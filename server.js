@@ -21,15 +21,35 @@ const PORT = 3001;
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
-// Initialize Supabase client with fallback
 let supabase = null;
-console.log('⚠️  Supabase not configured. Using fallback mode.');
+if (supabaseUrl && supabaseKey) {
+  try {
+    supabase = createClient(supabaseUrl, supabaseKey);
+    console.log('✅ Supabase client initialized successfully');
+  } catch (error) {
+    console.log('⚠️  Supabase initialization failed:', error.message);
+    console.log('⚠️  Using fallback mode.');
+  }
+} else {
+  console.log('⚠️  Supabase not configured. Using fallback mode.');
+}
 
 // Initialize OpenAI client
 const openaiApiKey = process.env.VITE_OPENAI_API_KEY;
-// Initialize OpenAI client with fallback
 let openai = null;
-console.log('⚠️  OpenAI not configured. Using fallback itinerary generation.');
+if (openaiApiKey) {
+  try {
+    openai = new OpenAI({
+      apiKey: openaiApiKey,
+    });
+    console.log('✅ OpenAI client initialized successfully');
+  } catch (error) {
+    console.log('⚠️  OpenAI initialization failed:', error.message);
+    console.log('⚠️  Using fallback itinerary generation.');
+  }
+} else {
+  console.log('⚠️  OpenAI not configured. Using fallback itinerary generation.');
+}
 
 // Middleware
 app.use(cors());
