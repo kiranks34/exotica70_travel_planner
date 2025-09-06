@@ -235,7 +235,7 @@ app.get('/api/trip/:id', async (req, res) => {
       
       console.log('[GET_TRIP] Returning demo trip data');
       return res.status(200).json({
-        trip: demoTrip
+        trip: demoTrip,
         votes: {}
       });
     }
