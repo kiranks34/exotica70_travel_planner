@@ -33,8 +33,8 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
   };
 
   return (
-    <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer transform hover:scale-[1.02] border border-white border-opacity-30 w-full max-w-lg">
-      <div className="flex h-56">
+    <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer transform hover:scale-[1.02] border border-white border-opacity-30 w-full max-w-xl">
+      <div className="flex h-48">
         {/* Image Section - 45% width */}
         <div className="relative w-[50%] overflow-hidden">
           <img
