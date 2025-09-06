@@ -152,7 +152,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!destination || !startDate || !numberOfDays || !tripType) return;
+    if (!destination || !startDate || !numberOfDays) return;
 
     handleTripCreation();
   };
@@ -318,7 +318,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({
         destination,
         startDate,
         endDate: endDateObj.toISOString().split('T')[0],
-        tripType,
+        tripType: tripType || 'general',
         collaborators: [],
         aiTripData
       };

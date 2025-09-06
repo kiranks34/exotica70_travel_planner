@@ -50,6 +50,7 @@ function App() {
     isFavorite: boolean;
   } | null>(null);
   const [savedPreferences, setSavedPreferences] = useState<TravelPreferences | null>(null);
+  const [shouldRestoreItinerary, setShouldRestoreItinerary] = useState(false);
 
   // Listen for auth changes
   useEffect(() => {
@@ -98,6 +99,24 @@ function App() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Check for itinerary restoration on component mount
+  useEffect(() => {
+    const previousState = sessionStorage.getItem('previousItineraryState');
+    if (previousState && currentState === 'planning') {
+      try {
+        const { trip, dayItineraries, tripType, aiInsights } = JSON.parse(previousState);
+        setCurrentTrip(trip);
+        setCurrentTripType(tripType);
+        setAiInsights(aiInsights);
+        setCurrentState('itinerary');
+        // Clear the stored state after restoration
+        sessionStorage.removeItem('previousItineraryState');
+      } catch (error) {
+        console.error('Failed to restore itinerary state:', error);
+      }
+    }
+  }, [currentState]);
 
   // Helper function to set user from session
   const setUserFromSession = (session: any) => {

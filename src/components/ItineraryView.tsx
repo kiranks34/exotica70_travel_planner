@@ -339,6 +339,12 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
       
       // Store in sessionStorage for the summary page
       sessionStorage.setItem('itinerarySummary', JSON.stringify(summaryData));
+      sessionStorage.setItem('previousItineraryState', JSON.stringify({
+        trip,
+        dayItineraries: confirmedDayItineraries,
+        tripType,
+        aiInsights
+      }));
       
       // Navigate to summary page
       window.location.href = `/summary/${trip.id}`;

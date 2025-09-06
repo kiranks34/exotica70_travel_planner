@@ -35,6 +35,18 @@ export const ItinerarySummaryPage: React.FC = () => {
   const [shareEmail, setShareEmail] = useState('');
   const [showShareModal, setShowShareModal] = useState(false);
 
+  const handleBackToItinerary = () => {
+    // Try to go back to the itinerary page
+    const previousState = sessionStorage.getItem('previousItineraryState');
+    if (previousState) {
+      // Navigate back to home and restore the itinerary state
+      navigate('/');
+      // The itinerary state will be restored from sessionStorage
+    } else {
+      // Fallback to home
+      navigate('/');
+    }
+  };
   useEffect(() => {
     const storedData = sessionStorage.getItem('itinerarySummary');
     if (storedData) {
@@ -137,7 +149,7 @@ Best regards`);
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => navigate(-1)}
+                onClick={handleBackToItinerary}
                 className="text-gray-600 hover:text-orange-500 transition-colors"
               >
                 <ArrowLeft className="h-6 w-6" />
