@@ -677,13 +677,13 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
         </div>
 
         {/* Destination Cards - Right Side */}
-        <div className="flex-1 max-h-screen overflow-y-auto ml-16 flex flex-col items-center">
+        <div className="flex-1 max-h-screen overflow-hidden flex flex-col items-center">
           <div className="mb-6 text-center">
             <h2 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">Popular Destinations</h2>
             <p className="text-white/90 drop-shadow-md">Discover amazing places around the world</p>
           </div>
           
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 max-w-6xl">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 max-w-6xl px-4">
             {destinationCards.map((destination, index) => (
               <DestinationCard
                 key={`${destination.name}-${destination.country}`}
@@ -701,7 +701,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
           </div>
           
           {/* Explore More Button */}
-          <div className="flex justify-center mt-8">
+          <div className="flex justify-center mt-8 mb-8">
             <button className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white px-8 py-3 rounded-full font-semibold transition-all transform hover:scale-105 shadow-lg">
               Explore More Destinations
             </button>
