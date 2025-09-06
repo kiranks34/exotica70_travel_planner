@@ -3,8 +3,13 @@ dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = 3001;
@@ -49,6 +54,9 @@ try {
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from dist directory
+app.use(express.static(path.join(__dirname, 'dist')));
 
 // Generate Itinerary Endpoint
 app.post('/api/generate-itinerary', async (req, res) => {
@@ -447,6 +455,16 @@ app.post('/api/trip/:id/vote', async (req, res) => {
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// Serve React app for all non-API routes
+app.get('*', (req, res) => {
+  // Don't serve index.html for API routes
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+  
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 // Start server
