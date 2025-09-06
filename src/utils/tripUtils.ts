@@ -42,3 +42,4 @@ export const formatDateRange = (startDate: string, endDate: string): string => {
   }
   
   return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${start.getFullYear()}`;
+}
