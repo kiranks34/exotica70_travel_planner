@@ -12,8 +12,10 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
   const [startDate, setStartDate] = useState('');
   const [numberOfDays, setNumberOfDays] = useState('');
   const [tripType, setTripType] = useState('');
-  const [budget, setBudget] = useState(0);
-  const [budgetInput, setBudgetInput] = useState('0');
+  const [budgetMin, setBudgetMin] = useState(0);
+  const [budgetMax, setBudgetMax] = useState(1000);
+  const [budgetMinInput, setBudgetMinInput] = useState('0');
+  const [budgetMaxInput, setBudgetMaxInput] = useState('1000');
   const [showCollaborators, setShowCollaborators] = useState(false);
   const [collaborators, setCollaborators] = useState<string[]>([]);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
@@ -101,15 +103,30 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
     setShowCalendar(false);
   };
 
-  const handleBudgetSliderChange = (value: number) => {
-    setBudget(value);
-    setBudgetInput(value.toString());
+  const handleBudgetMinChange = (value: number) => {
+    const newMin = Math.min(value, budgetMax - 100); // Ensure min is always less than max
+    setBudgetMin(newMin);
+    setBudgetMinInput(newMin.toString());
   };
 
-  const handleBudgetInputChange = (value: string) => {
-    setBudgetInput(value);
+  const handleBudgetMaxChange = (value: number) => {
+    const newMax = Math.max(value, budgetMin + 100); // Ensure max is always greater than min
+    setBudgetMax(newMax);
+    setBudgetMaxInput(newMax.toString());
+  };
+
+  const handleBudgetMinInputChange = (value: string) => {
+    setBudgetMinInput(value);
     const numValue = parseInt(value) || 0;
-    setBudget(Math.max(0, Math.min(10000, numValue)));
+    const clampedValue = Math.max(0, Math.min(budgetMax - 100, numValue));
+    setBudgetMin(clampedValue);
+  };
+
+  const handleBudgetMaxInputChange = (value: string) => {
+    setBudgetMaxInput(value);
+    const numValue = parseInt(value) || 0;
+    const clampedValue = Math.max(budgetMin + 100, Math.min(10000, numValue));
+    setBudgetMax(clampedValue);
   };
 
   const openCalendar = () => {
@@ -296,10 +313,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                 <div className="relative calendar-field">
                   <label className="block text-xs font-medium text-gray-600 mb-1">Start Date</label>
                   <div className="relative">
-                    <Calendar 
-                      className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 cursor-pointer" 
-                      onClick={openCalendar}
-                    />
+                    <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 pointer-events-none" />
                     <input
                       type="text"
                       value={formatDateForDisplay(startDate)}
@@ -438,46 +452,69 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                 {/* Budget Display Bubble */}
                 <div className="flex justify-center">
                   <div className="relative">
-                    <div className="bg-blue-500 text-white px-4 py-2 rounded-full font-semibold text-lg">
-                      ${budget}
+                    <div className="bg-orange-500 text-white px-4 py-2 rounded-full font-semibold text-lg">
+                      ${budgetMin} - ${budgetMax}
                     </div>
-                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-blue-500"></div>
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-orange-500"></div>
                   </div>
                 </div>
                 
-                {/* Slider */}
+                {/* Range Slider */}
                 <div className="relative">
+                  {/* Track */}
+                  <div className="relative h-2 bg-gray-200 rounded-lg">
+                    <div 
+                      className="absolute h-2 bg-orange-500 rounded-lg"
+                      style={{
+                        left: `${(budgetMin / 10000) * 100}%`,
+                        width: `${((budgetMax - budgetMin) / 10000) * 100}%`
+                      }}
+                    />
+                  </div>
+                  
+                  {/* Min Range Input */}
                   <input
                     type="range"
                     min="0"
                     max="10000"
                     step="100"
-                    value={budget}
-                    onChange={(e) => handleBudgetSliderChange(parseInt(e.target.value))}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                    style={{
-                      background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(budget / 10000) * 100}%, #e5e7eb ${(budget / 10000) * 100}%, #e5e7eb 100%)`
-                    }}
+                    value={budgetMin}
+                    onChange={(e) => handleBudgetMinChange(parseInt(e.target.value))}
+                    className="absolute top-0 w-full h-2 bg-transparent appearance-none cursor-pointer range-slider"
                   />
+                  
+                  {/* Max Range Input */}
+                  <input
+                    type="range"
+                    min="0"
+                    max="10000"
+                    step="100"
+                    value={budgetMax}
+                    onChange={(e) => handleBudgetMaxChange(parseInt(e.target.value))}
+                    className="absolute top-0 w-full h-2 bg-transparent appearance-none cursor-pointer range-slider"
+                  />
+                  
                   <style jsx>{`
-                    .slider::-webkit-slider-thumb {
+                    .range-slider::-webkit-slider-thumb {
                       appearance: none;
                       width: 20px;
                       height: 20px;
                       border-radius: 50%;
-                      background: #3b82f6;
+                      background: #f97316;
                       cursor: pointer;
                       border: 2px solid white;
                       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                      pointer-events: all;
                     }
-                    .slider::-moz-range-thumb {
+                    .range-slider::-moz-range-thumb {
                       width: 20px;
                       height: 20px;
                       border-radius: 50%;
-                      background: #3b82f6;
+                      background: #f97316;
                       cursor: pointer;
                       border: 2px solid white;
                       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                      pointer-events: all;
                     }
                   `}</style>
                 </div>
@@ -489,19 +526,22 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                       type="number"
                       min="0"
                       max="10000"
-                      value={budgetInput}
-                      onChange={(e) => handleBudgetInputChange(e.target.value)}
+                      value={budgetMinInput}
+                      onChange={(e) => handleBudgetMinInputChange(e.target.value)}
                       placeholder="$0"
-                      className="w-full px-4 py-2 border-2 border-gray-200 bg-white rounded-full text-center focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                      className="w-full px-4 py-2 border-2 border-gray-200 bg-white rounded-full text-center focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
                     />
                   </div>
                   <span className="text-gray-500 font-medium">—</span>
                   <div className="flex-1">
                     <input
-                      type="text"
-                      value={`$${budget}`}
-                      readOnly
-                      className="w-full px-4 py-2 border-2 border-gray-200 bg-gray-50 rounded-full text-center text-gray-600"
+                      type="number"
+                      min="0"
+                      max="10000"
+                      value={budgetMaxInput}
+                      onChange={(e) => handleBudgetMaxInputChange(e.target.value)}
+                      placeholder="$1000"
+                      className="w-full px-4 py-2 border-2 border-gray-200 bg-white rounded-full text-center focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
                     />
                   </div>
                 </div>
