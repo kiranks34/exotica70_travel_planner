@@ -23,6 +23,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [showCalendar, setShowCalendar] = useState(false);
   const [favoriteCards, setFavoriteCards] = useState<Set<string>>(new Set());
+  const [isCreatingTrip, setIsCreatingTrip] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
   const dateInputRef = useRef<HTMLInputElement>(null);
 
@@ -159,21 +160,9 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!destination || !startDate || !numberOfDays) return;
+    if (!destination || !startDate || !numberOfDays || !tripType) return;
 
-    // Calculate end date based on start date and number of days
-    const start = new Date(startDate);
-    const end = new Date(start);
-    end.setDate(start.getDate() + parseInt(numberOfDays) - 1);
-    const endDate = end.toISOString().split('T')[0];
-
-    onTripCreate({
-      destination,
-      startDate,
-      endDate,
-      tripType,
-      collaborators: []
-    });
+    handleTripCreation();
   };
 
   const handleDateSelect = (date: string) => {
@@ -291,6 +280,52 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
       onFavoriteCountChange?.(newSet.size);
       return newSet;
     });
+  };
+
+  const handleTripCreation = async () => {
+    setIsCreatingTrip(true);
+    
+    try {
+      // Calculate end date based on start date and number of days
+      const start = new Date(startDate);
+      const end = new Date(start);
+      end.setDate(start.getDate() + parseInt(numberOfDays) - 1);
+      const endDate = end.toISOString().split('T')[0];
+
+      const tripData = {
+        destination,
+        vibe: tripType,
+        days: parseInt(numberOfDays),
+        start_date: startDate,
+        budget: budgetMax // Use max budget as the budget value
+      };
+
+      const response = await fetch('/api/generate-itinerary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(tripData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.id) {
+        // Redirect to the trip page
+        window.location.href = `/trip/${result.id}`;
+      } else {
+        throw new Error('No trip ID returned from server');
+      }
+    } catch (error) {
+      console.error('Error creating trip:', error);
+      alert('Failed to create trip. Please try again.');
+    } finally {
+      setIsCreatingTrip(false);
+    }
   };
 
   return (
@@ -653,10 +688,17 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={!destination || !startDate || !numberOfDays || !tripType}
+              disabled={!destination || !startDate || !numberOfDays || !tripType || isCreatingTrip}
               className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-2.5 px-6 rounded-xl font-semibold hover:from-orange-600 hover:to-red-600 transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
             >
-              Start planning
+              {isCreatingTrip ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Creating trip...</span>
+                </div>
+              ) : (
+                'Start planning'
+              )}
             </button>
 
             <div className="text-center">
