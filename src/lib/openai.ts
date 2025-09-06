@@ -4,7 +4,7 @@ import OpenAI from 'openai';
 const getOpenAIClient = () => {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
   
-  if (!apiKey) {
+  if (!apiKey || apiKey.includes('your-') || apiKey.includes('sk-your-')) {
     throw new Error('OpenAI API key is not configured. Please add VITE_OPENAI_API_KEY to your .env file.');
   }
   

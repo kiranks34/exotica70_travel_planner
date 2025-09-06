@@ -132,58 +132,53 @@ function App() {
     setIsGeneratingTrip(true);
     
     try {
-      // Generate AI trip plan
-      const aiTripPlan = await generateTripPlan({
-        destination: tripData.destination,
-        startDate: tripData.startDate,
-        endDate: tripData.endDate,
-        tripType: tripData.tripType,
-        collaborators: tripData.collaborators || []
-      });
-
-      // Create trip object
-      const newTrip: Trip = {
-        id: crypto.randomUUID(),
-        title: `${tripData.destination} Trip`,
-        destination: tripData.destination,
-        startDate: tripData.startDate,
-        endDate: tripData.endDate,
-        collaborators: tripData.collaborators || [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-
-      // Convert AI plan to itinerary format
-      const { trip, dayItineraries, aiInsights: insights } = convertAITripPlanToItinerary(aiTripPlan, newTrip);
+      // Check if OpenAI API key is properly configured
+      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
       
-      setCurrentTrip(trip);
-      setCurrentTripType(tripData.tripType || '');
-      setAiInsights(insights);
-      setIsGeneratingTrip(false);
-      
-      // Show AI insights modal first
-      setShowAIInsights(true);
+      if (apiKey && !apiKey.includes('your-') && !apiKey.includes('sk-your-')) {
+        // Generate AI trip plan
+        const aiTripPlan = await generateTripPlan({
+          destination: tripData.destination,
+          startDate: tripData.startDate,
+          endDate: tripData.endDate,
+          tripType: tripData.tripType,
+          collaborators: tripData.collaborators || []
+        });
+
+        // Create trip object
+        const newTrip: Trip = {
+          id: crypto.randomUUID(),
+          title: `${tripData.destination} Trip`,
+          destination: tripData.destination,
+          startDate: tripData.startDate,
+          endDate: tripData.endDate,
+          collaborators: tripData.collaborators || [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        // Convert AI plan to itinerary format
+        const { trip, dayItineraries, aiInsights: insights } = convertAITripPlanToItinerary(aiTripPlan, newTrip);
+        
+        setCurrentTrip(trip);
+        setCurrentTripType(tripData.tripType || '');
+        setAiInsights(insights);
+        setIsGeneratingTrip(false);
+        
+        // Show AI insights modal first
+        setShowAIInsights(true);
+      } else {
+        // Fallback to basic trip creation without AI
+        console.warn('OpenAI API key not configured, using fallback trip creation');
+        handleTripCreateBasic(tripData);
+      }
       
     } catch (error) {
       console.error('Error generating trip plan:', error);
       setIsGeneratingTrip(false);
       
-      // Fallback to basic trip creation
-      const newTrip: Trip = {
-        id: crypto.randomUUID(),
-        title: `${tripData.destination} Trip`,
-        destination: tripData.destination,
-        startDate: tripData.startDate,
-        endDate: tripData.endDate,
-        collaborators: tripData.collaborators || [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-
-      setCurrentTrip(newTrip);
-      setCurrentTripType(tripData.tripType || '');
-      setCurrentState('itinerary');
-      
+      // Fallback to basic trip creation on error
+      handleTripCreateBasic(tripData);
       alert('Unable to generate AI suggestions. Using basic itinerary template.');
     }
   };
