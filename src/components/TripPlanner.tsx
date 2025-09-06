@@ -326,10 +326,10 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                   
                   {/* Calendar sliding from right */}
                   {showCalendar && (
-                    <div className={`absolute top-0 left-full ml-4 z-50 transition-all duration-300 ease-out transform ${
+                    <div className={`fixed top-1/2 left-1/2 transform -translate-y-1/2 translate-x-8 z-50 transition-all duration-300 ease-out ${
                       showCalendar ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'
                     }`}>
-                      <div className="bg-white rounded-xl shadow-2xl border border-gray-200 p-6 w-96 calendar-container">
+                      <div className="bg-white bg-opacity-95 backdrop-blur-lg rounded-xl shadow-2xl border border-gray-200 p-6 w-96 calendar-container">
                         <div className="flex items-center justify-between mb-4">
                           <h3 className="text-lg font-semibold text-gray-900">
                             Select Start Date
