@@ -130,10 +130,13 @@ function App() {
     setUser(userData);
   };
   const handleTripCreate = async (tripData: any) => {
-    setIsGeneratingTrip(true);
-    setIsGeneratingAI(true);
+    console.log('🎯 App.tsx handleTripCreate called with:', tripData);
     
     try {
+      if (!tripData.destination || !tripData.startDate || !tripData.endDate) {
+        throw new Error('Missing required trip data');
+      }
+      
       // Create trip object
       const newTrip: Trip = {
         id: crypto.randomUUID(),
@@ -146,12 +149,15 @@ function App() {
         updatedAt: new Date().toISOString()
       };
 
+      console.log('✅ Trip object created:', newTrip);
+      
       setCurrentTrip(newTrip);
       setCurrentTripType(tripData.tripType || '');
       
       // If AI trip data is available, process it
       if (tripData.aiTripData) {
         try {
+          console.log('🤖 Processing AI trip data...');
           const { convertAITripPlanToItinerary } = await import('./utils/aiTripConverter');
           const { aiInsights } = convertAITripPlanToItinerary(tripData.aiTripData, newTrip);
           setAiInsights(aiInsights);
@@ -159,21 +165,28 @@ function App() {
         } catch (error) {
           console.warn('Failed to process AI insights:', error);
         }
+      } else {
+        console.log('ℹ️ No AI trip data available, using fallback suggestions');
       }
       
-      setIsGeneratingTrip(false);
-      setIsGeneratingAI(false);
-      
       // Go directly to itinerary view
+      console.log('🚀 Navigating to itinerary view...');
       setCurrentState('itinerary');
       
     } catch (error) {
-      console.error('Error generating trip plan:', error);
-      setIsGeneratingTrip(false);
-      setIsGeneratingAI(false);
+      console.error('❌ Error in handleTripCreate:', error);
       
       // Fallback to basic trip creation on error
-      handleTripCreateBasic(tripData);
+      console.log('🔄 Falling back to basic trip creation...');
+      try {
+        handleTripCreateBasic(tripData);
+      } catch (fallbackError) {
+        console.error('❌ Fallback also failed:', fallbackError);
+        // Reset to planning state
+        setCurrentState('planning');
+        setCurrentTrip(null);
+        setCurrentTripType('');
+      }
     }
   };
 

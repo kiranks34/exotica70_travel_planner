@@ -272,56 +272,76 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
     setErrorMessage(null);
     
     try {
-      // Calculate end date
+      console.log('🚀 Starting trip creation process...');
+      
+      // Calculate end date properly
       const startDateObj = new Date(startDate);
       const endDateObj = new Date(startDateObj);
       endDateObj.setDate(startDateObj.getDate() + parseInt(numberOfDays) - 1);
       
-      // Generate AI-powered trip plan
-      const aiTripData = await generatePersonalizedTrip({
-        destination,
+      console.log('📅 Dates calculated:', {
         startDate,
         endDate: endDateObj.toISOString().split('T')[0],
-        days: parseInt(numberOfDays),
-        tripType,
-        budget: budgetMax,
-        groupSize: 2 // Default group size
+        days: numberOfDays
       });
       
-      // Create trip data
+      let aiTripData = null;
+      
+      // Try to generate AI-powered trip plan
+      try {
+        console.log('🤖 Attempting AI trip generation...');
+        aiTripData = await generatePersonalizedTrip({
+          destination,
+          startDate,
+          endDate: endDateObj.toISOString().split('T')[0],
+          days: parseInt(numberOfDays),
+          tripType,
+          budget: budgetMax,
+          groupSize: 2
+        });
+        console.log('✅ AI trip generation successful');
+      } catch (aiError) {
+        console.warn('⚠️ AI generation failed, continuing without AI data:', aiError);
+        // Continue without AI data - the app will use fallback suggestions
+      }
+      
+      // Create trip data object
       const tripData = {
         destination,
         startDate,
         endDate: endDateObj.toISOString().split('T')[0],
         tripType,
         collaborators: [],
-        aiTripData // Pass AI-generated data
+        aiTripData
       };
+      
+      console.log('📦 Trip data prepared:', tripData);
       
       // Show success message briefly
       setShowSuccessMessage(true);
       
+      // Navigate after short delay
       setTimeout(() => {
+        console.log('🎯 Calling onTripCreate...');
         setIsCreatingTrip(false);
         setIsGeneratingWithAI(false);
         setShowSuccessMessage(false);
-        // Call the existing trip creation handler
         onTripCreate(tripData);
-      }, 1500);
+      }, 1000); // Reduced delay
       
     } catch (error) {
-      console.error('Error creating trip:', error);
-      setErrorMessage(error instanceof Error ? error.message : 'Failed to create trip. Please try again.');
+      console.error('❌ Error in trip creation:', error);
+      setErrorMessage('Failed to create trip. Please try again.');
       setIsCreatingTrip(false);
       setIsGeneratingWithAI(false);
       setShowSuccessMessage(false);
-      // Auto-hide error after 5 seconds
-      setTimeout(() => setErrorMessage(null), 5000);
     }
   };
 
   // Generate personalized trip using OpenAI
   const generatePersonalizedTrip = async (tripParams: any) => {
+    console.log('🤖 OpenAI generation starting with params:', tripParams);
+    
     try {
       const { generateTripPlan } = await import('../lib/openai');
       
@@ -333,11 +353,11 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
         collaborators: []
       });
       
+      console.log('✅ OpenAI generation completed');
       return aiTripPlan;
     } catch (error) {
-      console.warn('OpenAI generation failed, using fallback:', error);
-      // Return null to use fallback system
-      return null;
+      console.warn('⚠️ OpenAI generation failed:', error);
+      throw error; // Let the calling function handle the error
     }
   };
 

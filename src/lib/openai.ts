@@ -61,12 +61,21 @@ export interface AITripPlan {
 }
 
 export const generateTripPlan = async (request: TripPlanningRequest): Promise<AITripPlan> => {
+  console.log('🤖 OpenAI generateTripPlan called with:', request);
+  
   try {
     const openai = getOpenAIClient();
     console.log('🤖 Starting OpenAI trip generation for:', request.destination);
+    
+    const startDate = new Date(request.startDate);
+    const endDate = new Date(request.endDate);
+    const duration = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    
+    console.log('📊 Trip parameters:', { destination: request.destination, duration, tripType: request.tripType });
   } catch (error) {
     console.error('OpenAI configuration error:', error);
     // Return fallback trip plan when API key is missing
+    console.log('🔄 Using fallback trip plan due to configuration error');
     return generateFallbackTripPlan(request);
   }
   
