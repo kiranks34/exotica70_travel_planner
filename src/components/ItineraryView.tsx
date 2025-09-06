@@ -8,6 +8,7 @@ import { generateDayItineraries } from '../utils/tripUtils';
 import { generateActivitySuggestions } from '../utils/activitySuggestions';
 import { ArrowLeft, Share2, Plus, Calendar, MapPin, Lightbulb } from 'lucide-react';
 import { AITripInsights } from '../utils/aiTripConverter';
+import { supabase } from '../lib/supabase';
 
 interface ItineraryViewProps {
   trip: Trip;
@@ -33,6 +34,52 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [voteCounts, setVoteCounts] = useState<{ [activityId: string]: { yes: number; no: number; maybe: number } }>({});
   const [userVotes, setUserVotes] = useState<{ [activityId: string]: 'yes' | 'no' | 'maybe' }>({});
+  const [showVotesResults, setShowVotesResults] = useState(false);
+
+  // Load votes when component mounts
+  React.useEffect(() => {
+    if (user && trip.id) {
+      loadVotes();
+    }
+  }, [user, trip.id]);
+
+  const loadVotes = async () => {
+    if (!user || !trip.id) return;
+
+    try {
+      // Get all votes for this trip
+      const { data: votes, error } = await supabase
+        .from('votes')
+        .select('activity_id, choice, voter_id')
+        .eq('trip_id', trip.id);
+
+      if (error) {
+        console.error('Error loading votes:', error);
+        return;
+      }
+
+      // Aggregate vote counts
+      const counts: { [activityId: string]: { yes: number; no: number; maybe: number } } = {};
+      const userVoteMap: { [activityId: string]: 'yes' | 'no' | 'maybe' } = {};
+
+      votes?.forEach(vote => {
+        if (!counts[vote.activity_id]) {
+          counts[vote.activity_id] = { yes: 0, no: 0, maybe: 0 };
+        }
+        counts[vote.activity_id][vote.choice as 'yes' | 'no' | 'maybe']++;
+
+        // Track current user's votes
+        if (vote.voter_id === user.id) {
+          userVoteMap[vote.activity_id] = vote.choice as 'yes' | 'no' | 'maybe';
+        }
+      });
+
+      setVoteCounts(counts);
+      setUserVotes(userVoteMap);
+    } catch (error) {
+      console.error('Error loading votes:', error);
+    }
+  };
 
   const handleAddActivity = (activity: Activity) => {
     if (!selectedDay) return;
@@ -90,53 +137,84 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
       setSelectedDay(updatedDay);
     }
   };
-  const handleVote = (activityId: string, choice: 'yes' | 'no' | 'maybe') => {
-    if (!user) return; // Only allow voting if user is logged in
-    
-    const previousVote = userVotes[activityId];
-    
-    // If user clicks the same vote, remove it (toggle off)
-    if (previousVote === choice) {
-      setUserVotes(prev => {
-        const newVotes = { ...prev };
-        delete newVotes[activityId];
-        return newVotes;
-      });
+
+  const handleVote = async (activityId: string, choice: 'yes' | 'no' | 'maybe') => {
+    if (!user || !trip.id) return;
+
+    try {
+      const previousVote = userVotes[activityId];
       
-      // Decrease the count for the removed vote
+      // If user clicks the same vote, remove it (toggle off)
+      if (previousVote === choice) {
+        const { error } = await supabase
+          .from('votes')
+          .delete()
+          .eq('trip_id', trip.id)
+          .eq('activity_id', activityId)
+          .eq('voter_id', user.id);
+
+        if (error) {
+          console.error('Error removing vote:', error);
+          return;
+        }
+
+        // Update local state
+        setUserVotes(prev => {
+          const newVotes = { ...prev };
+          delete newVotes[activityId];
+          return newVotes;
+        });
+        
+        setVoteCounts(prev => {
+          const currentCounts = prev[activityId] || { yes: 0, no: 0, maybe: 0 };
+          return {
+            ...prev,
+            [activityId]: {
+              ...currentCounts,
+              [choice]: Math.max(0, currentCounts[choice] - 1)
+            }
+          };
+        });
+        return;
+      }
+
+      // Upsert the vote
+      const { error } = await supabase
+        .from('votes')
+        .upsert({
+          trip_id: trip.id,
+          activity_id: activityId,
+          voter_id: user.id,
+          choice
+        });
+
+      if (error) {
+        console.error('Error saving vote:', error);
+        return;
+      }
+
+      // Update local state
+      setUserVotes(prev => ({ ...prev, [activityId]: choice }));
+      
       setVoteCounts(prev => {
         const currentCounts = prev[activityId] || { yes: 0, no: 0, maybe: 0 };
+        
+        // Remove previous vote if exists
+        if (previousVote) {
+          currentCounts[previousVote] = Math.max(0, currentCounts[previousVote] - 1);
+        }
+        
+        // Add new vote
+        currentCounts[choice] = currentCounts[choice] + 1;
+        
         return {
           ...prev,
-          [activityId]: {
-            ...currentCounts,
-            [choice]: Math.max(0, currentCounts[choice] - 1)
-          }
+          [activityId]: { ...currentCounts }
         };
       });
-      return;
+    } catch (error) {
+      console.error('Error handling vote:', error);
     }
-    
-    // Update user's vote
-    setUserVotes(prev => ({ ...prev, [activityId]: choice }));
-    
-    // Update vote counts (simulate real-time voting)
-    setVoteCounts(prev => {
-      const currentCounts = prev[activityId] || { yes: 0, no: 0, maybe: 0 };
-      
-      // Remove previous vote if exists
-      if (previousVote) {
-        currentCounts[previousVote] = Math.max(0, currentCounts[previousVote] - 1);
-      }
-      
-      // Add new vote
-      currentCounts[choice] = currentCounts[choice] + 1;
-      
-      return {
-        ...prev,
-        [activityId]: { ...currentCounts }
-      };
-    });
   };
 
   const tripDuration = new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime();
@@ -270,6 +348,88 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
             )}
           </div>
         </div>
+
+        {/* Votes Results Section */}
+        {user && Object.keys(voteCounts).length > 0 && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Group Voting Results</h2>
+                <button
+                  onClick={() => setShowVotesResults(!showVotesResults)}
+                  className="text-orange-600 hover:text-orange-700 font-medium"
+                >
+                  {showVotesResults ? 'Hide Results' : 'See Votes'}
+                </button>
+              </div>
+              
+              {showVotesResults && (
+                <div className="space-y-4">
+                  {dayItineraries.map(day => {
+                    const dayActivitiesWithVotes = day.activities.filter(activity => 
+                      voteCounts[activity.id] && 
+                      (voteCounts[activity.id].yes + voteCounts[activity.id].no + voteCounts[activity.id].maybe) > 0
+                    );
+                    
+                    if (dayActivitiesWithVotes.length === 0) return null;
+                    
+                    return (
+                      <div key={day.id} className="border border-gray-200 rounded-lg p-4">
+                        <h3 className="font-semibold text-gray-900 mb-3">
+                          Day {dayItineraries.indexOf(day) + 1} - {new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </h3>
+                        <div className="space-y-3">
+                          {dayActivitiesWithVotes
+                            .sort((a, b) => {
+                              const aVotes = voteCounts[a.id];
+                              const bVotes = voteCounts[b.id];
+                              const aScore = aVotes.yes * 2 + aVotes.maybe * 1 - aVotes.no * 1;
+                              const bScore = bVotes.yes * 2 + bVotes.maybe * 1 - bVotes.no * 1;
+                              return bScore - aScore;
+                            })
+                            .map(activity => {
+                              const votes = voteCounts[activity.id];
+                              const totalVotes = votes.yes + votes.no + votes.maybe;
+                              const score = votes.yes * 2 + votes.maybe * 1 - votes.no * 1;
+                              const isTopVoted = score > 0 && votes.yes >= votes.no;
+                              
+                              return (
+                                <div key={activity.id} className={`flex items-center justify-between p-3 rounded-lg ${
+                                  isTopVoted ? 'bg-green-50 border border-green-200' : 'bg-gray-50'
+                                }`}>
+                                  <div className="flex-1">
+                                    <h4 className={`font-medium ${isTopVoted ? 'text-green-800' : 'text-gray-900'}`}>
+                                      {activity.title}
+                                      {isTopVoted && <span className="ml-2 text-green-600">⭐ Top Choice</span>}
+                                    </h4>
+                                  </div>
+                                  <div className="flex items-center space-x-4 text-sm">
+                                    <span className="flex items-center space-x-1">
+                                      <span>👍</span>
+                                      <span className="font-medium">{votes.yes}</span>
+                                    </span>
+                                    <span className="flex items-center space-x-1">
+                                      <span>👎</span>
+                                      <span className="font-medium">{votes.no}</span>
+                                    </span>
+                                    <span className="flex items-center space-x-1">
+                                      <span>🤷</span>
+                                      <span className="font-medium">{votes.maybe}</span>
+                                    </span>
+                                    <span className="text-gray-500">({totalVotes} votes)</span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modals */}
