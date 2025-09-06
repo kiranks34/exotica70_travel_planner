@@ -11,10 +11,11 @@ export const LoadingModal: React.FC<LoadingModalProps> = ({ destination, isVisib
   const [currentStep, setCurrentStep] = useState(0);
 
   const steps = [
-    'Analyzing your preferences...',
-    'Finding the best attractions...',
-    'Curating local experiences...',
-    'Optimizing your itinerary...'
+    'AI is analyzing your preferences...',
+    'Finding personalized attractions...',
+    'Curating unique local experiences...',
+    'Optimizing your custom itinerary...',
+    'Adding insider tips and recommendations...'
   ];
 
   useEffect(() => {

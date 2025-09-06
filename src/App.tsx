@@ -38,6 +38,7 @@ function App() {
   const [aiInsights, setAiInsights] = useState<AITripInsights | null>(null);
   const [showAIInsights, setShowAIInsights] = useState(false);
   const [favoriteCount, setFavoriteCount] = useState(0);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
   // Listen for auth changes
   useEffect(() => {
@@ -130,6 +131,7 @@ function App() {
   };
   const handleTripCreate = async (tripData: any) => {
     setIsGeneratingTrip(true);
+    setIsGeneratingAI(true);
     
     try {
       // Create trip object
@@ -146,7 +148,21 @@ function App() {
 
       setCurrentTrip(newTrip);
       setCurrentTripType(tripData.tripType || '');
+      
+      // If AI trip data is available, process it
+      if (tripData.aiTripData) {
+        try {
+          const { convertAITripPlanToItinerary } = await import('./utils/aiTripConverter');
+          const { aiInsights } = convertAITripPlanToItinerary(tripData.aiTripData, newTrip);
+          setAiInsights(aiInsights);
+          console.log('✅ AI insights generated successfully');
+        } catch (error) {
+          console.warn('Failed to process AI insights:', error);
+        }
+      }
+      
       setIsGeneratingTrip(false);
+      setIsGeneratingAI(false);
       
       // Go directly to itinerary view
       setCurrentState('itinerary');
@@ -154,6 +170,7 @@ function App() {
     } catch (error) {
       console.error('Error generating trip plan:', error);
       setIsGeneratingTrip(false);
+      setIsGeneratingAI(false);
       
       // Fallback to basic trip creation on error
       handleTripCreateBasic(tripData);

@@ -63,6 +63,7 @@ export interface AITripPlan {
 export const generateTripPlan = async (request: TripPlanningRequest): Promise<AITripPlan> => {
   try {
     const openai = getOpenAIClient();
+    console.log('🤖 Starting OpenAI trip generation for:', request.destination);
   } catch (error) {
     console.error('OpenAI configuration error:', error);
     // Return fallback trip plan when API key is missing
@@ -73,84 +74,91 @@ export const generateTripPlan = async (request: TripPlanningRequest): Promise<AI
   const endDate = new Date(request.endDate);
   const duration = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
-  const prompt = `
-Create a detailed ${duration}-day trip itinerary for ${request.destination} from ${request.startDate} to ${request.endDate}.
+  const prompt = `Create a highly personalized and detailed ${duration}-day trip itinerary for ${request.destination}.
 
 Trip Details:
 - Destination: ${request.destination}
 - Duration: ${duration} days
+- Start Date: ${request.startDate}
+- End Date: ${request.endDate}
 - Trip Type: ${request.tripType}
-- Travel Style: ${getTripStyleDescription(request.tripType)}
+- Travel Style: ${getTripStyleDescription(request.tripType)} 
 ${request.collaborators.length > 0 ? `- Traveling with: ${request.collaborators.length} other people` : '- Solo travel'}
 
-Please provide a comprehensive trip plan in JSON format with the following structure:
+IMPORTANT: Create a PERSONALIZED experience tailored specifically to the "${request.tripType}" travel style. 
+
+For ${request.tripType} travelers, focus on:
+${getPersonalizationPrompt(request.tripType)}
+
+Provide a comprehensive, personalized trip plan in JSON format:
 {
   "destination": "${request.destination}",
   "duration": ${duration},
   "totalBudgetEstimate": number (in USD),
-  "bestTimeToVisit": "string",
-  "weatherInfo": "string describing expected weather",
+  "bestTimeToVisit": "specific advice for ${request.tripType} travelers",
+  "weatherInfo": "weather info relevant to ${request.tripType} activities",
   "localCurrency": "string",
-  "languageInfo": "string about local language and useful phrases",
-  "culturalTips": ["array of cultural etiquette tips"],
-  "packingRecommendations": ["array of packing suggestions"],
+  "languageInfo": "language info with phrases useful for ${request.tripType} activities",
+  "culturalTips": ["cultural tips specifically relevant to ${request.tripType} travelers"],
+  "packingRecommendations": ["packing suggestions optimized for ${request.tripType} activities"],
   "dayPlans": [
     {
       "date": "YYYY-MM-DD",
-      "theme": "string describing the day's focus",
+      "theme": "day theme aligned with ${request.tripType} interests",
       "activities": [
         {
-          "title": "Activity name",
-          "description": "Detailed description",
+          "title": "Activity name (${request.tripType}-focused)",
+          "description": "Detailed description explaining why this fits ${request.tripType} style",
           "location": "Specific address or area",
           "startTime": "HH:MM",
           "endTime": "HH:MM",
           "category": "accommodation|transport|restaurant|attraction|activity|shopping|other",
           "estimatedCost": number (in USD, optional),
           "bookingRequired": boolean,
-          "tips": ["array of specific tips for this activity"]
+          "tips": ["specific tips for ${request.tripType} travelers at this activity"]
         }
       ],
-      "localTips": ["array of tips specific to this day"],
+      "localTips": ["${request.tripType}-specific tips for this day"],
       "budgetEstimate": number (daily budget in USD)
     }
   ],
   "emergencyInfo": {
     "emergencyNumber": "local emergency number",
     "nearestEmbassy": "if applicable",
-    "importantAddresses": ["array of important locations"]
+    "importantAddresses": ["important locations for ${request.tripType} travelers"]
   }
 }
 
 Requirements:
-1. Create realistic daily schedules (8 AM to 10 PM)
-2. Include a mix of must-see attractions, local experiences, and ${request.tripType} activities
-3. Suggest specific restaurants, hotels, and attractions with real names when possible
-4. Provide realistic cost estimates
-5. Include practical travel tips and cultural insights
-6. Balance popular tourist spots with authentic local experiences
-7. Consider travel time between activities
-8. Include rest periods and meal times
-9. Adapt suggestions based on the "${request.tripType}" trip type
+1. PERSONALIZE everything for ${request.tripType} travelers
+2. Create realistic schedules optimized for ${request.tripType} activities
+3. Include specific venues that cater to ${request.tripType} interests
+4. Provide insider tips that ${request.tripType} travelers would find valuable
+5. Balance must-see spots with hidden gems perfect for ${request.tripType} style
+6. Consider optimal timing for ${request.tripType} activities
+7. Include ${request.tripType}-appropriate dining and accommodation suggestions
+8. Add cultural insights relevant to ${request.tripType} experiences
 
-Focus on creating an authentic, well-researched itinerary that captures the essence of ${request.destination} while catering to a ${request.tripType} travel style.
+Make this itinerary feel like it was created by a local expert who specializes in ${request.tripType} travel!
 `;
 
   try {
     const openai = getOpenAIClient();
+    console.log('🤖 Sending request to OpenAI...');
+    
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: "You are an expert travel planner with extensive knowledge of destinations worldwide. Provide detailed, practical, and culturally-aware travel itineraries in valid JSON format only. Do not include any text outside the JSON response."
+          content: `You are an expert travel planner specializing in ${request.tripType} travel experiences. You have extensive local knowledge and connections worldwide. Create highly personalized, authentic itineraries that go beyond typical tourist recommendations. Focus on experiences that truly match the traveler's style and interests. Provide valid JSON format only.`
         },
         {
           role: "user",
           content: prompt
         }
       ],
-      temperature: 0.7,
+      temperature: 0.8, // Higher creativity for personalization
       max_tokens: 4000,
       response_format: { type: "json_object" }
     });
@@ -160,6 +168,8 @@ Focus on creating an authentic, well-researched itinerary that captures the esse
       throw new Error('No response from OpenAI');
     }
 
+    console.log('✅ OpenAI response received, parsing...');
+    
     // Parse the JSON response
     const tripPlan: AITripPlan = JSON.parse(response);
     
@@ -168,15 +178,87 @@ Focus on creating an authentic, well-researched itinerary that captures the esse
       throw new Error('Invalid trip plan structure');
     }
 
+    console.log('✅ AI trip plan generated successfully:', {
+      destination: tripPlan.destination,
+      days: tripPlan.dayPlans.length,
+      budget: tripPlan.totalBudgetEstimate
+    });
+
     return tripPlan;
   } catch (error) {
     console.error('Error generating trip plan:', error);
     
     // Fallback to a basic structure if OpenAI fails
+    console.log('⚠️ Using fallback trip plan');
     return generateFallbackTripPlan(request);
   }
 };
 
+const getPersonalizationPrompt = (tripType: string): string => {
+  switch (tripType) {
+    case 'adventure':
+      return `- Outdoor activities, hiking trails, extreme sports, adventure tours
+- Off-the-beaten-path locations and hidden natural wonders
+- Local adventure guides and equipment rental spots
+- Early morning activities to catch the best conditions
+- Physical challenges and adrenaline-pumping experiences`;
+    case 'chill':
+    case 'relaxation':
+      return `- Peaceful locations, spas, wellness centers, quiet beaches
+- Slow-paced activities with plenty of rest time
+- Scenic spots perfect for meditation or reading
+- Comfortable accommodations with relaxation amenities
+- Local cafes and peaceful dining experiences`;
+    case 'party':
+      return `- Vibrant nightlife, clubs, bars, live music venues
+- Social activities and group experiences
+- Local party districts and entertainment areas
+- Late-night dining and street food scenes
+- Festival events and social gatherings`;
+    case 'culture':
+      return `- Museums, historical sites, art galleries, cultural centers
+- Traditional performances, workshops, and classes
+- Local artisan shops and cultural markets
+- Heritage sites and architectural marvels
+- Interactions with local artists and cultural experts`;
+    case 'spontaneous':
+      return `- Flexible activities that can be decided day-of
+- Local recommendations and hidden gems
+- Markets, street food, and impromptu discoveries
+- Activities that allow for last-minute changes
+- Experiences that capture the authentic local vibe`;
+    case 'food':
+      return `- Local food markets, cooking classes, food tours
+- Authentic restaurants known by locals
+- Street food vendors and culinary experiences
+- Wine/beer tastings and local beverage culture
+- Farm-to-table experiences and local ingredients`;
+    case 'romantic':
+      return `- Intimate dining experiences and romantic settings
+- Sunset viewpoints and scenic couple activities
+- Luxury accommodations and spa experiences
+- Private tours and exclusive experiences
+- Beautiful photo opportunities for couples`;
+    case 'family':
+      return `- Family-friendly attractions and activities for all ages
+- Educational experiences and interactive museums
+- Parks, playgrounds, and outdoor family activities
+- Restaurants with kid-friendly options
+- Safe, accessible locations with family amenities`;
+    case 'nature':
+      return `- National parks, nature reserves, wildlife viewing
+- Hiking trails, botanical gardens, natural landmarks
+- Eco-friendly accommodations and sustainable tourism
+- Bird watching, photography, and nature education
+- Conservation experiences and environmental learning`;
+    default:
+      return `- Balanced mix of popular attractions and local experiences
+- Variety of activities to suit different interests
+- Cultural immersion and authentic local interactions
+- Comfortable pacing with time for exploration
+- Mix of planned activities and free time for discovery`;
+  }
+};
 const getTripStyleDescription = (tripType: string): string => {
   switch (tripType) {
     case 'adventure':

@@ -28,6 +28,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
   const dateInputRef = useRef<HTMLInputElement>(null);
+  const [isGeneratingWithAI, setIsGeneratingWithAI] = useState(false);
 
   // Destination cards data
   const destinationCards = [
@@ -267,6 +268,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
 
   const handleTripCreation = async () => {
     setIsCreatingTrip(true);
+    setIsGeneratingWithAI(true);
     setErrorMessage(null);
     
     try {
@@ -275,13 +277,25 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
       const endDateObj = new Date(startDateObj);
       endDateObj.setDate(startDateObj.getDate() + parseInt(numberOfDays) - 1);
       
+      // Generate AI-powered trip plan
+      const aiTripData = await generatePersonalizedTrip({
+        destination,
+        startDate,
+        endDate: endDateObj.toISOString().split('T')[0],
+        days: parseInt(numberOfDays),
+        tripType,
+        budget: budgetMax,
+        groupSize: 2 // Default group size
+      });
+      
       // Create trip data
       const tripData = {
         destination,
         startDate,
         endDate: endDateObj.toISOString().split('T')[0],
         tripType,
-        collaborators: []
+        collaborators: [],
+        aiTripData // Pass AI-generated data
       };
       
       // Show success message briefly
@@ -289,6 +303,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
       
       setTimeout(() => {
         setIsCreatingTrip(false);
+        setIsGeneratingWithAI(false);
         setShowSuccessMessage(false);
         // Call the existing trip creation handler
         onTripCreate(tripData);
@@ -298,9 +313,31 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
       console.error('Error creating trip:', error);
       setErrorMessage(error instanceof Error ? error.message : 'Failed to create trip. Please try again.');
       setIsCreatingTrip(false);
+      setIsGeneratingWithAI(false);
       setShowSuccessMessage(false);
       // Auto-hide error after 5 seconds
       setTimeout(() => setErrorMessage(null), 5000);
+    }
+  };
+
+  // Generate personalized trip using OpenAI
+  const generatePersonalizedTrip = async (tripParams: any) => {
+    try {
+      const { generateTripPlan } = await import('../lib/openai');
+      
+      const aiTripPlan = await generateTripPlan({
+        destination: tripParams.destination,
+        startDate: tripParams.startDate,
+        endDate: tripParams.endDate,
+        tripType: tripParams.tripType,
+        collaborators: []
+      });
+      
+      return aiTripPlan;
+    } catch (error) {
+      console.warn('OpenAI generation failed, using fallback:', error);
+      // Return null to use fallback system
+      return null;
     }
   };
 
@@ -667,7 +704,12 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
               ) : isCreatingTrip ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
-                  <span className="animate-pulse">Creating your trip<span className="animate-bounce">.</span><span className="animate-bounce" style={{animationDelay: '0.1s'}}>.</span><span className="animate-bounce" style={{animationDelay: '0.2s'}}>.</span></span>
+                  <span className="animate-pulse">
+                    {isGeneratingWithAI ? 'AI is crafting your perfect trip' : 'Creating your trip'}
+                    <span className="animate-bounce">.</span>
+                    <span className="animate-bounce" style={{animationDelay: '0.1s'}}>.</span>
+                    <span className="animate-bounce" style={{animationDelay: '0.2s'}}>.</span>
+                  </span>
                 </div>
               ) : (
                 'Start planning'

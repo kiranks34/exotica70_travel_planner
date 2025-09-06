@@ -38,8 +38,16 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
       try {
         setIsLoading(true);
         
-        // Generate day itineraries with AI suggestions
-        const initialDayItineraries = generateActivitySuggestions(trip.destination, tripType, generateDayItineraries(trip));
+        // Check if we have AI insights, if so use enhanced suggestions
+        let initialDayItineraries;
+        if (aiInsights) {
+          // Use AI-enhanced activity suggestions
+          initialDayItineraries = generateAIEnhancedSuggestions(trip.destination, tripType, generateDayItineraries(trip), aiInsights);
+        } else {
+          // Fallback to regular AI suggestions
+          initialDayItineraries = generateActivitySuggestions(trip.destination, tripType, generateDayItineraries(trip));
+        }
+        
         setDayItineraries(initialDayItineraries);
         setSelectedDay(initialDayItineraries[0] || null);
         
@@ -56,6 +64,21 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
 
     loadTripData();
   }, [trip.id, trip.destination, tripType]);
+
+  // Generate AI-enhanced suggestions when we have AI insights
+  const generateAIEnhancedSuggestions = (destination: string, tripType: string, dayItineraries: DayItinerary[], insights: AITripInsights): DayItinerary[] => {
+    const enhancedDays = generateActivitySuggestions(destination, tripType, dayItineraries);
+    
+    // Enhance activities with AI insights
+    return enhancedDays.map((day, index) => ({
+      ...day,
+      activities: day.activities.map(activity => ({
+        ...activity,
+        notes: `${activity.notes}\n\n🤖 AI Enhanced:\n• Best time to visit: ${insights.bestTimeToVisit}\n• Local currency: ${insights.localCurrency}\n• Cultural tip: ${insights.culturalTips[index % insights.culturalTips.length] || 'Respect local customs'}`
+      })),
+      notes: `${day.notes}\n\n💡 AI Insight: ${insights.culturalTips[index] || 'Enjoy your day exploring!'}`
+    }));
+  };
 
   // Helper function to convert API itinerary format to our day itineraries format
   const convertAPIItineraryToDayItineraries = (apiItinerary: any, trip: Trip): DayItinerary[] => {
