@@ -9,6 +9,8 @@ interface DestinationCardProps {
   hiddenGem: string;
   rating: number;
   onPlanTrip: (destination: string) => void;
+  onFavoriteToggle?: (isFavorite: boolean) => void;
+  favoriteCount?: number;
 }
 
 export const DestinationCard: React.FC<DestinationCardProps> = ({
@@ -18,17 +20,17 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
   description,
   hiddenGem,
   rating,
-  onPlanTrip
+  onPlanTrip,
+  onFavoriteToggle
 }) => {
   const [isFavorite, setIsFavorite] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
   const [showTripFeedback, setShowTripFeedback] = useState(false);
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsFavorite(!isFavorite);
-    setShowFeedback(true);
-    setTimeout(() => setShowFeedback(false), 2000);
+    const newFavoriteState = !isFavorite;
+    setIsFavorite(newFavoriteState);
+    onFavoriteToggle?.(newFavoriteState);
   };
 
   const handlePlanTrip = (e: React.MouseEvent) => {
@@ -40,16 +42,6 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
 
   return (
     <div className="relative bg-white bg-opacity-20 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer transform hover:scale-[1.02] border border-white border-opacity-30 w-full max-w-xl">
-      {/* Favorite Feedback */}
-      {showFeedback && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-20 bg-white rounded-full px-4 py-2 shadow-lg border border-gray-200 flex items-center space-x-2 animate-pulse">
-          <Heart className={`h-4 w-4 ${isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-400'}`} />
-          <span className="text-sm font-medium text-gray-700">
-            {isFavorite ? 'Added to favorites!' : 'Removed from favorites'}
-          </span>
-        </div>
-      )}
-      
       {/* Trip Added Feedback */}
       {showTripFeedback && (
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-20 bg-green-500 text-white rounded-full px-4 py-2 shadow-lg flex items-center space-x-2 animate-pulse">

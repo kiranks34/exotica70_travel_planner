@@ -16,6 +16,7 @@ interface HeaderProps {
   user?: User | null;
   onLogout?: () => void;
   onHomeClick?: () => void;
+  favoriteCount?: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
@@ -24,7 +25,8 @@ export const Header: React.FC<HeaderProps> = ({
   onSignupClick, 
   user, 
   onLogout, 
-  onHomeClick 
+  onHomeClick,
+  favoriteCount = 0
 }) => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
@@ -179,6 +181,11 @@ export const Header: React.FC<HeaderProps> = ({
             <button className="flex items-center space-x-2 text-gray-700 hover:text-orange-500 transition-colors px-3 py-2 rounded-lg hover:bg-orange-50">
               <Heart className="h-5 w-5" />
               <span className="font-medium">Favorites</span>
+              {favoriteCount > 0 && (
+                <span className="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full min-w-[20px] text-center">
+                  {favoriteCount}
+                </span>
+              )}
             </button>
             
             {user ? (

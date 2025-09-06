@@ -35,6 +35,7 @@ function App() {
   const [isGeneratingTrip, setIsGeneratingTrip] = useState(false);
   const [aiInsights, setAiInsights] = useState<AITripInsights | null>(null);
   const [showAIInsights, setShowAIInsights] = useState(false);
+  const [favoriteCount, setFavoriteCount] = useState(0);
 
   // Listen for auth changes
   useEffect(() => {
@@ -279,6 +280,7 @@ function App() {
         user={user}
         onLogout={handleLogout}
         onHomeClick={handleHomeClick}
+        favoriteCount={favoriteCount}
       />
       
       {currentState === 'planning' ? (
@@ -286,6 +288,7 @@ function App() {
           onTripCreate={handleTripCreate} 
           onInspireMe={handleInspireMe}
           inspirationDestination={inspirationDestination}
+          onFavoriteCountChange={setFavoriteCount}
         />
       ) : currentTrip ? (
         <ItineraryView 

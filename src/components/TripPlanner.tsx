@@ -6,6 +6,7 @@ interface TripPlannerProps {
   onTripCreate: (tripData: any) => void;
   onInspireMe: () => void;
   inspirationDestination?: string;
+  onFavoriteCountChange?: (count: number) => void;
 }
 
 export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspireMe, inspirationDestination }) => {
@@ -20,6 +21,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
   const [currentCalendarMonth, setCurrentCalendarMonth] = useState(new Date());
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [favoriteCards, setFavoriteCards] = useState<Set<string>>(new Set());
   const calendarRef = useRef<HTMLDivElement>(null);
   const dateInputRef = useRef<HTMLInputElement>(null);
 
@@ -275,6 +277,19 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
 
   const handleDestinationSelect = (destination: string) => {
     setDestination(destination);
+  };
+
+  const handleFavoriteToggle = (cardId: string, isFavorite: boolean) => {
+    setFavoriteCards(prev => {
+      const newSet = new Set(prev);
+      if (isFavorite) {
+        newSet.add(cardId);
+      } else {
+        newSet.delete(cardId);
+      }
+      onFavoriteCountChange?.(newSet.size);
+      return newSet;
+    });
   };
 
   return (
@@ -670,7 +685,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 max-w-6xl">
             {destinationCards.map((destination, index) => (
               <DestinationCard
-                key={index}
+                key={`${destination.name}-${destination.country}`}
                 name={destination.name}
                 country={destination.country}
                 image={destination.image}
@@ -678,6 +693,8 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                 hiddenGem={destination.hiddenGem}
                 rating={destination.rating}
                 onPlanTrip={handleDestinationSelect}
+                onFavoriteToggle={(isFavorite) => handleFavoriteToggle(`${destination.name}-${destination.country}`, isFavorite)}
+                favoriteCount={favoriteCards.size}
               />
             ))}
           </div>
