@@ -290,10 +290,19 @@ const TripPage: React.FC = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your trip...</p>
+      <div className="min-h-screen bg-gray-50">
+        <Header 
+          onLoginClick={() => setShowLogin(true)}
+          onSignupClick={() => setShowSignup(true)}
+          user={user}
+          onLogout={handleLogout}
+          onHomeClick={() => window.location.href = '/'}
+        />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your trip...</p>
+          </div>
         </div>
       </div>
     );
@@ -302,19 +311,28 @@ const TripPage: React.FC = () => {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-6">
-          <div className="bg-red-100 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-            <RefreshCw className="h-8 w-8 text-red-600" />
+      <div className="min-h-screen bg-gray-50">
+        <Header 
+          onLoginClick={() => setShowLogin(true)}
+          onSignupClick={() => setShowSignup(true)}
+          user={user}
+          onLogout={handleLogout}
+          onHomeClick={() => window.location.href = '/'}
+        />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center max-w-md mx-auto p-6">
+            <div className="bg-red-100 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+              <RefreshCw className="h-8 w-8 text-red-600" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Failed to Load Trip</h2>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button
+              onClick={fetchTripData}
+              className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+            >
+              Try Again
+            </button>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Failed to Load Trip</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={fetchTripData}
-            className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
-          >
-            Try Again
-          </button>
         </div>
       </div>
     );
@@ -323,9 +341,18 @@ const TripPage: React.FC = () => {
   // No trip data
   if (!tripData) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">Trip not found</p>
+      <div className="min-h-screen bg-gray-50">
+        <Header 
+          onLoginClick={() => setShowLogin(true)}
+          onSignupClick={() => setShowSignup(true)}
+          user={user}
+          onLogout={handleLogout}
+          onHomeClick={() => window.location.href = '/'}
+        />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <p className="text-gray-600">Trip not found</p>
+          </div>
         </div>
       </div>
     );

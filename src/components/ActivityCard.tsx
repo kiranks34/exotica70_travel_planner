@@ -13,10 +13,6 @@ interface ActivityCardProps {
   onAISuggest?: () => void;
   onUndo?: () => void;
   hasUndo?: boolean;
-  onVote?: (activityId: string, choice: 'yes' | 'no' | 'maybe') => void;
-  voteCounts?: { yes: number; no: number; maybe: number };
-  userVote?: 'yes' | 'no' | 'maybe' | null;
-  isLoggedIn?: boolean;
 }
 
 export const ActivityCard: React.FC<ActivityCardProps> = ({

@@ -7,7 +7,6 @@ interface TripPlannerProps {
   onInspireMe: () => void;
   inspirationDestination?: string;
   onFavoriteCountChange?: (count: number) => void;
-  onFavoriteCountChange?: (count: number) => void;
 }
 
 export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspireMe, inspirationDestination, onFavoriteCountChange }) => {
@@ -270,6 +269,13 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
     setErrorMessage(null);
     
     try {
+      // Validate required fields
+      if (!destination || !startDate || !numberOfDays || !tripType) {
+        setErrorMessage('Please fill in all required fields');
+        setIsCreatingTrip(false);
+        return;
+      }
+
       // Call backend API to generate itinerary
       const response = await fetch('/api/generate-itinerary', {
         method: 'POST',
@@ -287,7 +293,8 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();

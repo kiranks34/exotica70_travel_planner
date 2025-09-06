@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Header } from './components/Header';
 import { TripPlanner } from './components/TripPlanner';
 import { ItineraryView } from './components/ItineraryView';
@@ -349,6 +349,9 @@ function App() {
           
           {/* Trip detail route */}
           <Route path="/trip/:id" element={<TripPage />} />
+          
+          {/* Catch all route - redirect to home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
     </Router>
