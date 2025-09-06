@@ -61,12 +61,14 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
               <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
               <span className="text-white text-xs font-medium">{rating}</span>
             </div>
+            <div className="ml-4">
             <button
               onClick={handlePlanTrip}
               className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded-full text-xs font-medium transition-all transform hover:scale-105 whitespace-nowrap"
             >
               Add Trip
             </button>
+            </div>
           </div>
         </div>
 
