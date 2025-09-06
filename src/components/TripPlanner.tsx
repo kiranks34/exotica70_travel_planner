@@ -7,9 +7,10 @@ interface TripPlannerProps {
   onInspireMe: () => void;
   inspirationDestination?: string;
   onFavoriteCountChange?: (count: number) => void;
+  onFavoriteCountChange?: (count: number) => void;
 }
 
-export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspireMe, inspirationDestination }) => {
+export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspireMe, inspirationDestination, onFavoriteCountChange }) => {
   const [destination, setDestination] = useState('');
   const [startDate, setStartDate] = useState('');
   const [numberOfDays, setNumberOfDays] = useState('');
