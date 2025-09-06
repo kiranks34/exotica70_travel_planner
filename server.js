@@ -21,10 +21,16 @@ if (supabaseUrl && supabaseKey && !supabaseUrl.includes('your-project') && !supa
 // Initialize OpenAI client
 const openaiApiKey = process.env.VITE_OPENAI_API_KEY;
 let openai = null;
-if (openaiApiKey && !openaiApiKey.includes('your-openai-api-key')) {
+if (openaiApiKey && openaiApiKey.startsWith('sk-')) {
   openai = new OpenAI({
     apiKey: openaiApiKey,
   });
+  console.log('✅ OpenAI client initialized successfully');
+} else {
+  console.log('⚠️  OpenAI API key not configured. Using fallback itinerary generation.');
+  console.log('   To enable OpenAI integration:');
+  console.log('   1. Get your API key from https://platform.openai.com/api-keys');
+  console.log('   2. Update VITE_OPENAI_API_KEY in your .env file');
 }
 
 // Middleware
@@ -90,32 +96,34 @@ Rules: keep estimated_total_cost <= budget (hard cap) whenever possible; 3–5 a
 
     try {
       if (openai) {
+        console.log('[GENERATE_ITINERARY] Using OpenAI to generate itinerary...');
         const completion = await openai.chat.completions.create({
-          model: "gpt-3.5-turbo",
+          model: "gpt-4o-mini",
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt }
           ],
           temperature: 0.4,
+          max_tokens: 4000,
           response_format: { type: "json_object" }
         });
 
         const responseContent = completion.choices[0].message.content;
-        console.log('[GENERATE_ITINERARY] OpenAI response received');
+        console.log('[GENERATE_ITINERARY] ✅ OpenAI response received successfully');
         
         try {
           itineraryData = JSON.parse(responseContent);
-          console.log('[GENERATE_ITINERARY] JSON parsed successfully');
+          console.log('[GENERATE_ITINERARY] ✅ AI itinerary generated successfully');
         } catch (parseError) {
-          console.log('[GENERATE_ITINERARY] JSON parse failed, using fallback');
+          console.log('[GENERATE_ITINERARY] ❌ JSON parse failed, using fallback');
           throw new Error('JSON parse failed');
         }
       } else {
-        console.log('[GENERATE_ITINERARY] OpenAI not configured, using fallback');
+        console.log('[GENERATE_ITINERARY] ⚠️  OpenAI not configured, using fallback');
         throw new Error('OpenAI not configured');
       }
     } catch (openaiError) {
-      console.log('[GENERATE_ITINERARY] OpenAI failed, using fallback:', openaiError.message);
+      console.log('[GENERATE_ITINERARY] ❌ OpenAI failed, using fallback:', openaiError.message);
       
       // Fallback itinerary
       const costPerDay = Math.floor(budget / days / 4); // Distribute budget across 4 activities per day
