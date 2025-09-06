@@ -38,28 +38,14 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
       try {
         setIsLoading(true);
         
-        // Fetch trip data from API
-        const response = await fetch(`/api/trip/${trip.id}`);
-        if (!response.ok) {
-          throw new Error('Failed to load trip data');
-        }
+        // Generate day itineraries with AI suggestions
+        const initialDayItineraries = generateActivitySuggestions(trip.destination, tripType, generateDayItineraries(trip));
+        setDayItineraries(initialDayItineraries);
+        setSelectedDay(initialDayItineraries[0] || null);
         
-        const data = await response.json();
-        
-        if (data.trip && data.trip.itinerary) {
-          // Convert API itinerary to day itineraries format
-          const convertedDays = convertAPIItineraryToDayItineraries(data.trip.itinerary, trip);
-          setDayItineraries(convertedDays);
-          setSelectedDay(convertedDays[0] || null);
-        } else {
-          // Fallback to generated suggestions if no API data
-          const initialDayItineraries = generateActivitySuggestions(trip.destination, tripType, generateDayItineraries(trip));
-          setDayItineraries(initialDayItineraries);
-          setSelectedDay(initialDayItineraries[0] || null);
-        }
       } catch (error) {
         console.error('Error loading trip data:', error);
-        // Fallback to generated suggestions on error
+        // Fallback to basic suggestions on error
         const initialDayItineraries = generateActivitySuggestions(trip.destination, tripType, generateDayItineraries(trip));
         setDayItineraries(initialDayItineraries);
         setSelectedDay(initialDayItineraries[0] || null);

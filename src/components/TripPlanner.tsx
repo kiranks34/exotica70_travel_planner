@@ -270,40 +270,30 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
     setErrorMessage(null);
     
     try {
-      // Call backend API to generate itinerary
-      const response = await fetch('/api/generate-itinerary', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          destination,
-          vibe: tripType,
-          days: parseInt(numberOfDays),
-          budget: budgetMax,
-          startDate,
-          groupSize: 2 // Default group size
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      // Calculate end date
+      const startDateObj = new Date(startDate);
+      const endDateObj = new Date(startDateObj);
+      endDateObj.setDate(startDateObj.getDate() + parseInt(numberOfDays) - 1);
       
-      if (data.id) {
-        // Show success message briefly before redirecting
-        setShowSuccessMessage(true);
-        setTimeout(() => {
-          setIsCreatingTrip(false);
-          setShowSuccessMessage(false);
-          // Redirect to the generated trip
-          window.location.href = `/trip/${data.id}`;
-        }, 1500);
-      } else {
-        throw new Error('No trip ID returned from server');
-      }
+      // Create trip data
+      const tripData = {
+        destination,
+        startDate,
+        endDate: endDateObj.toISOString().split('T')[0],
+        tripType,
+        collaborators: []
+      };
+      
+      // Show success message briefly
+      setShowSuccessMessage(true);
+      
+      setTimeout(() => {
+        setIsCreatingTrip(false);
+        setShowSuccessMessage(false);
+        // Call the existing trip creation handler
+        onTripCreate(tripData);
+      }, 1500);
+      
     } catch (error) {
       console.error('Error creating trip:', error);
       setErrorMessage(error instanceof Error ? error.message : 'Failed to create trip. Please try again.');
