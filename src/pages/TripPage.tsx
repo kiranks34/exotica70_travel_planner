@@ -307,7 +307,7 @@ const TripPage: React.FC = () => {
               </div>
 
               <div className="space-y-4">
-                {day.activities.map((activity) => (
+                {day.activities.map((activity) => {
                   const voteCounts = getVoteCounts(activity.id);
                   const totalVotes = getTotalVotes(activity.id);
                   const userVote = userVotes[activity.id];
