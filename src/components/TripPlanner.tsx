@@ -627,7 +627,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({
         </div>
 
         {/* Destination Cards */}
-        <div className="w-[520px] mr-8 lg:mr-16">
+        <div className="w-[720px] mr-8 lg:mr-16">
           <div className="mb-8">
             <h2 className="text-xl font-bold text-white mb-2 text-center">
               Discover Amazing Destinations
@@ -637,7 +637,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({
             </p>
           </div>
           
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-6">
             {destinations.slice(0, 4).map((destination) => (
               <DestinationCard
                 key={destination.id}
