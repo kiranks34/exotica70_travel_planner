@@ -8,7 +8,7 @@ import { InspireMeModal } from './components/InspireMeModal';
 import { LoginModal } from './components/LoginModal';
 import { SignupModal } from './components/SignupModal';
 import { LoadingModal } from './components/LoadingModal';
-import { AIInsightsModal } from './components/AIInsightsModal';
+import { AIInsightsPage } from './components/AIInsightsPage';
 import TripPage from './pages/TripPage';
 import { Trip } from './types';
 import { generateTripPlan } from './lib/openai';
@@ -23,7 +23,7 @@ interface User {
   avatar?: string;
 }
 
-type AppState = 'planning' | 'itinerary';
+type AppState = 'planning' | 'ai-insights' | 'itinerary';
 
 function App() {
   const [currentState, setCurrentState] = useState<AppState>('planning');
@@ -165,8 +165,8 @@ function App() {
         setAiInsights(insights);
         setIsGeneratingTrip(false);
         
-        // Show AI insights modal first
-        setShowAIInsights(true);
+        // Go to AI insights page first
+        setCurrentState('ai-insights');
       } else {
         // Fallback to basic trip creation without AI
         console.warn('OpenAI API key not configured, using fallback trip creation');
@@ -183,9 +183,15 @@ function App() {
     }
   };
 
-  const handleAIInsightsClose = () => {
-    setShowAIInsights(false);
+  const handleAIInsightsStartPlanning = () => {
     setCurrentState('itinerary');
+  };
+
+  const handleAIInsightsBack = () => {
+    setCurrentState('planning');
+    setCurrentTrip(null);
+    setCurrentTripType('');
+    setAiInsights(null);
   };
 
   const handleTripCreateBasic = (tripData: any) => {
@@ -292,12 +298,20 @@ function App() {
                   inspirationDestination={inspirationDestination}
                   onFavoriteCountChange={setFavoriteCount}
                 />
+              ) : currentState === 'ai-insights' && aiInsights ? (
+                <AIInsightsPage
+                  insights={aiInsights}
+                  destination={currentTrip?.destination || ''}
+                  onBack={handleAIInsightsBack}
+                  onStartPlanning={handleAIInsightsStartPlanning}
+                />
               ) : currentTrip ? (
                 <ItineraryView 
                   trip={currentTrip} 
                   tripType={currentTripType}
                   onBack={handleBackToPlanning}
                   user={user}
+                  aiInsights={aiInsights}
                 />
               ) : null}
 
@@ -330,14 +344,6 @@ function App() {
                 isVisible={isGeneratingTrip} 
               />
 
-              {/* AI Insights Modal */}
-              {showAIInsights && aiInsights && (
-                <AIInsightsModal
-                  insights={aiInsights}
-                  destination={currentTrip?.destination || ''}
-                  onClose={handleAIInsightsClose}
-                />
-              )}
             </>
           } />
           

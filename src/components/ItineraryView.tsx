@@ -2,24 +2,34 @@ import React, { useState } from 'react';
 import { DayPlanner } from './DayPlanner';
 import { ActivityModal } from './ActivityModal';
 import { ShareModal } from './ShareModal';
+import { AIInsightsModal } from './AIInsightsModal';
 import { Trip, DayItinerary, Activity } from '../types';
 import { generateDayItineraries } from '../utils/tripUtils';
 import { generateActivitySuggestions } from '../utils/activitySuggestions';
-import { ArrowLeft, Share2, Plus, Calendar, MapPin } from 'lucide-react';
+import { ArrowLeft, Share2, Plus, Calendar, MapPin, Lightbulb } from 'lucide-react';
+import { AITripInsights } from '../utils/aiTripConverter';
 
 interface ItineraryViewProps {
   trip: Trip;
   tripType?: string;
   onBack: () => void;
   user?: any;
+  aiInsights?: AITripInsights | null;
 }
 
-export const ItineraryView: React.FC<ItineraryViewProps> = ({ trip, tripType = '', onBack, user }) => {
+export const ItineraryView: React.FC<ItineraryViewProps> = ({ 
+  trip, 
+  tripType = '', 
+  onBack, 
+  user,
+  aiInsights 
+}) => {
   const initialDayItineraries = generateActivitySuggestions(trip.destination, tripType, generateDayItineraries(trip));
   const [dayItineraries, setDayItineraries] = useState<DayItinerary[]>(initialDayItineraries);
   const [selectedDay, setSelectedDay] = useState<DayItinerary | null>(initialDayItineraries[0] || null);
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showAIInsights, setShowAIInsights] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [voteCounts, setVoteCounts] = useState<{ [activityId: string]: { yes: number; no: number; maybe: number } }>({});
   const [userVotes, setUserVotes] = useState<{ [activityId: string]: 'yes' | 'no' | 'maybe' }>({});
@@ -164,6 +174,16 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({ trip, tripType = '
               </div>
             </div>
             <div className="flex items-center space-x-3">
+              {aiInsights && (
+                <button
+                  onClick={() => setShowAIInsights(true)}
+                  className="flex items-center space-x-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-xl hover:bg-purple-200 transition-colors font-medium"
+                >
+                  <Lightbulb className="h-4 w-4" />
+                  <span>AI Insights</span>
+                </button>
+              )}
+              
               <button
                 onClick={() => setShowShareModal(true)}
                 className="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium"
@@ -269,6 +289,14 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({ trip, tripType = '
         <ShareModal
           trip={trip}
           onClose={() => setShowShareModal(false)}
+        />
+      )}
+
+      {showAIInsights && aiInsights && (
+        <AIInsightsModal
+          insights={aiInsights}
+          destination={trip.destination}
+          onClose={() => setShowAIInsights(false)}
         />
       )}
     </div>
