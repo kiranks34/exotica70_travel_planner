@@ -661,8 +661,8 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
         </div>
 
         {/* Destination Cards - Right Side */}
-        <div className="flex-1 max-h-screen overflow-y-auto">
-          <div className="mb-6">
+        <div className="flex-1 max-h-screen overflow-y-auto ml-12">
+          <div className="mb-6 text-center">
             <h2 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">Popular Destinations</h2>
             <p className="text-white/90 drop-shadow-md">Discover amazing places around the world</p>
           </div>

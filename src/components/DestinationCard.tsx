@@ -74,7 +74,7 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
           </div>
 
           {/* Description */}
-          <p className="text-gray-700 text-sm mb-3 leading-relaxed line-clamp-2">
+          <p className="text-gray-700 text-sm mb-3 leading-relaxed">
             {description}
           </p>
 
@@ -84,17 +84,17 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
               <Sparkles className="h-4 w-4 text-purple-500" />
               <span className="text-purple-700 text-xs font-medium">Hidden Gem</span>
             </div>
-            <p className="text-purple-600 text-xs mt-1 leading-relaxed">
+            <p className="text-purple-600 text-xs mt-1 leading-relaxed whitespace-normal">
               {hiddenGem}
             </p>
           </div>
 
-          {/* Plan Trip Button */}
+          {/* Plan a Trip Button */}
           <button
             onClick={handlePlanTrip}
-            className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-2 px-4 rounded-lg font-medium hover:from-orange-600 hover:to-red-600 transition-all transform hover:scale-105 text-sm"
+            className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-2.5 px-4 rounded-lg font-medium hover:from-orange-600 hover:to-red-600 transition-all transform hover:scale-105 text-sm whitespace-nowrap"
           >
-            Plan Trip
+            Plan a Trip
           </button>
         </div>
       </div>
