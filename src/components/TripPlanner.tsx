@@ -10,14 +10,12 @@ interface TripPlannerProps {
 export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspireMe, inspirationDestination }) => {
   const [destination, setDestination] = useState('');
   const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [tripType, setTripType] = useState('party');
+  const [numberOfDays, setNumberOfDays] = useState('');
+  const [tripType, setTripType] = useState('');
   const [showCollaborators, setShowCollaborators] = useState(false);
   const [collaborators, setCollaborators] = useState<string[]>([]);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [activeField, setActiveField] = useState<'start' | 'return' | null>(null);
-  const [isFirstSelection, setIsFirstSelection] = useState(true);
 
   // Beautiful travel videos from Pexels - various landscapes and experiences
   const travelVideos = [
@@ -79,7 +77,13 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!destination || !startDate || !endDate) return;
+    if (!destination || !startDate || !numberOfDays) return;
+
+    // Calculate end date based on start date and number of days
+    const start = new Date(startDate);
+    const end = new Date(start);
+    end.setDate(start.getDate() + parseInt(numberOfDays) - 1);
+    const endDate = end.toISOString().split('T')[0];
 
     onTripCreate({
       destination,
@@ -91,52 +95,12 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
   };
 
   const handleDateSelect = (date: string) => {
-    if (isFirstSelection) {
-      // First selection is always start date
-      setStartDate(date);
-      setActiveField('return');
-      setIsFirstSelection(false);
-    } else {
-      if (activeField === 'start') {
-        // If new start date is after current end date, reset end date
-        if (endDate && new Date(date) >= new Date(endDate)) {
-          setStartDate(date);
-          setEndDate('');
-          setActiveField('return');
-          setIsFirstSelection(false);
-        } else {
-          setStartDate(date);
-        }
-      } else {
-        // Selecting return date
-        if (new Date(date) <= new Date(startDate)) {
-          // If return date is before or same as start date, make it the new start date
-          setStartDate(date);
-          setEndDate('');
-          setActiveField('return');
-          setIsFirstSelection(false);
-        } else {
-          setEndDate(date);
-        }
-      }
-    }
+    setStartDate(date);
+    setShowCalendar(false);
   };
 
-  const openCalendar = (field?: 'start' | 'return') => {
+  const openCalendar = () => {
     setShowCalendar(true);
-    if (startDate && endDate) {
-      // Both dates are set, determine which field to make active
-      setActiveField(field || 'start');
-      setIsFirstSelection(false);
-    } else if (startDate && !endDate) {
-      // Only start date is set
-      setActiveField('return');
-      setIsFirstSelection(false);
-    } else {
-      // No dates set
-      setActiveField('start');
-      setIsFirstSelection(true);
-    }
   };
 
   const closeCalendar = () => {
@@ -189,15 +153,12 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
   };
 
   const isDateInRange = (date: Date) => {
-    if (!startDate || !endDate) return false;
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    return date >= start && date <= end;
+    return false; // No range selection needed anymore
   };
 
   const isDateSelected = (date: Date) => {
     const dateStr = date.toISOString().split('T')[0];
-    return dateStr === startDate || dateStr === endDate;
+    return dateStr === startDate;
   };
 
   const isDateDisabled = (date: Date) => {
@@ -282,6 +243,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                   onChange={(e) => setTripType(e.target.value)}
                   className="w-full px-4 py-2.5 border-2 border-gray-200 bg-white rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition-all appearance-none pr-10"
                 >
+                  <option value="" disabled>Select your vibe</option>
                   <option value="chill">Chill</option>
                   <option value="party">Party</option>
                   <option value="adventure">Adventure</option>
@@ -298,47 +260,38 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
               </div>
             </div>
 
-            {/* Dates */}
+            {/* Start Date and Number of Days */}
             <div className="relative">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                When are you thinking?
+                When are you going and for how long?
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Number of Days</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="365"
+                    value={numberOfDays}
+                    onChange={(e) => setNumberOfDays(e.target.value)}
+                    placeholder="e.g. 7"
+                    className="w-full px-4 py-2.5 border-2 border-gray-200 bg-white rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+                  />
+                </div>
                 <div className="relative">
                   <label className="block text-xs font-medium text-gray-600 mb-1">Start Date</label>
                   <div className="relative">
                     <Calendar 
                       className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 cursor-pointer" 
-                      onClick={() => openCalendar('start')}
+                      onClick={openCalendar}
                     />
                     <input
                       type="text"
                       value={formatDateForDisplay(startDate)}
-                      onClick={() => openCalendar('start')}
+                      onClick={openCalendar}
                       placeholder="Select start date"
                       readOnly
-                      className={`w-full pl-12 pr-4 py-2.5 border-2 bg-white rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition-all cursor-pointer ${
-                        activeField === 'start' && showCalendar ? 'border-orange-500 ring-2 ring-orange-100' : 'border-gray-200'
-                      }`}
-                    />
-                  </div>
-                </div>
-                <div className="relative">
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Return Date</label>
-                  <div className="relative">
-                    <Calendar 
-                      className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 cursor-pointer" 
-                      onClick={() => openCalendar('return')}
-                    />
-                    <input
-                      type="text"
-                      value={formatDateForDisplay(endDate)}
-                      onClick={() => openCalendar('return')}
-                      placeholder="Select return date"
-                      readOnly
-                      className={`w-full pl-12 pr-4 py-2.5 border-2 bg-white rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition-all cursor-pointer ${
-                        activeField === 'return' && showCalendar ? 'border-orange-500 ring-2 ring-orange-100' : 'border-gray-200'
-                      }`}
+                      className="w-full pl-12 pr-4 py-2.5 border-2 border-gray-200 bg-white rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition-all cursor-pointer"
                     />
                   </div>
                 </div>
@@ -353,7 +306,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                   <div className="bg-white rounded-xl shadow-2xl border border-gray-200 p-6 max-w-2xl w-full mx-4">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-gray-900">
-                      {activeField === 'start' ? 'Select Start Date' : 'Select Return Date'}
+                      Select Start Date
                     </h3>
                     <button
                       onClick={closeCalendar}
@@ -447,10 +400,13 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                     </div>
                   </div>
                   
-                  {startDate && endDate && (
+                  {startDate && (
                     <div className="mt-4 p-3 bg-orange-50 rounded-lg">
                       <p className="text-sm text-orange-700 text-center">
-                        <span className="font-semibold">Selected:</span> {formatDateForDisplay(startDate)} - {formatDateForDisplay(endDate)}
+                        <span className="font-semibold">Selected:</span> {formatDateForDisplay(startDate)}
+                        {numberOfDays && (
+                          <span> for {numberOfDays} day{numberOfDays !== '1' ? 's' : ''}</span>
+                        )}
                       </p>
                     </div>
                   )}
@@ -464,7 +420,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={!destination}
+              disabled={!destination || !startDate || !numberOfDays || !tripType}
               className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-2.5 px-6 rounded-xl font-semibold hover:from-orange-600 hover:to-red-600 transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
             >
               Start planning
