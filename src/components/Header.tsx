@@ -625,6 +625,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({
           </form>
         </div>
       </div>
+      </div>
 
     </div>
   );
