@@ -297,6 +297,7 @@ function App() {
                   trip={currentTrip} 
                   tripType={currentTripType}
                   onBack={handleBackToPlanning}
+                  user={user}
                 />
               ) : null}
 

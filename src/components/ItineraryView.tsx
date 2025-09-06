@@ -11,9 +11,10 @@ interface ItineraryViewProps {
   trip: Trip;
   tripType?: string;
   onBack: () => void;
+  user?: any;
 }
 
-export const ItineraryView: React.FC<ItineraryViewProps> = ({ trip, tripType = '', onBack }) => {
+export const ItineraryView: React.FC<ItineraryViewProps> = ({ trip, tripType = '', onBack, user }) => {
   const initialDayItineraries = generateActivitySuggestions(trip.destination, tripType, generateDayItineraries(trip));
   const [dayItineraries, setDayItineraries] = useState<DayItinerary[]>(initialDayItineraries);
   const [selectedDay, setSelectedDay] = useState<DayItinerary | null>(initialDayItineraries[0] || null);
@@ -80,13 +81,38 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({ trip, tripType = '
     }
   };
   const handleVote = (activityId: string, choice: 'yes' | 'no' | 'maybe') => {
+    if (!user) return; // Only allow voting if user is logged in
+    
+    const previousVote = userVotes[activityId];
+    
+    // If user clicks the same vote, remove it (toggle off)
+    if (previousVote === choice) {
+      setUserVotes(prev => {
+        const newVotes = { ...prev };
+        delete newVotes[activityId];
+        return newVotes;
+      });
+      
+      // Decrease the count for the removed vote
+      setVoteCounts(prev => {
+        const currentCounts = prev[activityId] || { yes: 0, no: 0, maybe: 0 };
+        return {
+          ...prev,
+          [activityId]: {
+            ...currentCounts,
+            [choice]: Math.max(0, currentCounts[choice] - 1)
+          }
+        };
+      });
+      return;
+    }
+    
     // Update user's vote
     setUserVotes(prev => ({ ...prev, [activityId]: choice }));
     
     // Update vote counts (simulate real-time voting)
     setVoteCounts(prev => {
       const currentCounts = prev[activityId] || { yes: 0, no: 0, maybe: 0 };
-      const previousVote = userVotes[activityId];
       
       // Remove previous vote if exists
       if (previousVote) {
@@ -209,6 +235,7 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({ trip, tripType = '
                 onVote={handleVote}
                 voteCounts={voteCounts}
                 userVotes={userVotes}
+               isLoggedIn={!!user}
               />
             ) : (
               <div className="bg-white rounded-xl shadow-sm p-12 text-center">
