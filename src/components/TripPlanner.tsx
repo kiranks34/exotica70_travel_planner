@@ -662,26 +662,24 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
 
         {/* Destination Cards - Right Side */}
         <div className="flex-1 max-h-screen overflow-y-auto">
-          <div className="bg-white bg-opacity-90 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border border-white border-opacity-80">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Popular Destinations</h2>
-              <p className="text-gray-600">Discover amazing places around the world</p>
-            </div>
-            
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-              {destinationCards.map((destination, index) => (
-                <DestinationCard
-                  key={index}
-                  name={destination.name}
-                  country={destination.country}
-                  image={destination.image}
-                  description={destination.description}
-                  hiddenGem={destination.hiddenGem}
-                  rating={destination.rating}
-                  onPlanTrip={handleDestinationSelect}
-                />
-              ))}
-            </div>
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">Popular Destinations</h2>
+            <p className="text-white/90 drop-shadow-md">Discover amazing places around the world</p>
+          </div>
+          
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            {destinationCards.map((destination, index) => (
+              <DestinationCard
+                key={index}
+                name={destination.name}
+                country={destination.country}
+                image={destination.image}
+                description={destination.description}
+                hiddenGem={destination.hiddenGem}
+                rating={destination.rating}
+                onPlanTrip={handleDestinationSelect}
+              />
+            ))}
           </div>
         </div>
       </div>
