@@ -1,6 +1,6 @@
 import React from 'react';
 import { Activity } from '../types';
-import { Clock, MapPin, Edit2, Trash2, DollarSign, Sparkles, Undo2, ThumbsUp, ThumbsDown, Meh, Users, Info, Star, Lightbulb } from 'lucide-react';
+import { Clock, MapPin, Edit2, Trash2, DollarSign, Sparkles, Undo2, ThumbsUp, ThumbsDown, Meh, Users, Info, Star, Lightbulb, Shuffle, X } from 'lucide-react';
 import { getDestinationThumbnail, getActivityAddress, getActivityPhoneNumber } from '../utils/destinationImages';
 import { getCategoryColor, getCategoryLabel, shouldShowPrice } from '../utils/categoryUtils';
 import { enrichActivityWithAI, EnrichedActivity } from '../utils/openaiEnrichment';
@@ -43,6 +43,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   const [enrichedData, setEnrichedData] = React.useState<EnrichedActivity | null>(null);
   const [showDetails, setShowDetails] = React.useState(false);
   const [isEnriching, setIsEnriching] = React.useState(false);
+  const [isGettingAlternate, setIsGettingAlternate] = React.useState(false);
 
   const startTime = new Date(`2000-01-01T${activity.startTime}`);
   const endTime = new Date(`2000-01-01T${activity.endTime}`);
@@ -106,6 +107,22 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
     }
   };
   return (
+  const handleGetAlternate = async () => {
+    if (!onAISuggest) return;
+    
+    setIsGettingAlternate(true);
+    try {
+      // Clear current enriched data when getting alternate
+      setEnrichedData(null);
+      setShowDetails(false);
+      onAISuggest();
+    } catch (error) {
+      console.error('Failed to get alternate suggestion:', error);
+    } finally {
+      setIsGettingAlternate(false);
+    }
+  };
+
     <div className="relative group">
       {/* Edit/Delete Buttons - Outside card, top right */}
       <div className="absolute -top-2 -right-2 flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
@@ -144,18 +161,59 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                     <span className="text-orange-500 font-bold mr-2">{activityNumber}.</span>
                     {enrichedData?.title || activity.title}
                   </h3>
-                  <button
-                    onClick={handleEnrichActivity}
-                    disabled={isEnriching}
-                    className="ml-2 p-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
-                    title="Get AI insights"
-                  >
-                    {isEnriching ? (
-                      <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      <Sparkles className="h-4 w-4" />
+                  
+                  {/* Right Side Action Buttons */}
+                  <div className="flex flex-col items-end space-y-2 ml-4">
+                    {/* AI Enhance Button */}
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs text-purple-600 font-medium">AI Enhance</span>
+                      <button
+                        onClick={handleEnrichActivity}
+                        disabled={isEnriching}
+                        className="p-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors border border-purple-200"
+                        title="Get AI-powered insights and recommendations"
+                      >
+                        {isEnriching ? (
+                          <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Sparkles className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                    
+                    {/* Alternate Suggestion Button */}
+                    {onAISuggest && (
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs text-blue-600 font-medium">Try Different</span>
+                        <button
+                          onClick={handleGetAlternate}
+                          disabled={isGettingAlternate}
+                          className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200"
+                          title="Get a different activity suggestion"
+                        >
+                          {isGettingAlternate ? (
+                            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                          ) : (
+                            <Shuffle className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
                     )}
-                  </button>
+                    
+                    {/* Undo Button */}
+                    {hasUndo && onUndo && (
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs text-gray-600 font-medium">Undo</span>
+                        <button
+                          onClick={onUndo}
+                          className="p-2 text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors border border-gray-200"
+                          title="Restore previous activity"
+                        >
+                          <Undo2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 {/* Enhanced Description */}
@@ -233,6 +291,20 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
               {/* AI Enhanced Content */}
               {enrichedData && showDetails && (
                 <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4 mb-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-medium text-gray-900 flex items-center">
+                      <Sparkles className="h-4 w-4 mr-1 text-purple-600" />
+                      AI-Enhanced Details
+                    </h4>
+                    <button
+                      onClick={() => setShowDetails(false)}
+                      className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded"
+                      title="Collapse details"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  
                   <div className="space-y-3">
                     {/* Detailed Description */}
                     <div>
@@ -275,15 +347,20 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                         ))}
                       </ul>
                     </div>
-
-                    {/* Toggle Details Button */}
-                    <button
-                      onClick={() => setShowDetails(false)}
-                      className="text-purple-600 hover:text-purple-700 text-sm font-medium"
-                    >
-                      Hide Details
-                    </button>
                   </div>
+                </div>
+              )}
+              
+              {/* Show Details Button when collapsed */}
+              {enrichedData && !showDetails && (
+                <div className="mb-4">
+                  <button
+                    onClick={() => setShowDetails(true)}
+                    className="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center space-x-1"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    <span>Show AI Details</span>
+                  </button>
                 </div>
               )}
             </div>
