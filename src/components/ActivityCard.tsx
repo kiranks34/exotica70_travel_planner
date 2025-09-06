@@ -70,7 +70,13 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
 
   const handleVote = (vote: 'yes' | 'no' | 'maybe') => {
     if (onVote) {
-      onVote(activity.id, vote);
+      // Toggle functionality - if clicking the same vote, remove it
+      if (userVote === vote) {
+        // Remove vote by setting to undefined/null - we'll handle this in the parent
+        onVote(activity.id, vote); // Let parent handle toggle logic
+      } else {
+        onVote(activity.id, vote);
+      }
     }
   };
 
@@ -264,116 +270,67 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                 onClick={handleMapClick}
                 className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
                 title="Open in Google Maps"
+        <div className="px-6 py-4 bg-gray-50 rounded-b-xl">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">What do you think?</span>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => handleVote('yes')}
+                className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  userVote === 'yes'
+                    ? 'bg-green-500 text-white shadow-md'
+                    : 'bg-white text-green-600 border border-green-200 hover:bg-green-50'
+                }`}
               >
-                <MapPin className="h-4 w-4" />
-                <span className="hover:underline">{preciseAddress}</span>
+                <ThumbsUp className="h-4 w-4" />
+                <span>Yes</span>
+                {voteCounts && voteCounts.yes > 0 && (
+                  <span className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${
+                    userVote === 'yes' ? 'bg-white bg-opacity-30' : 'bg-green-100'
+                  }`}>
+                    {voteCounts.yes}
+                  </span>
+                )}
+              </button>
+              
+              <button
+                onClick={() => handleVote('maybe')}
+                className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  userVote === 'maybe'
+                    ? 'bg-yellow-500 text-white shadow-md'
+                    : 'bg-white text-yellow-600 border border-yellow-200 hover:bg-yellow-50'
+                }`}
+              >
+                <Meh className="h-4 w-4" />
+                <span>Maybe</span>
+                {voteCounts && voteCounts.maybe > 0 && (
+                  <span className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${
+                    userVote === 'maybe' ? 'bg-white bg-opacity-30' : 'bg-yellow-100'
+                  }`}>
+                    {voteCounts.maybe}
+                  </span>
+                )}
+              </button>
+              
+              <button
+                onClick={() => handleVote('no')}
+                className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  userVote === 'no'
+                    ? 'bg-red-500 text-white shadow-md'
+                    : 'bg-white text-red-600 border border-red-200 hover:bg-red-50'
+                }`}
+              >
+                <ThumbsDown className="h-4 w-4" />
+                <span>No</span>
+                {voteCounts && voteCounts.no > 0 && (
+                  <span className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${
+                    userVote === 'no' ? 'bg-white bg-opacity-30' : 'bg-red-100'
+                  }`}>
+                    {voteCounts.no}
+                  </span>
+                )}
               </button>
             </div>
-            
-            {/* Phone Number under Maps */}
-            {phoneNumber && (
-              <div className="flex items-center space-x-2 ml-6">
-                <span className="text-gray-400">📞</span>
-                <a 
-                  href={`tel:${phoneNumber}`}
-                  className="text-blue-600 hover:text-blue-800 transition-colors hover:underline text-sm"
-                >
-                  {phoneNumber}
-                </a>
-              </div>
-            )}
-            
-            {/* Cost - only for bookable attractions */}
-            {activity.cost && shouldShowPrice(activity.category, activity.title) && (
-              <div className="flex items-center space-x-2">
-                <DollarSign className="h-4 w-4 text-gray-400" />
-                <span>${activity.cost}</span>
-              </div>
-            )}
-          </div>
-          
-          {/* Description */}
-          {activity.description && (
-            <p className="text-gray-700 mb-4">
-              {activity.description}
-            </p>
-          )}
-          </div>
-          
-          {/* Thumbnail Image - Right Side */}
-          <div className="flex-shrink-0 flex flex-col">
-            <img
-              src={thumbnailImage}
-              alt={activity.title}
-              className="w-80 h-48 object-cover rounded-lg"
-            />
-            
-            {/* AI Suggested Section - Below Image */}
-            {activity.notes && activity.notes.includes('AI curated') && (
-              <div className="bg-gray-50 rounded-lg p-3 mt-3 w-80">
-                <div className="flex flex-col items-center space-y-2">
-                  <div className="flex items-center justify-center">
-                    {hasUndo && onUndo && (
-                      <button
-                        onClick={onUndo}
-                        className="flex items-center space-x-1 text-xs text-gray-500 hover:text-orange-600 transition-colors px-2 py-1 rounded-md hover:bg-white mr-2"
-                        title="Undo last suggestion"
-                      >
-                        <Undo2 className="h-3 w-3" />
-                        <span>Undo</span>
-                      </button>
-                    )}
-                    {onAISuggest && (
-                      <button
-                        onClick={onAISuggest}
-                        className="flex items-center space-x-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1.5 rounded-full hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 font-medium whitespace-nowrap"
-                        title="Get AI suggestion for this activity"
-                      >
-                        <Sparkles className="h-3 w-3" />
-                        <span>Suggest Alternatives</span>
-                      </button>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-500 text-center">
-                    AI can make mistakes, so double-check it
-                  </p>
-                </div>
-              </div>
-            )}
-            
-            {/* AI Suggested Section - Below Image */}
-            {activity.notes && activity.notes.includes('Suggested activity') && (
-              <div className="bg-gray-50 rounded-lg p-3 mt-3 w-64">
-                <div className="flex items-center space-x-2 mb-2">
-                  <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
-                  <span className="text-xs font-medium text-orange-600">AI Suggested</span>
-                </div>
-                
-                {/* AI Buttons */}
-                <div className="flex items-center justify-end space-x-2">
-                  {hasUndo && onUndo && (
-                    <button
-                      onClick={onUndo}
-                      className="flex items-center space-x-1 text-xs text-gray-500 hover:text-orange-600 transition-colors px-2 py-1 rounded-md hover:bg-white"
-                      title="Undo last suggestion"
-                    >
-                      <Undo2 className="h-3 w-3" />
-                      <span>Undo</span>
-                    </button>
-                  )}
-                  {onAISuggest && (
-                    <button
-                      onClick={onAISuggest}
-                      className="flex items-center space-x-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1.5 rounded-full hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 font-medium"
-                      title="Get AI suggestion for this activity"
-                    >
-                      <Sparkles className="h-3 w-3" />
-                      <span>Suggest Alternative</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>

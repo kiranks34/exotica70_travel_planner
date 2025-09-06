@@ -236,29 +236,49 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
   const handleVote = (activityId: string, vote: 'yes' | 'no' | 'maybe') => {
     const previousVote = userVotes[activityId];
     
-    // Update user vote
-    setUserVotes(prev => ({
-      ...prev,
-      [activityId]: vote
-    }));
-    
-    // Update vote counts
-    setVoteCounts(prev => {
-      const newCounts = { ...prev };
-      if (!newCounts[activityId]) {
-        newCounts[activityId] = { yes: 0, no: 0, maybe: 0 };
-      }
+    // Toggle functionality - if clicking the same vote, remove it
+    if (previousVote === vote) {
+      // Remove the vote
+      setUserVotes(prev => {
+        const newVotes = { ...prev };
+        delete newVotes[activityId];
+        return newVotes;
+      });
       
-      // Remove previous vote if exists
-      if (previousVote) {
-        newCounts[activityId][previousVote] = Math.max(0, newCounts[activityId][previousVote] - 1);
-      }
+      // Update vote counts - remove previous vote
+      setVoteCounts(prev => {
+        const newCounts = { ...prev };
+        if (!newCounts[activityId]) {
+          newCounts[activityId] = { yes: 0, no: 0, maybe: 0 };
+        }
+        newCounts[activityId][vote] = Math.max(0, newCounts[activityId][vote] - 1);
+        return newCounts;
+      });
+    } else {
+      // Set new vote
+      setUserVotes(prev => ({
+        ...prev,
+        [activityId]: vote
+      }));
       
-      // Add new vote
-      newCounts[activityId][vote] += 1;
-      
-      return newCounts;
-    });
+      // Update vote counts
+      setVoteCounts(prev => {
+        const newCounts = { ...prev };
+        if (!newCounts[activityId]) {
+          newCounts[activityId] = { yes: 0, no: 0, maybe: 0 };
+        }
+        
+        // Remove previous vote if exists
+        if (previousVote) {
+          newCounts[activityId][previousVote] = Math.max(0, newCounts[activityId][previousVote] - 1);
+        }
+        
+        // Add new vote
+        newCounts[activityId][vote] += 1;
+        
+        return newCounts;
+      });
+    }
   };
   const tripDuration = new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime();
   const dayCount = Math.ceil(tripDuration / (1000 * 60 * 60 * 24)) + 1;
