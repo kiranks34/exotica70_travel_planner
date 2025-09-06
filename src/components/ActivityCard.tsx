@@ -196,53 +196,6 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                     <span className="text-orange-500 font-bold mr-2">{activityNumber}.</span>
                     {enrichedData?.title || activity.title}
                   </h3>
-                  
-                  {/* Right Side Action Buttons */}
-                 <div className="flex flex-col items-center space-y-2 ml-4">
-                    {/* AI Enhance Button */}
-                    <button
-                      onClick={handleEnrichActivity}
-                      disabled={isEnriching}
-                     className="flex items-center space-x-2 px-3 py-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors border border-purple-200 text-sm font-medium"
-                     title="Get detailed insights and recommendations"
-                    >
-                      {isEnriching ? (
-                        <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-                      ) : (
-                       <Info className="h-4 w-4" />
-                      )}
-                     <span>More Details</span>
-                    </button>
-                    
-                    {/* Alternate Suggestion Button */}
-                    {onAISuggest && (
-                      <button
-                        onClick={handleGetAlternate}
-                        disabled={isGettingAlternate}
-                        className="flex items-center space-x-2 px-3 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200 text-sm font-medium"
-                        title="Get alternative activity suggestions"
-                      >
-                        {isGettingAlternate ? (
-                          <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                          <RefreshCw className="h-4 w-4" />
-                        )}
-                        <span>Suggest Alternatives</span>
-                      </button>
-                    )}
-                    
-                    {/* Undo Button */}
-                    {hasUndo && onUndo && (
-                      <button
-                        onClick={onUndo}
-                        className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors border border-gray-200 text-sm font-medium"
-                        title="Restore previous activity"
-                      >
-                        <Undo2 className="h-4 w-4" />
-                        <span>Undo</span>
-                      </button>
-                    )}
-                  </div>
                 </div>
                 
                 {/* Enhanced Description */}
@@ -253,7 +206,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                 )}
                 
                 {/* Category and Status */}
-               <div className="flex items-center space-x-3 mb-3">
+               <div className="flex items-center space-x-3 mb-2">
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${categoryColor}`}>
                     {categoryLabel}
                   </span>
@@ -274,7 +227,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
               </div>
 
               {/* Activity Details */}
-             <div className="space-y-2 text-sm text-gray-600 mb-3">
+             <div className="space-y-2 text-sm text-gray-600 mb-4">
                 {/* Time */}
                 <div className="flex items-center space-x-2">
                   <Clock className="h-4 w-4 text-gray-400" />
@@ -314,6 +267,53 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                     <DollarSign className="h-4 w-4 text-gray-400" />
                     <span>${activity.cost}</span>
                   </div>
+                )}
+              </div>
+
+              {/* Action Buttons - Moved below activity details */}
+              <div className="flex items-center justify-end space-x-2 mb-4">
+                {/* More Details Button */}
+                <button
+                  onClick={handleEnrichActivity}
+                  disabled={isEnriching}
+                  className="flex items-center space-x-2 px-3 py-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors border border-purple-200 text-sm font-medium"
+                  title="Get detailed insights and recommendations"
+                >
+                  {isEnriching ? (
+                    <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <Info className="h-4 w-4" />
+                  )}
+                  <span>More Details</span>
+                </button>
+                
+                {/* Suggest Alternatives Button */}
+                {onAISuggest && (
+                  <button
+                    onClick={handleGetAlternate}
+                    disabled={isGettingAlternate}
+                    className="flex items-center space-x-2 px-3 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200 text-sm font-medium"
+                    title="Get alternative activity suggestions"
+                  >
+                    {isGettingAlternate ? (
+                      <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <RefreshCw className="h-4 w-4" />
+                    )}
+                    <span>Suggest Alternatives</span>
+                  </button>
+                )}
+                
+                {/* Undo Button */}
+                {hasUndo && onUndo && (
+                  <button
+                    onClick={onUndo}
+                    className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors border border-gray-200 text-sm font-medium"
+                    title="Restore previous activity"
+                  >
+                    <Undo2 className="h-4 w-4" />
+                    <span>Undo</span>
+                  </button>
                 )}
               </div>
 
