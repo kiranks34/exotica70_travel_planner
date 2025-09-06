@@ -159,8 +159,16 @@ Focus on creating an authentic, well-researched itinerary that captures the esse
       throw new Error('No response from OpenAI');
     }
 
+    // Clean the response by removing markdown code block wrappers
+    let cleanedResponse = response.trim();
+    if (cleanedResponse.startsWith('```json')) {
+      cleanedResponse = cleanedResponse.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    } else if (cleanedResponse.startsWith('```')) {
+      cleanedResponse = cleanedResponse.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    }
+
     // Parse the JSON response
-    const tripPlan: AITripPlan = JSON.parse(response);
+    const tripPlan: AITripPlan = JSON.parse(cleanedResponse);
     
     // Validate the response structure
     if (!tripPlan.dayPlans || !Array.isArray(tripPlan.dayPlans)) {
