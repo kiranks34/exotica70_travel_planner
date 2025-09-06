@@ -52,12 +52,12 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
   return (
     <div 
       onClick={handleCardClick}
-      className="group relative bg-white bg-opacity-10 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:scale-105 border border-white border-opacity-20 aspect-video"
+      className="group relative bg-white bg-opacity-10 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:scale-105 border border-white border-opacity-20 h-64"
     >
-      {/* Vertical Layout - Image on top, content below */}
+      {/* Vertical Layout - Image on top (60%), content below (40%) */}
       <div className="flex flex-col h-full">
-        {/* Image Container - Top */}
-        <div className="relative h-3/5 overflow-hidden">
+        {/* Image Container - Top 60% */}
+        <div className="relative h-[60%] overflow-hidden">
           <img
             src={image}
             alt={`${name}, ${country}`}
@@ -82,7 +82,7 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
             } ${favoriteClicked ? 'scale-125' : 'scale-100'}`}
           >
             <Heart 
-              className={`h-4 w-4 transition-all ${
+              className={`h-5 w-5 transition-all ${
                 isFavorite ? 'fill-current' : ''
               }`} 
             />
@@ -90,32 +90,32 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
 
           {/* Rating */}
           <div className="absolute top-2 left-2 flex items-center space-x-1 bg-black/30 backdrop-blur-sm rounded-full px-2 py-0.5">
-            <Star className="h-3 w-3 text-yellow-400 fill-current" />
+            <Star className="h-4 w-4 text-yellow-400 fill-current" />
             <span className="text-white text-sm font-medium">{rating}</span>
           </div>
         </div>
 
-        {/* Content - Bottom */}
-        <div className="flex-1 p-3 flex flex-col justify-between">
+        {/* Content - Bottom 40% */}
+        <div className="flex-1 p-4 flex flex-col justify-between">
           {/* Location */}
           <div>
             <div className="flex items-center space-x-1 mb-1">
-              <MapPin className="h-4 w-4 text-orange-400 flex-shrink-0" />
-              <h3 className="text-base font-bold text-white">{name}</h3>
+              <MapPin className="h-5 w-5 text-orange-400 flex-shrink-0" />
+              <h3 className="text-lg font-bold text-white">{name}</h3>
               <span className="text-white/70 text-sm">{country}</span>
             </div>
 
             {/* Description */}
-            <p className="text-white/90 text-sm mb-2 leading-relaxed">
+            <p className="text-white/90 text-sm mb-3 leading-relaxed">
               {description}
             </p>
           </div>
 
           {/* Hidden Gem */}
-          <div className="bg-gradient-to-r from-orange-500/20 to-pink-500/20 rounded-lg p-2 mb-3 border border-orange-400/30">
+          <div className="bg-gradient-to-r from-orange-500/20 to-pink-500/20 rounded-lg p-3 mb-3 border border-orange-400/30">
             <div className="flex items-center space-x-1 mb-1">
               <div className="w-1 h-1 bg-orange-400 rounded-full animate-pulse flex-shrink-0" />
-              <span className="text-orange-300 text-sm font-semibold uppercase tracking-wide">Local Gem</span>
+              <span className="text-orange-300 text-xs font-semibold uppercase tracking-wide">Local Gem</span>
             </div>
             <p className="text-white text-sm italic leading-relaxed">"{hiddenGem}"</p>
           </div>
@@ -123,7 +123,7 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
           {/* Plan Trip Button */}
           <button
             onClick={handlePlanTripClick}
-            className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white py-2 px-3 rounded-lg font-semibold text-sm transition-all duration-200 transform hover:scale-105 shadow-lg"
+            className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white py-3 px-4 rounded-lg font-semibold text-sm transition-all duration-200 transform hover:scale-105 shadow-lg"
           >
             Plan Trip
           </button>
