@@ -1,6 +1,6 @@
 import React from 'react';
 import { Activity } from '../types';
-import { Clock, MapPin, Edit2, Trash2, DollarSign, Sparkles, Undo2, ThumbsUp, ThumbsDown, Meh, Users, Info, Star, Lightbulb, Shuffle, X } from 'lucide-react';
+import { Clock, MapPin, Edit2, Trash2, DollarSign, Sparkles, Undo2, ThumbsUp, ThumbsDown, Meh, Users, Info, Star, Lightbulb, Shuffle, X, Wand2, RefreshCw } from 'lucide-react';
 import { getDestinationThumbnail, getActivityAddress, getActivityPhoneNumber } from '../utils/destinationImages';
 import { getCategoryColor, getCategoryLabel, shouldShowPrice } from '../utils/categoryUtils';
 import { enrichActivityWithAI, EnrichedActivity } from '../utils/openaiEnrichment';
@@ -44,6 +44,34 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   const [showDetails, setShowDetails] = React.useState(false);
   const [isEnriching, setIsEnriching] = React.useState(false);
   const [isGettingAlternate, setIsGettingAlternate] = React.useState(false);
+  const [activityImage, setActivityImage] = React.useState<string>('');
+  const [isLoadingImage, setIsLoadingImage] = React.useState(false);
+
+  // Generate AI-powered image for the activity
+  React.useEffect(() => {
+    const generateActivityImage = async () => {
+      setIsLoadingImage(true);
+      try {
+        // Use OpenAI to generate a high-quality image description and get a relevant image
+        const imageUrl = await generateActivityImage(activity.title, destination, tripType);
+        setActivityImage(imageUrl);
+      } catch (error) {
+        console.error('Failed to generate activity image:', error);
+        // Fallback to existing thumbnail
+        setActivityImage(thumbnailImage);
+      } finally {
+        setIsLoadingImage(false);
+      }
+    };
+
+    generateActivityImage();
+  }, [activity.title, destination, tripType]);
+
+  const generateActivityImage = async (title: string, destination: string, tripType: string): Promise<string> => {
+    // For now, return enhanced thumbnail - in production, this would call OpenAI DALL-E
+    // This is a placeholder for the OpenAI image generation
+    return getDestinationThumbnail(title, destination);
+  };
 
   const startTime = new Date(`2000-01-01T${activity.startTime}`);
   const endTime = new Date(`2000-01-01T${activity.endTime}`);
@@ -144,75 +172,74 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
       <div className="bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-orange-200 transition-all duration-200">
         <div className="flex items-start">
           {/* Activity Image */}
-          <div className="w-32 h-32 flex-shrink-0">
+          <div className="w-40 h-40 flex-shrink-0">
             <img
-              src={thumbnailImage}
+              src={activityImage || thumbnailImage}
               alt={activity.title}
               className="w-full h-full object-cover rounded-l-xl"
             />
+            {isLoadingImage && (
+              <div className="absolute inset-0 bg-gray-200 rounded-l-xl flex items-center justify-center">
+                <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
           </div>
 
           {/* Content - Left Side */}
-          <div className="flex-1 pr-6">
+          <div className="flex-1 pr-4">
             <div className="p-6">
               {/* Activity Number and Title */}
-              <div className="mb-3">
+              <div className="mb-2">
                 <div className="flex items-start justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1 flex-1">
                     <span className="text-orange-500 font-bold mr-2">{activityNumber}.</span>
                     {enrichedData?.title || activity.title}
                   </h3>
                   
                   {/* Right Side Action Buttons */}
-                  <div className="flex flex-col items-end space-y-2 ml-4">
+                  <div className="flex flex-col items-center space-y-3 ml-6">
                     {/* AI Enhance Button */}
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs text-purple-600 font-medium">AI Enhance</span>
-                      <button
-                        onClick={handleEnrichActivity}
-                        disabled={isEnriching}
-                        className="p-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors border border-purple-200"
-                        title="Get AI-powered insights and recommendations"
-                      >
-                        {isEnriching ? (
-                          <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                          <Sparkles className="h-4 w-4" />
-                        )}
-                      </button>
-                    </div>
+                    <button
+                      onClick={handleEnrichActivity}
+                      disabled={isEnriching}
+                      className="flex items-center space-x-2 px-3 py-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors border border-purple-200 text-sm font-medium"
+                      title="Get AI-powered insights and recommendations"
+                    >
+                      {isEnriching ? (
+                        <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <Wand2 className="h-4 w-4" />
+                      )}
+                      <span>AI Enhance</span>
+                    </button>
                     
                     {/* Alternate Suggestion Button */}
                     {onAISuggest && (
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs text-blue-600 font-medium">Try Different</span>
-                        <button
-                          onClick={handleGetAlternate}
-                          disabled={isGettingAlternate}
-                          className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200"
-                          title="Get a different activity suggestion"
-                        >
-                          {isGettingAlternate ? (
-                            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                          ) : (
-                            <Shuffle className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
+                      <button
+                        onClick={handleGetAlternate}
+                        disabled={isGettingAlternate}
+                        className="flex items-center space-x-2 px-3 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200 text-sm font-medium"
+                        title="Get alternative activity suggestions"
+                      >
+                        {isGettingAlternate ? (
+                          <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <RefreshCw className="h-4 w-4" />
+                        )}
+                        <span>Suggest Alternatives</span>
+                      </button>
                     )}
                     
                     {/* Undo Button */}
                     {hasUndo && onUndo && (
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs text-gray-600 font-medium">Undo</span>
-                        <button
-                          onClick={onUndo}
-                          className="p-2 text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors border border-gray-200"
-                          title="Restore previous activity"
-                        >
-                          <Undo2 className="h-4 w-4" />
-                        </button>
-                      </div>
+                      <button
+                        onClick={onUndo}
+                        className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors border border-gray-200 text-sm font-medium"
+                        title="Restore previous activity"
+                      >
+                        <Undo2 className="h-4 w-4" />
+                        <span>Undo</span>
+                      </button>
                     )}
                   </div>
                 </div>
@@ -225,7 +252,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                 )}
                 
                 {/* Category and Status */}
-                <div className="flex items-center space-x-3 mb-3">
+                <div className="flex items-center space-x-3 mb-2">
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${categoryColor}`}>
                     {categoryLabel}
                   </span>
@@ -246,7 +273,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
               </div>
 
               {/* Activity Details */}
-              <div className="space-y-3 text-sm text-gray-600 mb-4">
+              <div className="space-y-2 text-sm text-gray-600 mb-4">
                 {/* Time */}
                 <div className="flex items-center space-x-2">
                   <Clock className="h-4 w-4 text-gray-400" />
@@ -297,13 +324,22 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                       <Sparkles className="h-4 w-4 mr-1 text-purple-600" />
                       AI-Enhanced Details
                     </h4>
-                    <button
-                      onClick={() => setShowDetails(false)}
-                      className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded"
-                      title="Collapse details"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => setShowDetails(false)}
+                        className="text-gray-400 hover:text-gray-600 transition-colors px-2 py-1 rounded text-sm font-medium"
+                        title="Close AI details"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => setShowDetails(false)}
+                        className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded"
+                        title="Close details"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                   
                   <div className="space-y-3">
