@@ -306,9 +306,6 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
           </div>
         </div>
       )}
-    </div>
-  );
-};
 
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between mb-6">
@@ -386,8 +383,6 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
               </div>
             )}
           </div>
-        </div>
-      )}
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
