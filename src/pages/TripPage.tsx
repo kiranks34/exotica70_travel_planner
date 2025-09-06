@@ -8,7 +8,11 @@ import {
   Check, 
   RefreshCw, 
   Clock,
-  Tag
+  Tag,
+  ThumbsUp,
+  ThumbsDown,
+  Meh,
+  Users
 } from 'lucide-react';
 
 interface Activity {
@@ -31,8 +35,19 @@ interface Trip {
   itinerary: Day[];
 }
 
+interface VoteCounts {
+  yes: number;
+  no: number;
+  maybe: number;
+}
+
+interface Votes {
+  [activityId: string]: VoteCounts;
+}
+
 interface TripData {
   trip: Trip;
+  votes?: Votes;
 }
 
 const TripPage: React.FC = () => {
@@ -41,6 +56,8 @@ const TripPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [userVotes, setUserVotes] = useState<{[activityId: string]: string}>({});
+  const [voterId] = useState(() => `voter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
 
   // Fetch trip data
   const fetchTripData = async () => {
@@ -81,6 +98,34 @@ const TripPage: React.FC = () => {
     }
   };
 
+  // Vote on activity
+  const handleVote = async (activityId: string, choice: 'yes' | 'no' | 'maybe') => {
+    if (!id) return;
+    
+    try {
+      const response = await fetch('/api/vote', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          trip_id: id,
+          activity_id: activityId,
+          voter_id: voterId,
+          choice
+        })
+      });
+
+      if (response.ok) {
+        // Update local vote state
+        setUserVotes(prev => ({ ...prev, [activityId]: choice }));
+        // Refresh trip data to get updated vote counts
+        fetchTripData();
+      }
+    } catch (err) {
+      console.error('Error voting:', err);
+    }
+  };
   // Calculate total spent
   const calculateTotalSpent = (): number => {
     if (!tripData?.trip.itinerary) return 0;
@@ -92,6 +137,16 @@ const TripPage: React.FC = () => {
     }, 0);
   };
 
+  // Get vote counts for an activity
+  const getVoteCounts = (activityId: string): VoteCounts => {
+    return tripData?.votes?.[activityId] || { yes: 0, no: 0, maybe: 0 };
+  };
+
+  // Get total votes for an activity
+  const getTotalVotes = (activityId: string): number => {
+    const counts = getVoteCounts(activityId);
+    return counts.yes + counts.no + counts.maybe;
+  };
   // Loading state
   if (loading) {
     return (
@@ -253,6 +308,10 @@ const TripPage: React.FC = () => {
 
               <div className="space-y-4">
                 {day.activities.map((activity) => (
+                  const voteCounts = getVoteCounts(activity.id);
+                  const totalVotes = getTotalVotes(activity.id);
+                  const userVote = userVotes[activity.id];
+
                   <div key={activity.id} className="border border-gray-200 rounded-lg p-4">
                     {/* Activity Header */}
                     <div className="flex items-start justify-between mb-3">
@@ -270,6 +329,81 @@ const TripPage: React.FC = () => {
                             </div>
                           )}
                         </div>
+                      </div>
+                      {/* Voting Section */}
+                      <div className="border-t border-gray-100 pt-4 mt-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-4">
+                            <span className="text-sm font-medium text-gray-700">What do you think?</span>
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={() => handleVote(activity.id, 'yes')}
+                                className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
+                                  userVote === 'yes'
+                                    ? 'bg-green-100 text-green-700 border-2 border-green-300'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-green-50 hover:text-green-600'
+                                }`}
+                              >
+                                <ThumbsUp className="h-4 w-4" />
+                                <span>Yes ({voteCounts.yes})</span>
+                              </button>
+                              <button
+                                onClick={() => handleVote(activity.id, 'maybe')}
+                                className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
+                                  userVote === 'maybe'
+                                    ? 'bg-yellow-100 text-yellow-700 border-2 border-yellow-300'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-yellow-50 hover:text-yellow-600'
+                                }`}
+                              >
+                                <Meh className="h-4 w-4" />
+                                <span>Maybe ({voteCounts.maybe})</span>
+                              </button>
+                              <button
+                                onClick={() => handleVote(activity.id, 'no')}
+                                className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
+                                  userVote === 'no'
+                                    ? 'bg-red-100 text-red-700 border-2 border-red-300'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-600'
+                                }`}
+                              >
+                                <ThumbsDown className="h-4 w-4" />
+                                <span>No ({voteCounts.no})</span>
+                              </button>
+                            </div>
+                          </div>
+                          {totalVotes > 0 && (
+                            <div className="flex items-center space-x-1 text-sm text-gray-500">
+                              <Users className="h-4 w-4" />
+                              <span>{totalVotes} vote{totalVotes !== 1 ? 's' : ''}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Vote Summary Bar */}
+                        {totalVotes > 0 && (
+                          <div className="mt-3">
+                            <div className="flex h-2 bg-gray-200 rounded-full overflow-hidden">
+                              {voteCounts.yes > 0 && (
+                                <div 
+                                  className="bg-green-500" 
+                                  style={{ width: `${(voteCounts.yes / totalVotes) * 100}%` }}
+                                />
+                              )}
+                              {voteCounts.maybe > 0 && (
+                                <div 
+                                  className="bg-yellow-500" 
+                                  style={{ width: `${(voteCounts.maybe / totalVotes) * 100}%` }}
+                                />
+                              )}
+                              {voteCounts.no > 0 && (
+                                <div 
+                                  className="bg-red-500" 
+                                  style={{ width: `${(voteCounts.no / totalVotes) * 100}%` }}
+                                />
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
 
