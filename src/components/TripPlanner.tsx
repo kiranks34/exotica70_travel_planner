@@ -197,6 +197,10 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
     return days;
   };
 
+  const getCurrentMonth = () => {
+    return currentCalendarMonth;
+  };
+
   const isDateInRange = (date: Date) => {
     return false; // No range selection needed anymore
   };
