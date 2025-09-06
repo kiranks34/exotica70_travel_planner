@@ -21,7 +21,9 @@ export const convertAITripPlanToItinerary = (
     bestTimeToVisit: aiTripPlan.bestTimeToVisit,
     weatherInfo: aiTripPlan.weatherInfo,
     localCurrency: aiTripPlan.localCurrency,
-    languageInfo: aiTripPlan.languageInfo,
+    languageInfo: typeof aiTripPlan.languageInfo === 'object' 
+      ? JSON.stringify(aiTripPlan.languageInfo) 
+      : String(aiTripPlan.languageInfo || ''),
     culturalTips: aiTripPlan.culturalTips,
     packingRecommendations: aiTripPlan.packingRecommendations,
     emergencyInfo: aiTripPlan.emergencyInfo
