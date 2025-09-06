@@ -16,10 +16,10 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
   const [budgetMax, setBudgetMax] = useState(1000);
   const [budgetMinInput, setBudgetMinInput] = useState('0');
   const [budgetMaxInput, setBudgetMaxInput] = useState('1000');
-  const [showCollaborators, setShowCollaborators] = useState(false);
-  const [collaborators, setCollaborators] = useState<string[]>([]);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [showCalendar, setShowCalendar] = useState(false);
+  const calendarRef = useRef<HTMLDivElement>(null);
+  const dateInputRef = useRef<HTMLInputElement>(null);
 
   // Beautiful travel videos from Pexels - various landscapes and experiences
   const travelVideos = [
@@ -60,6 +60,27 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
     }
   }, [inspirationDestination]);
 
+  // Handle click outside calendar
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (
+        showCalendar &&
+        calendarRef.current &&
+        dateInputRef.current &&
+        !calendarRef.current.contains(target) &&
+        !dateInputRef.current.contains(target)
+      ) {
+        setShowCalendar(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCalendar]);
+
   // Auto-rotate videos every 6 seconds
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -94,7 +115,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
       startDate,
       endDate,
       tripType,
-      collaborators
+      collaborators: []
     });
   };
 
@@ -133,17 +154,6 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
     setShowCalendar(true);
   };
 
-  const closeCalendar = () => {
-    setShowCalendar(false);
-  };
-
-  const handleClickOutside = (e: React.MouseEvent) => {
-    // Only close if clicking outside the calendar container
-    const target = e.target as Element;
-    if (!target.closest('.calendar-container')) {
-      closeCalendar();
-    }
-  };
 
   const getCurrentMonth = () => {
     const now = new Date();
@@ -293,7 +303,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
             </div>
 
             {/* Start Date and Number of Days */}
-            <div className="relative" onClick={handleClickOutside}>
+            <div className="relative">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 When are you going and for how long?
               </label>
@@ -310,11 +320,12 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                     className="w-full px-4 py-2.5 border-2 border-gray-200 bg-white rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
                   />
                 </div>
-                <div className="relative calendar-field">
+                <div className="relative">
                   <label className="block text-xs font-medium text-gray-600 mb-1">Start Date</label>
                   <div className="relative">
-                    <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 pointer-events-none" />
+                    <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                     <input
+                      ref={dateInputRef}
                       type="text"
                       value={formatDateForDisplay(startDate)}
                       onClick={openCalendar}
@@ -323,122 +334,6 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                       className="w-full pl-12 pr-4 py-2.5 border-2 border-gray-200 bg-white rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition-all cursor-pointer"
                     />
                   </div>
-                  
-                  {/* Calendar sliding from right */}
-                  {showCalendar && (
-                    <div className={`fixed top-1/2 left-1/2 transform -translate-y-1/2 translate-x-8 z-50 transition-all duration-300 ease-out ${
-                      showCalendar ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'
-                    }`}>
-                      <div className="bg-white bg-opacity-95 backdrop-blur-lg rounded-xl shadow-2xl border border-gray-200 p-6 w-96 calendar-container">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            Select Start Date
-                          </h3>
-                          <button
-                            onClick={closeCalendar}
-                            className="text-gray-400 hover:text-gray-600 transition-colors"
-                          >
-                            <X className="h-5 w-5" />
-                          </button>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 gap-6">
-                          {/* Current Month */}
-                          <div>
-                            <h4 className="text-sm font-semibold text-gray-700 mb-3 text-center">
-                              {getCurrentMonth().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                            </h4>
-                            <div className="grid grid-cols-7 gap-1 mb-2">
-                              {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-                                <div key={day} className="text-xs font-medium text-gray-500 text-center py-2">
-                                  {day}
-                                </div>
-                              ))}
-                            </div>
-                            <div className="grid grid-cols-7 gap-1">
-                              {generateCalendarDays(getCurrentMonth()).map((date, index) => {
-                                const isCurrentMonth = date.getMonth() === getCurrentMonth().getMonth();
-                                const isSelected = isDateSelected(date);
-                                const isInRange = isDateInRange(date);
-                                const isDisabled = isDateDisabled(date);
-                                const dateStr = date.toISOString().split('T')[0];
-                                
-                                return (
-                                  <button
-                                    key={index}
-                                    onClick={() => !isDisabled && handleDateSelect(dateStr)}
-                                    disabled={isDisabled}
-                                    className={`
-                                      w-8 h-8 text-sm rounded-lg transition-all
-                                      ${!isCurrentMonth ? 'text-gray-300' : ''}
-                                      ${isSelected ? 'bg-orange-500 text-white font-semibold' : ''}
-                                      ${isInRange && !isSelected ? 'bg-orange-100 text-orange-700' : ''}
-                                      ${!isSelected && !isInRange && isCurrentMonth && !isDisabled ? 'hover:bg-gray-100 text-gray-700' : ''}
-                                      ${isDisabled ? 'text-gray-300 cursor-not-allowed' : 'cursor-pointer'}
-                                    `}
-                                  >
-                                    {date.getDate()}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                          
-                          {/* Next Month */}
-                          <div>
-                            <h4 className="text-sm font-semibold text-gray-700 mb-3 text-center">
-                              {getNextMonth().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                            </h4>
-                            <div className="grid grid-cols-7 gap-1 mb-2">
-                              {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-                                <div key={day} className="text-xs font-medium text-gray-500 text-center py-2">
-                                  {day}
-                                </div>
-                              ))}
-                            </div>
-                            <div className="grid grid-cols-7 gap-1">
-                              {generateCalendarDays(getNextMonth()).map((date, index) => {
-                                const isCurrentMonth = date.getMonth() === getNextMonth().getMonth();
-                                const isSelected = isDateSelected(date);
-                                const isInRange = isDateInRange(date);
-                                const isDisabled = isDateDisabled(date);
-                                const dateStr = date.toISOString().split('T')[0];
-                                
-                                return (
-                                  <button
-                                    key={index}
-                                    onClick={() => !isDisabled && handleDateSelect(dateStr)}
-                                    disabled={isDisabled}
-                                    className={`
-                                      w-8 h-8 text-sm rounded-lg transition-all
-                                      ${!isCurrentMonth ? 'text-gray-300' : ''}
-                                      ${isSelected ? 'bg-orange-500 text-white font-semibold' : ''}
-                                      ${isInRange && !isSelected ? 'bg-orange-100 text-orange-700' : ''}
-                                      ${!isSelected && !isInRange && isCurrentMonth && !isDisabled ? 'hover:bg-gray-100 text-gray-700' : ''}
-                                      ${isDisabled ? 'text-gray-300 cursor-not-allowed' : 'cursor-pointer'}
-                                    `}
-                                  >
-                                    {date.getDate()}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {startDate && (
-                          <div className="mt-4 p-3 bg-orange-50 rounded-lg">
-                            <p className="text-sm text-orange-700 text-center">
-                              <span className="font-semibold">Selected:</span> {formatDateForDisplay(startDate)}
-                              {numberOfDays && (
-                                <span> for {numberOfDays} day{numberOfDays !== '1' ? 's' : ''}</span>
-                              )}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -548,7 +443,6 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
               </div>
             </div>
 
-            {/* Collaborators */}
 
             {/* Submit Button */}
             <button
@@ -575,6 +469,130 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
           </form>
         </div>
       </div>
+
+      {/* Calendar Overlay - Slides from right */}
+      {showCalendar && (
+        <>
+          {/* Backdrop */}
+          <div className="fixed inset-0 bg-black bg-opacity-30 z-40" />
+          
+          {/* Calendar Panel */}
+          <div 
+            ref={calendarRef}
+            className={`fixed top-0 right-0 h-full w-96 bg-white bg-opacity-95 backdrop-blur-lg shadow-2xl z-50 transform transition-transform duration-300 ease-out ${
+              showCalendar ? 'translate-x-0' : 'translate-x-full'
+            }`}
+          >
+            <div className="p-6 h-full overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-gray-900">
+                  Select Start Date
+                </h3>
+                <button
+                  onClick={() => setShowCalendar(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              
+              <div className="space-y-8">
+                {/* Current Month */}
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-700 mb-4 text-center">
+                    {getCurrentMonth().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  </h4>
+                  <div className="grid grid-cols-7 gap-1 mb-3">
+                    {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
+                      <div key={day} className="text-sm font-medium text-gray-500 text-center py-2">
+                        {day}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-7 gap-1">
+                    {generateCalendarDays(getCurrentMonth()).map((date, index) => {
+                      const isCurrentMonth = date.getMonth() === getCurrentMonth().getMonth();
+                      const isSelected = isDateSelected(date);
+                      const isDisabled = isDateDisabled(date);
+                      const dateStr = date.toISOString().split('T')[0];
+                      
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => !isDisabled && handleDateSelect(dateStr)}
+                          disabled={isDisabled}
+                          className={`
+                            w-10 h-10 text-sm rounded-lg transition-all font-medium
+                            ${!isCurrentMonth ? 'text-gray-300' : ''}
+                            ${isSelected ? 'bg-orange-500 text-white font-semibold shadow-lg' : ''}
+                            ${!isSelected && isCurrentMonth && !isDisabled ? 'hover:bg-orange-100 hover:text-orange-700 text-gray-700' : ''}
+                            ${isDisabled ? 'text-gray-300 cursor-not-allowed' : 'cursor-pointer'}
+                          `}
+                        >
+                          {date.getDate()}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                {/* Next Month */}
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-700 mb-4 text-center">
+                    {getNextMonth().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  </h4>
+                  <div className="grid grid-cols-7 gap-1 mb-3">
+                    {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
+                      <div key={day} className="text-sm font-medium text-gray-500 text-center py-2">
+                        {day}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-7 gap-1">
+                    {generateCalendarDays(getNextMonth()).map((date, index) => {
+                      const isCurrentMonth = date.getMonth() === getNextMonth().getMonth();
+                      const isSelected = isDateSelected(date);
+                      const isDisabled = isDateDisabled(date);
+                      const dateStr = date.toISOString().split('T')[0];
+                      
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => !isDisabled && handleDateSelect(dateStr)}
+                          disabled={isDisabled}
+                          className={`
+                            w-10 h-10 text-sm rounded-lg transition-all font-medium
+                            ${!isCurrentMonth ? 'text-gray-300' : ''}
+                            ${isSelected ? 'bg-orange-500 text-white font-semibold shadow-lg' : ''}
+                            ${!isSelected && isCurrentMonth && !isDisabled ? 'hover:bg-orange-100 hover:text-orange-700 text-gray-700' : ''}
+                            ${isDisabled ? 'text-gray-300 cursor-not-allowed' : 'cursor-pointer'}
+                          `}
+                        >
+                          {date.getDate()}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Selected Date Display */}
+              {startDate && (
+                <div className="mt-8 p-4 bg-orange-50 rounded-xl">
+                  <p className="text-orange-700 text-center font-medium">
+                    <span className="font-semibold">Selected:</span> {formatDateForDisplay(startDate)}
+                    {numberOfDays && (
+                      <span className="block text-sm mt-1">
+                        Duration: {numberOfDays} day{numberOfDays !== '1' ? 's' : ''}
+                      </span>
+                    )}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
