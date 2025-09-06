@@ -143,16 +143,6 @@ export const AIInsightsModal: React.FC<AIInsightsModalProps> = ({ insights, dest
               </div>
             )}
           </div>
-
-          {/* Close Button */}
-          <div className="flex justify-center pt-4">
-            <button
-              onClick={onClose}
-              className="bg-gradient-to-r from-orange-500 to-purple-500 text-white px-8 py-3 rounded-xl font-semibold hover:from-orange-600 hover:to-purple-600 transition-all transform hover:scale-105"
-            >
-              Got it, let's start planning!
-            </button>
-          </div>
         </div>
       </div>
     </div>
