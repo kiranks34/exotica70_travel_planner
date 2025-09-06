@@ -270,24 +270,40 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
     setErrorMessage(null);
     
     try {
-      // Create a simple trip object and use the existing trip creation flow
-      const tripData = {
-        destination,
-        startDate,
-        endDate: calculateEndDate(startDate, parseInt(numberOfDays)),
-        tripType,
-        collaborators: []
-      };
+      // Call backend API to generate itinerary
+      const response = await fetch('/api/generate-itinerary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          destination,
+          vibe: tripType,
+          days: parseInt(numberOfDays),
+          budget: budgetMax,
+          startDate,
+          groupSize: 2 // Default group size
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
       
-      // Show success message briefly
-      setShowSuccessMessage(true);
-      setTimeout(() => {
-        setIsCreatingTrip(false);
-        setShowSuccessMessage(false);
-        // Call the existing trip creation handler
-        onTripCreate(tripData);
-      }, 1500);
-      
+      if (data.id) {
+        // Show success message briefly before redirecting
+        setShowSuccessMessage(true);
+        setTimeout(() => {
+          setIsCreatingTrip(false);
+          setShowSuccessMessage(false);
+          // Redirect to the generated trip
+          window.location.href = `/trip/${data.id}`;
+        }, 1500);
+      } else {
+        throw new Error('No trip ID returned from server');
+      }
     } catch (error) {
       console.error('Error creating trip:', error);
       setErrorMessage(error instanceof Error ? error.message : 'Failed to create trip. Please try again.');
@@ -296,13 +312,6 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
       // Auto-hide error after 5 seconds
       setTimeout(() => setErrorMessage(null), 5000);
     }
-  };
-  
-  const calculateEndDate = (startDate: string, days: number): string => {
-    const start = new Date(startDate);
-    const end = new Date(start);
-    end.setDate(start.getDate() + days - 1);
-    return end.toISOString().split('T')[0];
   };
 
   return (
