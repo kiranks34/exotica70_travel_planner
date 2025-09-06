@@ -11,6 +11,15 @@ interface AIInsightsModalProps {
 export const AIInsightsModal: React.FC<AIInsightsModalProps> = ({ insights, destination, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
+      {/* Fixed Close Button - Always Visible */}
+      <button
+        onClick={onClose}
+        className="fixed top-6 right-6 z-[110] bg-white bg-opacity-90 backdrop-blur-sm text-gray-600 hover:text-gray-800 p-3 rounded-full shadow-lg hover:bg-white transition-all"
+        title="Close AI Insights"
+      >
+        <X className="h-6 w-6" />
+      </button>
+      
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-purple-50">
@@ -18,12 +27,6 @@ export const AIInsightsModal: React.FC<AIInsightsModalProps> = ({ insights, dest
             <h2 className="text-2xl font-bold text-gray-900">AI Travel Insights</h2>
             <p className="text-gray-600 mt-1">Essential information for your {destination} trip</p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X className="h-6 w-6" />
-          </button>
         </div>
 
         <div className="p-6 space-y-8">

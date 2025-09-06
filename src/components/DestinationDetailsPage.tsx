@@ -106,7 +106,7 @@ export const DestinationDetailsPage: React.FC<DestinationDetailsPageProps> = ({
             className="flex items-center space-x-2 bg-white bg-opacity-90 backdrop-blur-sm text-gray-800 px-4 py-2 rounded-lg hover:bg-white transition-colors shadow-lg"
           >
             <ArrowLeft className="h-5 w-5" />
-            <span className="font-medium">Back to Home</span>
+            <span className="font-medium">Back</span>
           </button>
 
           <button

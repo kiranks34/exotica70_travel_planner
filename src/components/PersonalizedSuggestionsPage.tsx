@@ -269,9 +269,10 @@ export const PersonalizedSuggestionsPage: React.FC<PersonalizedSuggestionsPagePr
             <p className="text-gray-600 mb-6">Adjust your preferences to discover more personalized destinations</p>
             <button
               onClick={onBack}
-              className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors font-medium"
+              className="flex items-center space-x-2 text-gray-600 hover:text-orange-500 transition-colors p-2 rounded-lg hover:bg-gray-100"
             >
               Update Preferences
+              <span className="font-medium">Back to Preferences</span>
             </button>
           </div>
         </div>

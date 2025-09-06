@@ -360,12 +360,17 @@ function App() {
 
   const handleBackFromDestinationDetails = () => {
     setSelectedDestination(null);
-    setCurrentState('planning');
+    // Check if we came from personalized suggestions
+    if (savedPreferences) {
+      setCurrentState('personalized-suggestions');
+    } else {
+      setCurrentState('planning');
+    }
   };
 
   const handleBackFromPersonalizedSuggestions = () => {
+    setSavedPreferences(null);
     setCurrentState('planning');
-    setShowInspireMe(true);
   };
 
   const handlePersonalizedDestinationSelect = (destination: string) => {
