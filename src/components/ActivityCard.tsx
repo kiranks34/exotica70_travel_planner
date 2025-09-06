@@ -47,6 +47,15 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   const [activityImage, setActivityImage] = React.useState<string>('');
   const [isLoadingImage, setIsLoadingImage] = React.useState(false);
 
+  // Initialize variables that are used in useEffect dependencies
+  const startTime = new Date(`2000-01-01T${activity.startTime}`);
+  const endTime = new Date(`2000-01-01T${activity.endTime}`);
+  const thumbnailImage = getDestinationThumbnail(activity.title, destination);
+  const preciseAddress = getActivityAddress(activity.title, destination);
+  const phoneNumber = getActivityPhoneNumber(activity.title, destination);
+  const categoryColor = getCategoryColor(activity.category);
+  const categoryLabel = getCategoryLabel(activity.category);
+
   // Generate AI-powered image for the activity
   React.useEffect(() => {
     const fetchAndSetActivityImage = async () => {
@@ -72,14 +81,6 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
     // This is a placeholder for the OpenAI image generation
     return getDestinationThumbnail(title, destination);
   };
-
-  const startTime = new Date(`2000-01-01T${activity.startTime}`);
-  const endTime = new Date(`2000-01-01T${activity.endTime}`);
-  const thumbnailImage = getDestinationThumbnail(activity.title, destination);
-  const preciseAddress = getActivityAddress(activity.title, destination);
-  const phoneNumber = getActivityPhoneNumber(activity.title, destination);
-  const categoryColor = getCategoryColor(activity.category);
-  const categoryLabel = getCategoryLabel(activity.category);
 
   const getStatusColor = (status: string) => {
     switch (status) {
