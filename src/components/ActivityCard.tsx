@@ -389,18 +389,6 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                 </div>
               )}
               
-              {/* Show Details Button when collapsed */}
-              {enrichedData && !showDetails && (
-               <div className="mb-3">
-                  <button
-                    onClick={() => setShowDetails(true)}
-                    className="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center space-x-1"
-                  >
-                   <Info className="h-4 w-4" />
-                   <span>Show Details</span>
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </div>
