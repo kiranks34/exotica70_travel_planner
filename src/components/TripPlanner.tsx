@@ -1,13 +1,23 @@
 import React, { useState, useRef } from 'react';
 import { Calendar, MapPin, Users, Plus, Sparkles, UserPlus, Lightbulb, X, ChevronDown } from 'lucide-react';
+import { DestinationCard } from './DestinationCard';
+import { destinations } from '../data/destinations';
 
 interface TripPlannerProps {
   onTripCreate: (tripData: any) => void;
   onInspireMe: () => void;
   inspirationDestination?: string;
+  onToggleFavorite?: (id: string) => void;
+  favorites?: string[];
 }
 
-export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspireMe, inspirationDestination }) => {
+export const TripPlanner: React.FC<TripPlannerProps> = ({ 
+  onTripCreate, 
+  onInspireMe, 
+  inspirationDestination,
+  onToggleFavorite,
+  favorites = []
+}) => {
   const [destination, setDestination] = useState('');
   const [startDate, setStartDate] = useState('');
   const [numberOfDays, setNumberOfDays] = useState('');
@@ -155,6 +165,19 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
     }
   };
 
+  const handlePlanTripFromCard = (destination: string) => {
+    setDestination(destination);
+    // Scroll to trip planner form
+    const formElement = document.querySelector('.trip-planner-form');
+    if (formElement) {
+      formElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  const handleViewDestinationDetails = (id: string) => {
+    // TODO: Navigate to destination details page
+    console.log('View details for destination:', id);
+  };
   const openCalendar = () => {
     setShowCalendar(true);
   };
@@ -256,8 +279,10 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
         <div className="absolute inset-0 bg-black bg-opacity-30 z-20" />
       </div>
 
-      <div className="max-w-xl w-full ml-8 lg:ml-16">
-        <div className="bg-white bg-opacity-90 backdrop-blur-lg rounded-2xl shadow-2xl p-5 md:p-6 border border-white border-opacity-80 relative z-10">
+      <div className="max-w-7xl w-full mx-auto flex items-start gap-8 relative z-30">
+        {/* Trip Planner Form */}
+        <div className="max-w-xl w-full ml-8 lg:ml-16">
+          <div className="trip-planner-form bg-white bg-opacity-90 backdrop-blur-lg rounded-2xl shadow-2xl p-5 md:p-6 border border-white border-opacity-80 relative z-10">
           <div className="mb-8 text-center">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 font-heading">
               Every Trip Has a Plan. What's Yours?
@@ -598,6 +623,39 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
               </button>
             </div>
           </form>
+        </div>
+        </div>
+
+        {/* Destination Cards */}
+        <div className="flex-1 max-w-4xl mr-8 lg:mr-16">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-white mb-2 text-center">
+              Discover Amazing Destinations
+            </h2>
+            <p className="text-white/80 text-center">
+              Handpicked places with insider secrets from locals
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {destinations.map((destination) => (
+              <DestinationCard
+                key={destination.id}
+                id={destination.id}
+                name={destination.name}
+                country={destination.country}
+                image={destination.image}
+                description={destination.description}
+                hiddenGem={destination.hiddenGem}
+                rating={destination.rating}
+                reviewCount={destination.reviewCount}
+                isFavorite={favorites.includes(destination.id)}
+                onToggleFavorite={onToggleFavorite || (() => {})}
+                onPlanTrip={handlePlanTripFromCard}
+                onViewDetails={handleViewDestinationDetails}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
