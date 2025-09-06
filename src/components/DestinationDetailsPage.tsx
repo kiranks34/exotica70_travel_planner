@@ -19,7 +19,7 @@ export const DestinationDetailsPage: React.FC<DestinationDetailsPageProps> = ({
   image,
   rating,
   initialFavorite = false,
-  onBack
+  onBack,
   onStartPlanning,
   onFavoriteToggle
 }) => {
