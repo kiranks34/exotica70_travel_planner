@@ -236,6 +236,15 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
   const handleVote = (activityId: string, vote: 'yes' | 'no' | 'maybe') => {
     const previousVote = userVotes[activityId];
     
+    // Initialize vote counts if not exists
+    setVoteCounts(prev => {
+      const newCounts = { ...prev };
+      if (!newCounts[activityId]) {
+        newCounts[activityId] = { yes: 0, no: 0, maybe: 0 };
+      }
+      return newCounts;
+    });
+
     // Toggle functionality - if clicking the same vote, remove it
     if (previousVote === vote) {
       // Remove the vote
@@ -245,17 +254,14 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
         return newVotes;
       });
       
-      // Update vote counts - remove previous vote
-      setVoteCounts(prev => {
-        const newCounts = { ...prev };
-        if (!newCounts[activityId]) {
-          newCounts[activityId] = { yes: 0, no: 0, maybe: 0 };
+      // Decrease vote count
+      setVoteCounts(prev => ({
+        ...prev,
+        [activityId]: {
+          ...prev[activityId],
+          [vote]: Math.max(0, (prev[activityId]?.[vote] || 0) - 1)
         }
-        if (newCounts[activityId][vote] > 0) {
-          newCounts[activityId][vote] = newCounts[activityId][vote] - 1;
-        }
-        return newCounts;
-      });
+      }));
     } else {
       // Set new vote
       setUserVotes(prev => ({
@@ -263,27 +269,55 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
         [activityId]: vote
       }));
       
-      // Update vote counts
+      // Update vote counts - remove previous vote and add new vote
       setVoteCounts(prev => {
-        const newCounts = { ...prev };
-        if (!newCounts[activityId]) {
-          newCounts[activityId] = { yes: 0, no: 0, maybe: 0 };
-        }
+        const currentCounts = prev[activityId] || { yes: 0, no: 0, maybe: 0 };
+        const newCounts = { ...currentCounts };
         
         // Remove previous vote if exists
-        if (previousVote) {
-          if (newCounts[activityId][previousVote] > 0) {
-            newCounts[activityId][previousVote] = newCounts[activityId][previousVote] - 1;
-          }
+        if (previousVote && newCounts[previousVote] > 0) {
+          newCounts[previousVote] = newCounts[previousVote] - 1;
         }
         
         // Add new vote
-        newCounts[activityId][vote] += 1;
+        newCounts[vote] = newCounts[vote] + 1;
         
-        return newCounts;
+        return {
+          ...prev,
+          [activityId]: newCounts
+        };
       });
     }
   };
+  const handleConfirmItinerary = () => {
+    // Filter activities based on votes - keep activities with more yes than no votes
+    const confirmedDayItineraries = dayItineraries.map(day => {
+      const confirmedActivities = day.activities.filter(activity => {
+        const votes = voteCounts[activity.id];
+        if (!votes) return true; // Keep activities with no votes
+        
+        const yesVotes = votes.yes || 0;
+        const noVotes = votes.no || 0;
+        
+        // Keep activity if yes votes >= no votes
+        return yesVotes >= noVotes;
+      });
+      
+      return {
+        ...day,
+        activities: confirmedActivities
+      };
+    });
+    
+    setDayItineraries(confirmedDayItineraries);
+    
+    // Show confirmation message
+    alert(`Itinerary confirmed! Removed ${
+      dayItineraries.reduce((total, day) => total + day.activities.length, 0) -
+      confirmedDayItineraries.reduce((total, day) => total + day.activities.length, 0)
+    } activities based on voting results.`);
+  };
+
   const tripDuration = new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime();
   const dayCount = Math.ceil(tripDuration / (1000 * 60 * 60 * 24)) + 1;
 
@@ -426,11 +460,26 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
         
         {/* Voting Summary */}
         {!isLoading && dayItineraries.length > 0 && (
-          <VotingSummary
-            dayItineraries={dayItineraries}
-            voteCounts={voteCounts}
-            userVotes={userVotes}
-          />
+          <>
+            <VotingSummary
+              dayItineraries={dayItineraries}
+              voteCounts={voteCounts}
+              userVotes={userVotes}
+            />
+            
+            {/* Confirm Itinerary Button */}
+            <div className="mt-8 text-center">
+              <button
+                onClick={handleConfirmItinerary}
+                className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-green-600 hover:to-blue-600 transition-all transform hover:scale-105 shadow-lg"
+              >
+                🎯 Confirm Final Itinerary
+              </button>
+              <p className="text-gray-600 text-sm mt-2">
+                Activities with more "No" votes than "Yes" votes will be removed
+              </p>
+            </div>
+          </>
         )}
       </div>
 
