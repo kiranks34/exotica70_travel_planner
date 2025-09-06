@@ -78,22 +78,22 @@ export const LoadingModal: React.FC<LoadingModalProps> = ({ destination, isVisib
             Destination: {destination}
           </p>
           
-          <div className="space-y-2 text-sm text-center">
+          <div className="space-y-2 text-sm">
             <div className="flex items-start space-x-2">
               <div className={`w-2 h-2 rounded-full mt-2 ${currentStep >= 0 ? 'bg-orange-500' : 'bg-gray-300'} ${currentStep === 0 ? 'animate-pulse' : ''}`}></div>
-              <span className={currentStep === 0 ? 'font-medium' : ''}>Analyzing your preferences...</span>
+              <span className={`text-center flex-1 ${currentStep === 0 ? 'font-medium' : ''}`}>Analyzing your preferences...</span>
             </div>
             <div className="flex items-start space-x-2">
               <div className={`w-2 h-2 rounded-full mt-2 ${currentStep >= 1 ? 'bg-blue-500' : 'bg-gray-300'} ${currentStep === 1 ? 'animate-pulse' : ''}`}></div>
-              <span className={currentStep === 1 ? 'font-medium' : ''}>Finding the best attractions...</span>
+              <span className={`text-center flex-1 ${currentStep === 1 ? 'font-medium' : ''}`}>Finding the best attractions...</span>
             </div>
             <div className="flex items-start space-x-2">
               <div className={`w-2 h-2 rounded-full mt-2 ${currentStep >= 2 ? 'bg-green-500' : 'bg-gray-300'} ${currentStep === 2 ? 'animate-pulse' : ''}`}></div>
-              <span className={currentStep === 2 ? 'font-medium' : ''}>Curating local experiences...</span>
+              <span className={`text-center flex-1 ${currentStep === 2 ? 'font-medium' : ''}`}>Curating local experiences...</span>
             </div>
             <div className="flex items-start space-x-2">
               <div className={`w-2 h-2 rounded-full mt-2 ${currentStep >= 3 ? 'bg-purple-500' : 'bg-gray-300'} ${currentStep === 3 ? 'animate-pulse' : ''}`}></div>
-              <span className={currentStep === 3 ? 'font-medium' : ''}>Optimizing your itinerary...</span>
+              <span className={`text-center flex-1 ${currentStep === 3 ? 'font-medium' : ''}`}>Optimizing your itinerary...</span>
             </div>
           </div>
         </div>

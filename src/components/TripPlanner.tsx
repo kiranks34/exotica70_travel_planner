@@ -649,7 +649,9 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
               className={`w-full py-2.5 px-6 rounded-xl font-semibold transition-all duration-200 shadow-lg ${
                 showSuccessMessage 
                   ? 'bg-green-500 text-white' 
-                  : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none'
+                  : isCreatingTrip
+                    ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white cursor-not-allowed'
+                    : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none'
               }`}
             >
               {showSuccessMessage ? (
@@ -661,8 +663,8 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                 </div>
               ) : isCreatingTrip ? (
                 <div className="flex items-center justify-center space-x-2">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Creating trip...</span>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
+                  <span className="animate-pulse">Creating your trip<span className="animate-bounce">.</span><span className="animate-bounce" style={{animationDelay: '0.1s'}}>.</span><span className="animate-bounce" style={{animationDelay: '0.2s'}}>.</span></span>
                 </div>
               ) : (
                 'Start planning'
