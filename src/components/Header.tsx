@@ -16,6 +16,8 @@ interface HeaderProps {
   user?: User | null;
   onLogout?: () => void;
   onHomeClick?: () => void;
+  onFavoritesClick?: () => void;
+  favoritesCount?: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
@@ -24,7 +26,9 @@ export const Header: React.FC<HeaderProps> = ({
   onSignupClick, 
   user, 
   onLogout, 
-  onHomeClick 
+  onHomeClick,
+  onFavoritesClick,
+  favoritesCount = 0
 }) => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
@@ -175,6 +179,20 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Actions */}
           <div className="flex items-center space-x-4 pr-2">
+            {/* Favorites Button */}
+            <button
+              onClick={onFavoritesClick}
+              className="relative flex items-center space-x-2 text-gray-700 hover:text-red-500 transition-colors px-3 py-2 rounded-lg hover:bg-gray-100"
+            >
+              <Heart className="h-5 w-5" />
+              <span className="hidden sm:inline">Favorites</span>
+              {favoritesCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                  {favoritesCount > 9 ? '9+' : favoritesCount}
+                </span>
+              )}
+            </button>
+
             {user ? (
               <div className="flex items-center space-x-3">
                 {/* User Profile */}
