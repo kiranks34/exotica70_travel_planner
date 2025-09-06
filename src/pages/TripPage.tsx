@@ -312,7 +312,8 @@ const TripPage: React.FC = () => {
                   const totalVotes = getTotalVotes(activity.id);
                   const userVote = userVotes[activity.id];
 
-                  <div key={activity.id} className="border border-gray-200 rounded-lg p-4">
+                  return (
+                    <div key={activity.id} className="border border-gray-200 rounded-lg p-4">
                     {/* Activity Header */}
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
@@ -423,8 +424,9 @@ const TripPage: React.FC = () => {
                         </div>
                       </div>
                     )}
-                  </div>
-                ))}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ))}
