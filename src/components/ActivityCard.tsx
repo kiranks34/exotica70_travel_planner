@@ -49,7 +49,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
 
   // Generate AI-powered image for the activity
   React.useEffect(() => {
-    const generateActivityImage = async () => {
+    const fetchAndSetActivityImage = async () => {
       setIsLoadingImage(true);
       try {
         // Use OpenAI to generate a high-quality image description and get a relevant image
@@ -64,8 +64,8 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
       }
     };
 
-    generateActivityImage();
-  }, [activity.title, destination, tripType]);
+    fetchAndSetActivityImage();
+  }, [activity.title, destination, tripType, thumbnailImage]);
 
   const generateActivityImage = async (title: string, destination: string, tripType: string): Promise<string> => {
     // For now, return enhanced thumbnail - in production, this would call OpenAI DALL-E
