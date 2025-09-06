@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Calendar, MapPin, Users, Plus, Sparkles, UserPlus, Lightbulb, X, ChevronDown } from 'lucide-react';
 import { DestinationCard } from './DestinationCard';
+import { LoadingModal } from './LoadingModal';
 
 interface TripPlannerProps {
   onTripCreate: (tripData: any) => void;
