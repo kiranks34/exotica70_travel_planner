@@ -175,6 +175,12 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Actions */}
           <div className="flex items-center space-x-4 pr-2">
+            {/* Favorites Button */}
+            <button className="flex items-center space-x-2 text-gray-700 hover:text-orange-500 transition-colors px-3 py-2 rounded-lg hover:bg-orange-50">
+              <Heart className="h-5 w-5" />
+              <span className="font-medium">Favorites</span>
+            </button>
+            
             {user ? (
               <div className="flex items-center space-x-3">
                 {/* User Profile */}
