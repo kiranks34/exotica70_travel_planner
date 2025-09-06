@@ -70,27 +70,10 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
 
   const handleVote = (vote: 'yes' | 'no' | 'maybe') => {
     if (onVote) {
-      // Toggle functionality - if clicking the same vote, remove it
-      if (userVote === vote) {
-        // Remove vote by setting to undefined/null - we'll handle this in the parent
-        onVote(activity.id, vote); // Let parent handle toggle logic
-      } else {
-        onVote(activity.id, vote);
-      }
+      onVote(activity.id, vote);
     }
   };
 
-  const getTotalVotes = () => {
-    if (!voteCounts) return 0;
-    return voteCounts.yes + voteCounts.no + voteCounts.maybe;
-  };
-
-  const getVotePercentage = (voteType: 'yes' | 'no' | 'maybe') => {
-    if (!voteCounts) return 0;
-    const total = getTotalVotes();
-    if (total === 0) return 0;
-    return Math.round((voteCounts[voteType] / total) * 100);
-  };
   return (
     <div className="relative group">
       {/* Edit/Delete Buttons - Outside card, top right */}
@@ -110,9 +93,19 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-orange-200 transition-all duration-200">
-        <div className="flex items-start p-6">
+        <div className="flex items-start">
+          {/* Activity Image */}
+          <div className="w-32 h-32 flex-shrink-0">
+            <img
+              src={thumbnailImage}
+              alt={activity.title}
+              className="w-full h-full object-cover rounded-l-xl"
+            />
+          </div>
+
           {/* Content - Left Side */}
           <div className="flex-1 pr-6">
+            <div className="p-6">
             {/* Activity Number and Title */}
             <div className="mb-3">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -160,6 +153,15 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                   <span>{preciseAddress}</span>
                 </button>
               </div>
+
+              {/* Cost */}
+              {activity.cost && (
+                <div className="flex items-center space-x-2">
+                  <DollarSign className="h-4 w-4 text-gray-400" />
+                  <span>${activity.cost}</span>
+                </div>
+              )}
+            </div>
             </div>
           </div>
         </div>
@@ -241,42 +243,6 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                 </div>
               )}
             </div>
-            
-            {/* Vote Progress Bars */}
-            {voteCounts && getTotalVotes() > 0 && (
-              <div className="mt-3 space-y-1">
-                <div className="flex items-center space-x-2 text-xs">
-                  <div className="w-12 text-green-600 font-medium">Yes</div>
-                  <div className="flex-1 bg-gray-200 rounded-full h-1.5">
-                    <div 
-                      className="bg-green-500 h-1.5 rounded-full transition-all duration-300"
-                      style={{ width: `${getVotePercentage('yes')}%` }}
-                    />
-                  </div>
-                  <div className="w-8 text-gray-600">{getVotePercentage('yes')}%</div>
-                </div>
-                <div className="flex items-center space-x-2 text-xs">
-                  <div className="w-12 text-yellow-600 font-medium">Maybe</div>
-                  <div className="flex-1 bg-gray-200 rounded-full h-1.5">
-                    <div 
-                      className="bg-yellow-500 h-1.5 rounded-full transition-all duration-300"
-                      style={{ width: `${getVotePercentage('maybe')}%` }}
-                    />
-                  </div>
-                  <div className="w-8 text-gray-600">{getVotePercentage('maybe')}%</div>
-                </div>
-                <div className="flex items-center space-x-2 text-xs">
-                  <div className="w-12 text-red-600 font-medium">No</div>
-                  <div className="flex-1 bg-gray-200 rounded-full h-1.5">
-                    <div 
-                      className="bg-red-500 h-1.5 rounded-full transition-all duration-300"
-                      style={{ width: `${getVotePercentage('no')}%` }}
-                    />
-                  </div>
-                  <div className="w-8 text-gray-600">{getVotePercentage('no')}%</div>
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
