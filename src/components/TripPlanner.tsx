@@ -541,7 +541,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                       value={budgetMinInput}
                       onChange={(e) => handleBudgetMinInputChange(e.target.value)}
                       onBlur={(e) => {
-                        const value = parseInt(e.target.value) || 0;
+                        const value = Number(e.target.value) || 0;
                         const clampedValue = Math.max(0, Math.min(budgetMax - 50, value));
                         setBudgetMin(clampedValue);
                         setBudgetMinInput(clampedValue.toString());
@@ -561,7 +561,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                       value={budgetMaxInput}
                       onChange={(e) => handleBudgetMaxInputChange(e.target.value)}
                       onBlur={(e) => {
-                        const value = parseInt(e.target.value) || 0;
+                        const value = Number(e.target.value) || 0;
                         const clampedValue = Math.max(budgetMin + 50, Math.min(10000, value));
                         setBudgetMax(clampedValue);
                         setBudgetMaxInput(clampedValue.toString());
