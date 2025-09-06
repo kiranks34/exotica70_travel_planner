@@ -17,10 +17,6 @@ interface ActivityCardProps {
   voteCounts?: { yes: number; no: number; maybe: number };
   userVote?: 'yes' | 'no' | 'maybe' | null;
   isLoggedIn?: boolean;
-  onVote?: (activityId: string, choice: 'yes' | 'no' | 'maybe') => void;
-  voteCounts?: { yes: number; no: number; maybe: number };
-  userVote?: 'yes' | 'no' | 'maybe' | null;
-  isLoggedIn?: boolean;
 }
 
 export const ActivityCard: React.FC<ActivityCardProps> = ({
@@ -32,10 +28,6 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   onAISuggest,
   onUndo,
   hasUndo = false,
-  onVote,
-  voteCounts = { yes: 0, no: 0, maybe: 0 },
-  userVote = null,
-  isLoggedIn = false
   onVote,
   voteCounts = { yes: 0, no: 0, maybe: 0 },
   userVote = null,
