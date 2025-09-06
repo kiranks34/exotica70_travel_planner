@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Header } from './components/Header';
 import { TripPlanner } from './components/TripPlanner';
 import { ItineraryView } from './components/ItineraryView';
@@ -8,6 +9,7 @@ import { LoginModal } from './components/LoginModal';
 import { SignupModal } from './components/SignupModal';
 import { LoadingModal } from './components/LoadingModal';
 import { AIInsightsModal } from './components/AIInsightsModal';
+import TripPage from './pages/TripPage';
 import { Trip } from './types';
 import { generateTripPlan } from './lib/openai';
 import { convertAITripPlanToItinerary, AITripInsights } from './utils/aiTripConverter';
@@ -273,69 +275,81 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header 
-        onLoginClick={handleLoginClick}
-        onSignupClick={handleSignupClick}
-        user={user}
-        onLogout={handleLogout}
-        onHomeClick={handleHomeClick}
-        favoriteCount={favoriteCount}
-      />
-      
-      {currentState === 'planning' ? (
-        <TripPlanner 
-          onTripCreate={handleTripCreate} 
-          onInspireMe={handleInspireMe}
-          inspirationDestination={inspirationDestination}
-          onFavoriteCountChange={setFavoriteCount}
-        />
-      ) : currentTrip ? (
-        <ItineraryView 
-          trip={currentTrip} 
-          tripType={currentTripType}
-          onBack={handleBackToPlanning}
-        />
-      ) : null}
+    <Router>
+      <div className="min-h-screen bg-gray-50">
+        <Routes>
+          {/* Home route */}
+          <Route path="/" element={
+            <>
+              <Header 
+                onLoginClick={handleLoginClick}
+                onSignupClick={handleSignupClick}
+                user={user}
+                onLogout={handleLogout}
+                onHomeClick={handleHomeClick}
+                favoriteCount={favoriteCount}
+              />
+              
+              {currentState === 'planning' ? (
+                <TripPlanner 
+                  onTripCreate={handleTripCreate} 
+                  onInspireMe={handleInspireMe}
+                  inspirationDestination={inspirationDestination}
+                  onFavoriteCountChange={setFavoriteCount}
+                />
+              ) : currentTrip ? (
+                <ItineraryView 
+                  trip={currentTrip} 
+                  tripType={currentTripType}
+                  onBack={handleBackToPlanning}
+                />
+              ) : null}
 
-      {showInspireMe && (
-        <InspireMeModal
-          onClose={() => setShowInspireMe(false)}
-          onSelectDestination={handleSelectInspiration}
-        />
-      )}
+              {showInspireMe && (
+                <InspireMeModal
+                  onClose={() => setShowInspireMe(false)}
+                  onSelectDestination={handleSelectInspiration}
+                />
+              )}
 
-      {showLogin && (
-        <LoginModal
-          onClose={() => setShowLogin(false)}
-          onSwitchToSignup={handleSwitchToSignup}
-          onLoginSuccess={handleLoginSuccess}
-        />
-      )}
+              {showLogin && (
+                <LoginModal
+                  onClose={() => setShowLogin(false)}
+                  onSwitchToSignup={handleSwitchToSignup}
+                  onLoginSuccess={handleLoginSuccess}
+                />
+              )}
 
-      {showSignup && (
-        <SignupModal
-          onClose={() => setShowSignup(false)}
-          onSwitchToLogin={handleSwitchToLogin}
-          onSignupSuccess={handleLoginSuccess}
-        />
-      )}
+              {showSignup && (
+                <SignupModal
+                  onClose={() => setShowSignup(false)}
+                  onSwitchToLogin={handleSwitchToLogin}
+                  onSignupSuccess={handleLoginSuccess}
+                />
+              )}
 
-      {/* Loading Modal */}
-      <LoadingModal 
-        destination={currentTrip?.destination || ''} 
-        isVisible={isGeneratingTrip} 
-      />
+              {/* Loading Modal */}
+              <LoadingModal 
+                destination={currentTrip?.destination || ''} 
+                isVisible={isGeneratingTrip} 
+              />
 
-      {/* AI Insights Modal */}
-      {showAIInsights && aiInsights && (
-        <AIInsightsModal
-          insights={aiInsights}
-          destination={currentTrip?.destination || ''}
-          onClose={handleAIInsightsClose}
-        />
-      )}
-    </div>
+              {/* AI Insights Modal */}
+              {showAIInsights && aiInsights && (
+                <AIInsightsModal
+                  insights={aiInsights}
+                  destination={currentTrip?.destination || ''}
+                  onClose={handleAIInsightsClose}
+                />
+              )}
+            </>
+          } />
+          
+          {/* Trip detail route */}
+          <Route path="/trip/:id" element={<TripPage />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
