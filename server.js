@@ -1,12 +1,8 @@
 import dotenv from 'dotenv';
 
-// Load environment variables with error handling
-try {
-  dotenv.config();
-  console.log('✅ Environment variables loaded');
-} catch (error) {
-  console.log('⚠️  Could not load .env file, using default values');
-}
+// Load environment variables - don't fail if .env doesn't exist
+dotenv.config({ silent: true });
+console.log('✅ Environment variables loaded');
 
 import express from 'express';
 import cors from 'cors';
@@ -25,47 +21,15 @@ const PORT = 3001;
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
+// Initialize Supabase client with fallback
 let supabase = null;
-
-// Safer Supabase initialization
-if (supabaseUrl && supabaseKey && 
-    !supabaseUrl.includes('your-project') && 
-    !supabaseKey.includes('your-anon-key') &&
-    supabaseUrl.startsWith('https://') &&
-    supabaseKey.length > 20) {
-  try {
-    supabase = createClient(supabaseUrl, supabaseKey);
-    console.log('✅ Supabase client initialized successfully');
-  } catch (error) {
-    console.error('❌ Failed to initialize Supabase client:', error.message);
-    supabase = null;
-  }
-} else {
-  console.log('⚠️  Supabase not configured properly. Using fallback mode.');
-  console.log('   URL present:', !!supabaseUrl);
-  console.log('   Key present:', !!supabaseKey);
-}
+console.log('⚠️  Supabase not configured. Using fallback mode.');
 
 // Initialize OpenAI client
 const openaiApiKey = process.env.VITE_OPENAI_API_KEY;
+// Initialize OpenAI client with fallback
 let openai = null;
-
-// Safer OpenAI initialization
-if (openaiApiKey && openaiApiKey.startsWith('sk-') && openaiApiKey.length > 20) {
-  try {
-    openai = new OpenAI({
-      apiKey: openaiApiKey,
-    });
-    console.log('✅ OpenAI client initialized successfully');
-  } catch (error) {
-    console.error('❌ Failed to initialize OpenAI client:', error.message);
-    openai = null;
-  }
-} else {
-  console.log('⚠️  OpenAI API key not configured properly. Using fallback itinerary generation.');
-  console.log('   Key present:', !!openaiApiKey);
-  console.log('   Key format valid:', openaiApiKey ? openaiApiKey.startsWith('sk-') : false);
-}
+console.log('⚠️  OpenAI not configured. Using fallback itinerary generation.');
 
 // Middleware
 app.use(cors());
@@ -484,10 +448,10 @@ app.get('*', (req, res) => {
 });
 
 // Start server
-const server = app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Backend server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-  console.log(`🌐 Server listening on all interfaces (0.0.0.0:${PORT})`);
+  console.log(`🌐 Server ready to accept connections`);
 });
 
 // Handle server errors
