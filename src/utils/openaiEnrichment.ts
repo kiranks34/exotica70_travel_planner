@@ -142,11 +142,12 @@ export const generateItinerarySummary = async (
         title: activity.title,
         time: `${activity.startTime} - ${activity.endTime}`,
         category: activity.category,
-        cost: activity.cost
+        cost: activity.cost,
+        location: activity.location
       }))
     }));
 
-    const prompt = `Create a comprehensive, well-formatted travel itinerary summary for:
+    const prompt = `Create a comprehensive, visually appealing travel itinerary summary for:
 
 Destination: ${trip.destination}
 Duration: ${new Date(trip.startDate).toLocaleDateString()} - ${new Date(trip.endDate).toLocaleDateString()}
@@ -157,22 +158,50 @@ Estimated Budget: $${totalBudget}
 Daily Activities:
 ${JSON.stringify(activitiesByDay, null, 2)}
 
-Create a professional, engaging summary that includes:
-1. Trip overview with highlights
-2. Day-by-day breakdown with timing
-3. Budget breakdown
-4. Essential travel tips
-5. What to pack
-6. Local recommendations
+IMPORTANT: Create a visually appealing, user-friendly summary using HTML-like formatting with icons and emojis. DO NOT use markdown. Use the following structure:
 
-Format as a comprehensive travel guide that friends would find useful and exciting.`;
+🌟 TRIP OVERVIEW
+📍 Destination: ${trip.destination}
+📅 Duration: [dates]
+🎯 Trip Style: ${tripType}
+💰 Total Budget: $${totalBudget}
+🎪 Total Activities: ${totalActivities}
+
+📋 DAILY ITINERARY
+For each day, format as:
+
+🗓️ DAY [X] - [Date]
+📍 [Location Focus]
+
+⏰ [Time] - [Activity Name]
+📍 [Location]
+💰 Cost: $[amount] (if applicable)
+ℹ️ [Brief description]
+
+💡 TRAVEL ESSENTIALS
+🎒 What to Pack: [list with emojis]
+🌡️ Weather Tips: [weather advice]
+💳 Budget Tips: [money-saving advice]
+🚗 Transportation: [transport recommendations]
+
+🏆 LOCAL HIGHLIGHTS
+🍽️ Must-Try Food: [local cuisine recommendations]
+📸 Photo Spots: [best photography locations]
+🎭 Cultural Experiences: [cultural activities]
+
+📞 IMPORTANT INFO
+🚨 Emergency: [emergency numbers]
+💱 Currency: [local currency info]
+🗣️ Language: [language tips]
+
+Make it engaging, informative, and visually appealing with plenty of emojis and clear sections!`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: "You are a professional travel writer creating comprehensive itinerary summaries. Write in an engaging, informative style that makes travelers excited about their trip."
+          content: "You are a professional travel writer creating visually appealing itinerary summaries. Use emojis, clear sections, and engaging language. DO NOT use markdown formatting. Use plain text with emojis and clear visual hierarchy."
         },
         {
           role: "user",
@@ -193,35 +222,40 @@ Format as a comprehensive travel guide that friends would find useful and exciti
       total + day.activities.reduce((dayTotal: number, activity: any) => 
         dayTotal + (activity.cost || 0), 0), 0);
 
-    return `# ${trip.destination} Travel Itinerary
+    return `🌟 ${trip.destination.toUpperCase()} TRAVEL ITINERARY
 
-## Trip Overview
-- **Destination:** ${trip.destination}
-- **Dates:** ${new Date(trip.startDate).toLocaleDateString()} - ${new Date(trip.endDate).toLocaleDateString()}
-- **Trip Style:** ${tripType}
-- **Total Activities:** ${totalActivities}
-- **Estimated Budget:** $${totalBudget}
+📍 Destination: ${trip.destination}
+📅 Dates: ${new Date(trip.startDate).toLocaleDateString()} - ${new Date(trip.endDate).toLocaleDateString()}
+🎯 Trip Style: ${tripType}
+🎪 Total Activities: ${totalActivities}
+💰 Estimated Budget: $${totalBudget}
 
-## Daily Breakdown
+📋 DAILY ITINERARY
 ${dayItineraries.map((day, index) => `
-### Day ${index + 1} - ${new Date(day.date).toLocaleDateString()}
+🗓️ DAY ${index + 1} - ${new Date(day.date).toLocaleDateString()}
 ${day.activities.map((activity: any) => `
-- **${activity.startTime}** - ${activity.title}
-  - Duration: ${activity.startTime} - ${activity.endTime}
-  - Cost: ${activity.cost ? `$${activity.cost}` : 'Free'}
+⏰ ${activity.startTime} - ${activity.title}
+📍 ${activity.location}
+💰 Cost: ${activity.cost ? `$${activity.cost}` : 'Free'}
 `).join('')}
 `).join('')}
 
-## Budget Summary
-- **Total Estimated Cost:** $${totalBudget}
-- **Average per Day:** $${Math.round(totalBudget / dayItineraries.length)}
+💡 TRAVEL ESSENTIALS
+🎒 Pack comfortable walking shoes and weather-appropriate clothing
+💳 Budget wisely and keep track of expenses
+🚗 Use local transportation when possible
+📱 Keep important contacts and maps downloaded
 
-## Travel Tips
-- Book accommodations in advance
-- Check local weather conditions
-- Bring comfortable walking shoes
-- Keep copies of important documents
+🏆 LOCAL HIGHLIGHTS
+🍽️ Try local specialties and street food
+📸 Capture memories at scenic viewpoints
+🎭 Immerse yourself in local culture
 
-Generated by Exotic70 Travel Planner`;
+📞 IMPORTANT INFO
+🚨 Keep emergency contacts handy
+💱 Exchange currency at official locations
+🗣️ Learn basic local phrases
+
+✨ Generated by Exotic70 Travel Planner ✨`;
   }
 };

@@ -232,8 +232,8 @@ Best regards`);
             </span>
           </div>
           
-          <div className="prose prose-gray max-w-none">
-            <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+          <div className="max-w-none">
+            <div className="whitespace-pre-wrap text-gray-700 leading-relaxed text-base">
               {summaryContent}
             </div>
           </div>
