@@ -11,7 +11,7 @@ interface TripPlannerProps {
   favorites?: string[];
 }
 
-export const TripPlanner: React.FC<TripPlannerProps> = ({ 
+export const Header: React.FC<TripPlannerProps> = ({ 
   onTripCreate, 
   onInspireMe, 
   inspirationDestination,
