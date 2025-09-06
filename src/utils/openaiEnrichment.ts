@@ -232,12 +232,15 @@ Make it engaging, informative, and visually appealing with plenty of emojis and 
 
 📋 DAILY ITINERARY
 ${dayItineraries.map((day, index) => `
+═══════════════════════════════════════
 🗓️ DAY ${index + 1} - ${new Date(day.date).toLocaleDateString()}
+═══════════════════════════════════════
 ${day.activities.map((activity: any) => `
 ⏰ ${activity.startTime} - ${activity.title}
 📍 ${activity.location}
 💰 Cost: ${activity.cost ? `$${activity.cost}` : 'Free'}
 `).join('')}
+
 `).join('')}
 
 💡 TRAVEL ESSENTIALS

@@ -500,11 +500,11 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
             />
             
             {/* Confirm Itinerary Button */}
-            <div className="mt-8 flex justify-center">
+           <div className="mt-8 text-center">
               <button
                 onClick={handleConfirmItinerary}
                 disabled={isGeneratingSummary}
-                className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-green-600 hover:to-blue-600 transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center space-x-2 mx-auto"
+               className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-green-600 hover:to-blue-600 transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center space-x-2"
               >
                 {isGeneratingSummary ? (
                   <>
@@ -514,13 +514,14 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
                 ) : (
                   <>
                     <FileText className="h-5 w-5" />
-                    <span>🎯 Generate Itinerary</span>
+                   <span>🎯 Final Itinerary</span>
                   </>
                 )}
               </button>
-              <p className="text-gray-600 text-sm mt-2">
-                Creates final itinerary and generates shareable summary
-              </p>
+           </div>
+           <p className="text-gray-600 text-sm mt-3 text-center">
+             Creates final itinerary and generates shareable summary
+           </p>
             </div>
           </>
         )}

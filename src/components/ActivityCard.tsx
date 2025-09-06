@@ -188,30 +188,30 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
 
           {/* Content - Left Side */}
           <div className="flex-1 pr-4">
-            <div className="p-6">
+           <div className="p-4">
               {/* Activity Number and Title */}
-              <div className="mb-2">
+             <div className="mb-3">
                 <div className="flex items-start justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1 flex-1">
+                 <h3 className="text-lg font-semibold text-gray-900 mb-2 flex-1">
                     <span className="text-orange-500 font-bold mr-2">{activityNumber}.</span>
                     {enrichedData?.title || activity.title}
                   </h3>
                   
                   {/* Right Side Action Buttons */}
-                  <div className="flex flex-col items-center space-y-3 ml-6">
+                 <div className="flex flex-col items-center space-y-2 ml-4">
                     {/* AI Enhance Button */}
                     <button
                       onClick={handleEnrichActivity}
                       disabled={isEnriching}
-                      className="flex items-center space-x-2 px-3 py-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors border border-purple-200 text-sm font-medium"
-                      title="Get AI-powered insights and recommendations"
+                     className="flex items-center space-x-2 px-3 py-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors border border-purple-200 text-sm font-medium"
+                     title="Get detailed insights and recommendations"
                     >
                       {isEnriching ? (
                         <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
                       ) : (
-                        <Wand2 className="h-4 w-4" />
+                       <Info className="h-4 w-4" />
                       )}
-                      <span>AI Enhance</span>
+                     <span>More Details</span>
                     </button>
                     
                     {/* Alternate Suggestion Button */}
@@ -247,13 +247,13 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                 
                 {/* Enhanced Description */}
                 {enrichedData && (
-                  <p className="text-gray-700 mb-3 leading-relaxed">
+                 <p className="text-gray-700 mb-2 leading-relaxed">
                     {enrichedData.description}
                   </p>
                 )}
                 
                 {/* Category and Status */}
-                <div className="flex items-center space-x-3 mb-2">
+               <div className="flex items-center space-x-3 mb-3">
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${categoryColor}`}>
                     {categoryLabel}
                   </span>
@@ -274,7 +274,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
               </div>
 
               {/* Activity Details */}
-              <div className="space-y-2 text-sm text-gray-600 mb-4">
+             <div className="space-y-2 text-sm text-gray-600 mb-3">
                 {/* Time */}
                 <div className="flex items-center space-x-2">
                   <Clock className="h-4 w-4 text-gray-400" />
@@ -319,17 +319,17 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
 
               {/* AI Enhanced Content */}
               {enrichedData && showDetails && (
-                <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4 mb-4">
+               <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4 mb-3">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="font-medium text-gray-900 flex items-center">
                       <Sparkles className="h-4 w-4 mr-1 text-purple-600" />
-                      AI-Enhanced Details
+                     Detailed Information
                     </h4>
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => setShowDetails(false)}
                         className="text-gray-400 hover:text-gray-600 transition-colors px-2 py-1 rounded text-sm font-medium"
-                        title="Close AI details"
+                       title="Close details"
                       >
                         Cancel
                       </button>
@@ -391,13 +391,13 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
               
               {/* Show Details Button when collapsed */}
               {enrichedData && !showDetails && (
-                <div className="mb-4">
+               <div className="mb-3">
                   <button
                     onClick={() => setShowDetails(true)}
                     className="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center space-x-1"
                   >
-                    <Sparkles className="h-4 w-4" />
-                    <span>Show AI Details</span>
+                   <Info className="h-4 w-4" />
+                   <span>Show Details</span>
                   </button>
                 </div>
               )}
@@ -407,7 +407,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
 
         {/* Voting Section */}
         {onVote && (
-          <div className="border-t border-gray-100 px-6 py-4">
+         <div className="border-t border-gray-100 px-4 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-1">
