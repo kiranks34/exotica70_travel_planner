@@ -74,11 +74,11 @@ export const LoadingModal: React.FC<LoadingModalProps> = ({ destination, isVisib
         </h2>
         
         <div className="space-y-3 text-gray-600">
-          <p className="text-lg font-medium text-orange-600 text-left">
+          <p className="text-lg font-medium text-orange-600 text-center">
             Destination: {destination}
           </p>
           
-          <div className="space-y-2 text-sm text-left">
+          <div className="space-y-2 text-sm text-center">
             <div className="flex items-start space-x-2">
               <div className={`w-2 h-2 rounded-full mt-2 ${currentStep >= 0 ? 'bg-orange-500' : 'bg-gray-300'} ${currentStep === 0 ? 'animate-pulse' : ''}`}></div>
               <span className={currentStep === 0 ? 'font-medium' : ''}>Analyzing your preferences...</span>
