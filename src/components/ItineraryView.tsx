@@ -3,12 +3,18 @@ import { DayPlanner } from './DayPlanner';
 import { ActivityModal } from './ActivityModal';
 import { ShareModal } from './ShareModal';
 import { AIInsightsModal } from './AIInsightsModal';
+import { VotingSummary } from './VotingSummary';
 import { Trip, DayItinerary, Activity } from '../types';
 import { generateDayItineraries } from '../utils/tripUtils';
 import { generateActivitySuggestions } from '../utils/activitySuggestions';
 import { ArrowLeft, Share2, Plus, Calendar, MapPin, Lightbulb } from 'lucide-react';
 import { AITripInsights } from '../utils/aiTripConverter';
 
+interface VoteCounts {
+  yes: number;
+  no: number;
+  maybe: number;
+}
 interface ItineraryViewProps {
   trip: Trip;
   tripType?: string;
@@ -31,6 +37,8 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
   const [showAIInsights, setShowAIInsights] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [userVotes, setUserVotes] = useState<{[activityId: string]: 'yes' | 'no' | 'maybe'}>({});
+  const [voteCounts, setVoteCounts] = useState<{[activityId: string]: VoteCounts}>({});
 
   // Load trip data and votes on component mount
   React.useEffect(() => {
@@ -50,6 +58,15 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
         
         setDayItineraries(initialDayItineraries);
         setSelectedDay(initialDayItineraries[0] || null);
+        
+        // Initialize vote counts for all activities
+        const initialVoteCounts: {[activityId: string]: VoteCounts} = {};
+        initialDayItineraries.forEach(day => {
+          day.activities.forEach(activity => {
+            initialVoteCounts[activity.id] = { yes: 0, no: 0, maybe: 0 };
+          });
+        });
+        setVoteCounts(initialVoteCounts);
         
       } catch (error) {
         console.error('Error loading trip data:', error);
@@ -149,6 +166,13 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
           : day
       )
     );
+    
+    // Initialize vote counts for new activity
+    setVoteCounts(prev => ({
+      ...prev,
+      [activity.id]: { yes: 0, no: 0, maybe: 0 }
+    }));
+    
     setShowActivityModal(false);
     setEditingActivity(null);
   };
@@ -166,6 +190,19 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
           : day
       )
     );
+    
+    // Remove votes for deleted activity
+    setUserVotes(prev => {
+      const newVotes = { ...prev };
+      delete newVotes[activityId];
+      return newVotes;
+    });
+    
+    setVoteCounts(prev => {
+      const newCounts = { ...prev };
+      delete newCounts[activityId];
+      return newCounts;
+    });
     
     // Update selected day if it's the one being modified
     if (selectedDay?.id === dayId) {
@@ -196,6 +233,33 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
     }
   };
 
+  const handleVote = (activityId: string, vote: 'yes' | 'no' | 'maybe') => {
+    const previousVote = userVotes[activityId];
+    
+    // Update user vote
+    setUserVotes(prev => ({
+      ...prev,
+      [activityId]: vote
+    }));
+    
+    // Update vote counts
+    setVoteCounts(prev => {
+      const newCounts = { ...prev };
+      if (!newCounts[activityId]) {
+        newCounts[activityId] = { yes: 0, no: 0, maybe: 0 };
+      }
+      
+      // Remove previous vote if exists
+      if (previousVote) {
+        newCounts[activityId][previousVote] = Math.max(0, newCounts[activityId][previousVote] - 1);
+      }
+      
+      // Add new vote
+      newCounts[activityId][vote] += 1;
+      
+      return newCounts;
+    });
+  };
   const tripDuration = new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime();
   const dayCount = Math.ceil(tripDuration / (1000 * 60 * 60 * 24)) + 1;
 
@@ -317,6 +381,9 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
                 onDeleteActivity={handleDeleteActivity}
                 onUpdateNotes={handleUpdateNotes}
                onUpdateDay={handleUpdateDay}
+               userVotes={userVotes}
+               voteCounts={voteCounts}
+               onVote={handleVote}
               />
             ) : (
               <div className="bg-white rounded-xl shadow-sm p-12 text-center">
@@ -331,6 +398,15 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
             )}
           </div>
         </div>
+        )}
+        
+        {/* Voting Summary */}
+        {!isLoading && dayItineraries.length > 0 && (
+          <VotingSummary
+            dayItineraries={dayItineraries}
+            voteCounts={voteCounts}
+            userVotes={userVotes}
+          />
         )}
       </div>
 

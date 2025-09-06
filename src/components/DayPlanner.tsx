@@ -4,6 +4,12 @@ import { DayItinerary, Activity } from '../types';
 import { generateActivitySuggestions } from '../utils/activitySuggestions';
 import { Plus, FileText, Calendar } from 'lucide-react';
 
+interface VoteCounts {
+  yes: number;
+  no: number;
+  maybe: number;
+}
+
 interface DayPlannerProps {
   day: DayItinerary;
   destination: string;
@@ -13,6 +19,9 @@ interface DayPlannerProps {
   onDeleteActivity: (dayId: string, activityId: string) => void;
   onUpdateNotes: (dayId: string, notes: string) => void;
   onUpdateDay: (updatedDay: DayItinerary) => void;
+  userVotes?: {[activityId: string]: 'yes' | 'no' | 'maybe'};
+  voteCounts?: {[activityId: string]: VoteCounts};
+  onVote?: (activityId: string, vote: 'yes' | 'no' | 'maybe') => void;
 }
 
 export const DayPlanner: React.FC<DayPlannerProps> = ({
@@ -24,6 +33,9 @@ export const DayPlanner: React.FC<DayPlannerProps> = ({
   onDeleteActivity,
   onUpdateNotes,
   onUpdateDay,
+  userVotes,
+  voteCounts,
+  onVote,
 }) => {
   const [notes, setNotes] = useState(day.notes);
   const [showNotes, setShowNotes] = useState(false);
@@ -167,6 +179,9 @@ export const DayPlanner: React.FC<DayPlannerProps> = ({
               onAISuggest={() => handleAISuggest(activity)}
               onUndo={() => handleUndo(activity.id)}
               hasUndo={activityHistory[activity.id]?.length > 0}
+              userVote={userVotes?.[activity.id]}
+              voteCounts={voteCounts?.[activity.id]}
+              onVote={onVote}
             />
           ))
         ) : (

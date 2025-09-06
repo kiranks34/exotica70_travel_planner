@@ -1,8 +1,14 @@
 import React from 'react';
 import { Activity } from '../types';
-import { Clock, MapPin, Edit2, Trash2, DollarSign, Sparkles, Undo2, ThumbsUp, ThumbsDown, Meh } from 'lucide-react';
+import { Clock, MapPin, Edit2, Trash2, DollarSign, Sparkles, Undo2, ThumbsUp, ThumbsDown, Meh, Users } from 'lucide-react';
 import { getDestinationThumbnail, getActivityAddress, getActivityPhoneNumber } from '../utils/destinationImages';
 import { getCategoryColor, getCategoryLabel, shouldShowPrice } from '../utils/categoryUtils';
+
+interface VoteCounts {
+  yes: number;
+  no: number;
+  maybe: number;
+}
 
 interface ActivityCardProps {
   activity: Activity;
@@ -13,6 +19,9 @@ interface ActivityCardProps {
   onAISuggest?: () => void;
   onUndo?: () => void;
   hasUndo?: boolean;
+  userVote?: 'yes' | 'no' | 'maybe';
+  voteCounts?: VoteCounts;
+  onVote?: (activityId: string, vote: 'yes' | 'no' | 'maybe') => void;
 }
 
 export const ActivityCard: React.FC<ActivityCardProps> = ({
@@ -24,6 +33,9 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   onAISuggest,
   onUndo,
   hasUndo = false,
+  userVote,
+  voteCounts,
+  onVote,
 }) => {
   const startTime = new Date(`2000-01-01T${activity.startTime}`);
   const endTime = new Date(`2000-01-01T${activity.endTime}`);
@@ -56,6 +68,23 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
     }
   };
 
+  const handleVote = (vote: 'yes' | 'no' | 'maybe') => {
+    if (onVote) {
+      onVote(activity.id, vote);
+    }
+  };
+
+  const getTotalVotes = () => {
+    if (!voteCounts) return 0;
+    return voteCounts.yes + voteCounts.no + voteCounts.maybe;
+  };
+
+  const getVotePercentage = (voteType: 'yes' | 'no' | 'maybe') => {
+    if (!voteCounts) return 0;
+    const total = getTotalVotes();
+    if (total === 0) return 0;
+    return Math.round((voteCounts[voteType] / total) * 100);
+  };
   return (
     <div className="relative group">
       {/* Edit/Delete Buttons - Outside card, top right */}
@@ -74,6 +103,121 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
         </button>
       </div>
 
+        {/* Voting Section */}
+        {onVote && (
+          <div className="border-t border-gray-100 px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-1">
+                  <Users className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm font-medium text-gray-700">What do you think?</span>
+                </div>
+                
+                {/* Voting Buttons */}
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => handleVote('yes')}
+                    className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                      userVote === 'yes'
+                        ? 'bg-green-500 text-white shadow-md transform scale-105'
+                        : 'bg-green-100 text-green-700 hover:bg-green-200 hover:shadow-sm'
+                    }`}
+                  >
+                    <ThumbsUp className="h-4 w-4" />
+                    <span>Yes</span>
+                    {voteCounts && voteCounts.yes > 0 && (
+                      <span className="bg-white bg-opacity-30 px-1.5 py-0.5 rounded-full text-xs">
+                        {voteCounts.yes}
+                      </span>
+                    )}
+                  </button>
+                  
+                  <button
+                    onClick={() => handleVote('maybe')}
+                    className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                      userVote === 'maybe'
+                        ? 'bg-yellow-500 text-white shadow-md transform scale-105'
+                        : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200 hover:shadow-sm'
+                    }`}
+                  >
+                    <Meh className="h-4 w-4" />
+                    <span>Maybe</span>
+                    {voteCounts && voteCounts.maybe > 0 && (
+                      <span className="bg-white bg-opacity-30 px-1.5 py-0.5 rounded-full text-xs">
+                        {voteCounts.maybe}
+                      </span>
+                    )}
+                  </button>
+                  
+                  <button
+                    onClick={() => handleVote('no')}
+                    className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                      userVote === 'no'
+                        ? 'bg-red-500 text-white shadow-md transform scale-105'
+                        : 'bg-red-100 text-red-700 hover:bg-red-200 hover:shadow-sm'
+                    }`}
+                  >
+                    <ThumbsDown className="h-4 w-4" />
+                    <span>No</span>
+                    {voteCounts && voteCounts.no > 0 && (
+                      <span className="bg-white bg-opacity-30 px-1.5 py-0.5 rounded-full text-xs">
+                        {voteCounts.no}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </div>
+              
+              {/* Vote Summary */}
+              {voteCounts && getTotalVotes() > 0 && (
+                <div className="text-sm text-gray-600">
+                  <span className="font-medium">{getTotalVotes()}</span> vote{getTotalVotes() !== 1 ? 's' : ''}
+                  {userVote && (
+                    <span className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded-full">
+                      You voted: <span className="font-medium capitalize">{userVote}</span>
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            {/* Vote Progress Bars */}
+            {voteCounts && getTotalVotes() > 0 && (
+              <div className="mt-3 space-y-1">
+                <div className="flex items-center space-x-2 text-xs">
+                  <div className="w-12 text-green-600 font-medium">Yes</div>
+                  <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                    <div 
+                      className="bg-green-500 h-1.5 rounded-full transition-all duration-300"
+                      style={{ width: `${getVotePercentage('yes')}%` }}
+                    />
+                  </div>
+                  <div className="w-8 text-gray-600">{getVotePercentage('yes')}%</div>
+                </div>
+                <div className="flex items-center space-x-2 text-xs">
+                  <div className="w-12 text-yellow-600 font-medium">Maybe</div>
+                  <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                    <div 
+                      className="bg-yellow-500 h-1.5 rounded-full transition-all duration-300"
+                      style={{ width: `${getVotePercentage('maybe')}%` }}
+                    />
+                  </div>
+                  <div className="w-8 text-gray-600">{getVotePercentage('maybe')}%</div>
+                </div>
+                <div className="flex items-center space-x-2 text-xs">
+                  <div className="w-12 text-red-600 font-medium">No</div>
+                  <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                    <div 
+                      className="bg-red-500 h-1.5 rounded-full transition-all duration-300"
+                      style={{ width: `${getVotePercentage('no')}%` }}
+                    />
+                  </div>
+                  <div className="w-8 text-gray-600">{getVotePercentage('no')}%</div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       <div className="bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-orange-200 transition-all duration-200">
         <div className="flex items-start p-6">
           {/* Content - Left Side */}
