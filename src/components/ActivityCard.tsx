@@ -109,6 +109,61 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
         </button>
       </div>
 
+      <div className="bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-orange-200 transition-all duration-200">
+        <div className="flex items-start p-6">
+          {/* Content - Left Side */}
+          <div className="flex-1 pr-6">
+            {/* Activity Number and Title */}
+            <div className="mb-3">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <span className="text-orange-500 font-bold mr-2">{activityNumber}.</span>
+                {activity.title}
+              </h3>
+              
+              {/* Category and Status */}
+              <div className="flex items-center space-x-3 mb-3">
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${categoryColor}`}>
+                  {categoryLabel}
+                </span>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(activity.bookedStatus)}`}>
+                  {activity.bookedStatus.replace('-', ' ')}
+                </span>
+              </div>
+            </div>
+          
+            {/* Activity Details */}
+            <div className="space-y-3 text-sm text-gray-600 mb-4">
+              {/* Time */}
+              <div className="flex items-center space-x-2">
+                <Clock className="h-4 w-4 text-gray-400" />
+                <span>
+                  {startTime.toLocaleTimeString('en-US', { 
+                    hour: 'numeric', 
+                    minute: '2-digit',
+                    hour12: true 
+                  })} - {endTime.toLocaleTimeString('en-US', { 
+                    hour: 'numeric', 
+                    minute: '2-digit',
+                    hour12: true 
+                  })}
+                </span>
+              </div>
+              
+              {/* Address with Google Maps */}
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={handleMapClick}
+                  className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
+                  title="Open in Google Maps"
+                >
+                  <MapPin className="h-4 w-4" />
+                  <span>{preciseAddress}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Voting Section */}
         {onVote && (
           <div className="border-t border-gray-100 px-6 py-4">
@@ -224,115 +279,6 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
             )}
           </div>
         )}
-      <div className="bg-white rounded-xl shadow-sm border-2 border-transparent hover:border-orange-200 transition-all duration-200">
-        <div className="flex items-start p-6">
-          {/* Content - Left Side */}
-          <div className="flex-1 pr-6">
-            {/* Activity Number and Title */}
-            <div className="mb-3">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                <span className="text-orange-500 font-bold mr-2">{activityNumber}.</span>
-                {activity.title}
-              </h3>
-              
-              {/* Category and Status */}
-              <div className="flex items-center space-x-3 mb-3">
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${categoryColor}`}>
-                  {categoryLabel}
-                </span>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(activity.bookedStatus)}`}>
-                  {activity.bookedStatus.replace('-', ' ')}
-                </span>
-              </div>
-            </div>
-          
-          {/* Activity Details */}
-          <div className="space-y-3 text-sm text-gray-600 mb-4">
-            {/* Time */}
-            <div className="flex items-center space-x-2">
-              <Clock className="h-4 w-4 text-gray-400" />
-              <span>
-                {startTime.toLocaleTimeString('en-US', { 
-                  hour: 'numeric', 
-                  minute: '2-digit',
-                  hour12: true 
-                })} - {endTime.toLocaleTimeString('en-US', { 
-                  hour: 'numeric', 
-                  minute: '2-digit',
-                  hour12: true 
-                })}
-              </span>
-            </div>
-            
-            {/* Address with Google Maps */}
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handleMapClick}
-                className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
-                title="Open in Google Maps"
-        <div className="px-6 py-4 bg-gray-50 rounded-b-xl">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700">What do you think?</span>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => handleVote('yes')}
-                className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                  userVote === 'yes'
-                    ? 'bg-green-500 text-white shadow-md'
-                    : 'bg-white text-green-600 border border-green-200 hover:bg-green-50'
-                }`}
-              >
-                <ThumbsUp className="h-4 w-4" />
-                <span>Yes</span>
-                {voteCounts && voteCounts.yes > 0 && (
-                  <span className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${
-                    userVote === 'yes' ? 'bg-white bg-opacity-30' : 'bg-green-100'
-                  }`}>
-                    {voteCounts.yes}
-                  </span>
-                )}
-              </button>
-              
-              <button
-                onClick={() => handleVote('maybe')}
-                className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                  userVote === 'maybe'
-                    ? 'bg-yellow-500 text-white shadow-md'
-                    : 'bg-white text-yellow-600 border border-yellow-200 hover:bg-yellow-50'
-                }`}
-              >
-                <Meh className="h-4 w-4" />
-                <span>Maybe</span>
-                {voteCounts && voteCounts.maybe > 0 && (
-                  <span className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${
-                    userVote === 'maybe' ? 'bg-white bg-opacity-30' : 'bg-yellow-100'
-                  }`}>
-                    {voteCounts.maybe}
-                  </span>
-                )}
-              </button>
-              
-              <button
-                onClick={() => handleVote('no')}
-                className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                  userVote === 'no'
-                    ? 'bg-red-500 text-white shadow-md'
-                    : 'bg-white text-red-600 border border-red-200 hover:bg-red-50'
-                }`}
-              >
-                <ThumbsDown className="h-4 w-4" />
-                <span>No</span>
-                {voteCounts && voteCounts.no > 0 && (
-                  <span className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${
-                    userVote === 'no' ? 'bg-white bg-opacity-30' : 'bg-red-100'
-                  }`}>
-                    {voteCounts.no}
-                  </span>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
