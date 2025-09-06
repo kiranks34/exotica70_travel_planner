@@ -34,7 +34,7 @@ const validVibes = ['Adventure', 'Chill', 'Party', 'Culture', 'Spontaneous', 'ad
 // Generate Itinerary Endpoint
 app.post('/api/generate-itinerary', async (req, res) => {
   try {
-    const { destination, vibe, days, start_date, budget, group_size } = req.body;
+    const { destination, vibe, days, budget, startDate, groupSize } = req.body;
 
     if (!destination || !vibe || !days || !budget) {
       return res.status(400).json({ 
@@ -60,8 +60,8 @@ app.post('/api/generate-itinerary', async (req, res) => {
       });
     }
 
-    const groupSize = group_size || 2;
-    const startDate = start_date || 'flexible';
+    const finalGroupSize = groupSize || 2;
+    const finalStartDate = startDate || 'flexible';
     
     // Generate fallback itinerary
     const costPerDay = Math.floor(budget / days / 4);
@@ -115,7 +115,7 @@ app.post('/api/generate-itinerary', async (req, res) => {
         days,
         budget,
         vibe,
-        group_size: groupSize,
+        group_size: finalGroupSize,
         currency: 'USD'
       },
       days: fallbackDays,
@@ -146,7 +146,7 @@ app.post('/api/generate-itinerary', async (req, res) => {
             vibe,
             days,
             budget,
-            start_date: start_date || null,
+            start_date: finalStartDate === 'flexible' ? null : finalStartDate,
             itinerary: itineraryData,
             created_at: new Date().toISOString()
           })
@@ -174,8 +174,10 @@ app.post('/api/generate-itinerary', async (req, res) => {
 
   } catch (error) {
     console.error('Server error:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).json({ 
-      error: 'Internal server error' 
+      error: 'Internal server error',
+      details: error.message
     });
   }
 });
