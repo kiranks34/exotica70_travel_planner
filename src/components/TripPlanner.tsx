@@ -486,8 +486,8 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                     step="100"
                     value={budgetMin}
                     onChange={(e) => handleBudgetMinChange(parseInt(e.target.value))}
-                    className="absolute top-0 w-full h-2 bg-transparent appearance-none cursor-pointer range-slider pointer-events-auto"
-                    style={{ zIndex: 2 }}
+                    className="absolute top-0 w-full h-2 bg-transparent appearance-none cursor-pointer range-slider"
+                    style={{ zIndex: 1 }}
                   />
                   
                   {/* Max Range Input */}
@@ -498,8 +498,8 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                     step="100"
                     value={budgetMax}
                     onChange={(e) => handleBudgetMaxChange(parseInt(e.target.value))}
-                    className="absolute top-0 w-full h-2 bg-transparent appearance-none cursor-pointer range-slider pointer-events-auto"
-                    style={{ zIndex: 1 }}
+                    className="absolute top-0 w-full h-2 bg-transparent appearance-none cursor-pointer range-slider"
+                    style={{ zIndex: 2 }}
                   />
                   
                   <style jsx>{`
@@ -512,7 +512,8 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                       cursor: pointer;
                       border: 2px solid white;
                       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                      pointer-events: all;
+                      position: relative;
+                      z-index: 999;
                     }
                     .range-slider::-moz-range-thumb {
                       width: 20px;
@@ -522,7 +523,8 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                       cursor: pointer;
                       border: 2px solid white;
                       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                      pointer-events: all;
+                      position: relative;
+                      z-index: 999;
                     }
                   `}</style>
                 </div>
