@@ -235,8 +235,7 @@ app.get('/api/trip/:id', async (req, res) => {
       
       console.log('[GET_TRIP] Returning demo trip data');
       return res.status(200).json({
-        trip: demoTrip,
-        votes: {}
+        trip: demoTrip
       });
     }
 
@@ -263,35 +262,9 @@ app.get('/api/trip/:id', async (req, res) => {
         return res.status(500).json({ error: 'SERVER_ERROR' });
       }
 
-      // Fetch votes for this trip (if votes table exists)
-      let votes = {};
-      try {
-        const { data: votesData, error: votesError } = await supabase
-          .from('votes')
-          .select('activity_id, choice')
-          .eq('trip_id', id);
-
-        if (!votesError && votesData) {
-          // Aggregate votes by activity_id
-          votesData.forEach(vote => {
-            const { activity_id, choice } = vote;
-            
-            if (!votes[activity_id]) {
-              votes[activity_id] = { yes: 0, no: 0, maybe: 0 };
-            }
-            
-            if (choice && ['yes', 'no', 'maybe'].includes(choice)) {
-              votes[activity_id][choice]++;
-            }
-          });
-        }
-      } catch (votesError) {
-        console.log('[GET_TRIP] Votes table not available, continuing without votes');
-      }
       console.log('[GET_TRIP] Trip data fetched successfully');
       res.status(200).json({
-        trip: tripData,
-        votes
+        trip: tripData
       });
     } catch (dbError) {
       console.error('[GET_TRIP] Database connection error:', dbError);
@@ -304,65 +277,6 @@ app.get('/api/trip/:id', async (req, res) => {
   }
 });
 
-// Vote on Activity Endpoint
-app.post('/api/vote', async (req, res) => {
-  try {
-    const { trip_id, activity_id, voter_id, choice } = req.body;
-
-    // Validate required fields
-    if (!trip_id || !activity_id || !voter_id || !choice) {
-      return res.status(400).json({ 
-        error: 'Missing required fields: trip_id, activity_id, voter_id, choice' 
-      });
-    }
-
-    // Validate choice
-    if (!['yes', 'no', 'maybe'].includes(choice)) {
-      return res.status(400).json({ 
-        error: 'Choice must be one of: yes, no, maybe' 
-      });
-    }
-
-    console.log('[VOTE] Recording vote:', { trip_id, activity_id, voter_id, choice });
-
-    // If no database, return success (for demo mode)
-    if (!supabase) {
-      console.log('[VOTE] Database not configured, returning demo success');
-      return res.status(200).json({ success: true });
-    }
-
-    try {
-      // Insert or update vote
-      const { data, error } = await supabase
-        .from('votes')
-        .upsert({
-          trip_id,
-          activity_id,
-          voter_id,
-          choice,
-          created_at: new Date().toISOString()
-        }, {
-          onConflict: 'trip_id,activity_id,voter_id'
-        });
-
-      if (error) {
-        console.error('[VOTE] Database error:', error);
-        return res.status(500).json({ error: 'Failed to record vote' });
-      }
-
-      console.log('[VOTE] Vote recorded successfully');
-      res.status(200).json({ success: true });
-
-    } catch (dbError) {
-      console.error('[VOTE] Database connection error:', dbError);
-      return res.status(500).json({ error: 'DATABASE_CONNECTION_ERROR' });
-    }
-
-  } catch (error) {
-    console.error('[VOTE] Server error:', error);
-    res.status(500).json({ error: 'SERVER_ERROR' });
-  }
-});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

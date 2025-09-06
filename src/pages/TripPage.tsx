@@ -57,7 +57,6 @@ const TripPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
   const [userVotes, setUserVotes] = useState<{[activityId: string]: string}>({});
-  const [voterId] = useState(() => `voter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
 
   // Fetch trip data
   const fetchTripData = async () => {
@@ -98,33 +97,9 @@ const TripPage: React.FC = () => {
     }
   };
 
-  // Vote on activity
-  const handleVote = async (activityId: string, choice: 'yes' | 'no' | 'maybe') => {
-    if (!id) return;
-    
-    try {
-      const response = await fetch('/api/vote', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          trip_id: id,
-          activity_id: activityId,
-          voter_id: voterId,
-          choice
-        })
-      });
-
-      if (response.ok) {
-        // Update local vote state
-        setUserVotes(prev => ({ ...prev, [activityId]: choice }));
-        // Refresh trip data to get updated vote counts
-        fetchTripData();
-      }
-    } catch (err) {
-      console.error('Error voting:', err);
-    }
+  // Simplified voting - just local state for now
+  const handleVote = (activityId: string, choice: 'yes' | 'no' | 'maybe') => {
+    setUserVotes(prev => ({ ...prev, [activityId]: choice }));
   };
   // Calculate total spent
   const calculateTotalSpent = (): number => {
@@ -137,16 +112,6 @@ const TripPage: React.FC = () => {
     }, 0);
   };
 
-  // Get vote counts for an activity
-  const getVoteCounts = (activityId: string): VoteCounts => {
-    return tripData?.votes?.[activityId] || { yes: 0, no: 0, maybe: 0 };
-  };
-
-  // Get total votes for an activity
-  const getTotalVotes = (activityId: string): number => {
-    const counts = getVoteCounts(activityId);
-    return counts.yes + counts.no + counts.maybe;
-  };
   // Loading state
   if (loading) {
     return (
@@ -308,8 +273,6 @@ const TripPage: React.FC = () => {
 
               <div className="space-y-4">
                 {day.activities.map((activity) => {
-                  const voteCounts = getVoteCounts(activity.id);
-                  const totalVotes = getTotalVotes(activity.id);
                   const userVote = userVotes[activity.id];
 
                   return (
@@ -346,7 +309,7 @@ const TripPage: React.FC = () => {
                                 }`}
                               >
                                 <ThumbsUp className="h-4 w-4" />
-                                <span>Yes ({voteCounts.yes})</span>
+                                <span>Yes</span>
                               </button>
                               <button
                                 onClick={() => handleVote(activity.id, 'maybe')}
@@ -357,7 +320,7 @@ const TripPage: React.FC = () => {
                                 }`}
                               >
                                 <Meh className="h-4 w-4" />
-                                <span>Maybe ({voteCounts.maybe})</span>
+                                <span>Maybe</span>
                               </button>
                               <button
                                 onClick={() => handleVote(activity.id, 'no')}
@@ -368,43 +331,16 @@ const TripPage: React.FC = () => {
                                 }`}
                               >
                                 <ThumbsDown className="h-4 w-4" />
-                                <span>No ({voteCounts.no})</span>
+                                <span>No</span>
                               </button>
                             </div>
                           </div>
-                          {totalVotes > 0 && (
-                            <div className="flex items-center space-x-1 text-sm text-gray-500">
-                              <Users className="h-4 w-4" />
-                              <span>{totalVotes} vote{totalVotes !== 1 ? 's' : ''}</span>
+                          {userVote && (
+                            <div className="text-sm text-gray-500">
+                              Your choice: <span className="font-medium capitalize">{userVote}</span>
                             </div>
                           )}
                         </div>
-
-                        {/* Vote Summary Bar */}
-                        {totalVotes > 0 && (
-                          <div className="mt-3">
-                            <div className="flex h-2 bg-gray-200 rounded-full overflow-hidden">
-                              {voteCounts.yes > 0 && (
-                                <div 
-                                  className="bg-green-500" 
-                                  style={{ width: `${(voteCounts.yes / totalVotes) * 100}%` }}
-                                />
-                              )}
-                              {voteCounts.maybe > 0 && (
-                                <div 
-                                  className="bg-yellow-500" 
-                                  style={{ width: `${(voteCounts.maybe / totalVotes) * 100}%` }}
-                                />
-                              )}
-                              {voteCounts.no > 0 && (
-                                <div 
-                                  className="bg-red-500" 
-                                  style={{ width: `${(voteCounts.no / totalVotes) * 100}%` }}
-                                />
-                              )}
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
 
