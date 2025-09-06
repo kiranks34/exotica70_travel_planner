@@ -1,18 +1,10 @@
 import dotenv from 'dotenv';
-
-// Load environment variables - don't fail if .env doesn't exist
-dotenv.config({ silent: true });
-console.log('✅ Environment variables loaded');
+dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = 3001;
@@ -21,53 +13,29 @@ const PORT = 3001;
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
-console.log('🔍 Checking Supabase configuration...');
-console.log('Supabase URL exists:', !!supabaseUrl);
-console.log('Supabase Key exists:', !!supabaseKey);
-
-let supabase;
-if (supabaseUrl && supabaseKey && !supabaseUrl.includes('your_') && !supabaseKey.includes('your_')) {
-  try {
-    supabase = createClient(supabaseUrl, supabaseKey);
-    console.log('✅ Supabase client initialized successfully');
-  } catch (error) {
-    console.log('❌ Supabase initialization failed:', error.message);
-    supabase = null;
-  }
-} else {
-  console.log('⚠️  Supabase not configured (missing or placeholder values)');
-  supabase = null;
+let supabase = null;
+if (supabaseUrl && supabaseKey && !supabaseUrl.includes('your-project') && !supabaseKey.includes('your-anon-key')) {
+  supabase = createClient(supabaseUrl, supabaseKey);
 }
 
 // Initialize OpenAI client
 const openaiApiKey = process.env.VITE_OPENAI_API_KEY;
-
-console.log('🔍 Checking OpenAI configuration...');
-console.log('OpenAI Key exists:', !!openaiApiKey);
-console.log('OpenAI Key valid format:', openaiApiKey ? openaiApiKey.startsWith('sk-') : false);
-
-let openai;
-if (openaiApiKey && openaiApiKey.startsWith('sk-') && !openaiApiKey.includes('your-')) {
-  try {
-    openai = new OpenAI({
-      apiKey: openaiApiKey,
-    });
-    console.log('✅ OpenAI client initialized successfully');
-  } catch (error) {
-    console.log('❌ OpenAI initialization failed:', error.message);
-    openai = null;
-  }
+let openai = null;
+if (openaiApiKey && openaiApiKey.startsWith('sk-')) {
+  openai = new OpenAI({
+    apiKey: openaiApiKey,
+  });
+  console.log('✅ OpenAI client initialized successfully');
 } else {
-  console.log('⚠️  OpenAI not configured (missing or invalid API key format)');
-  openai = null;
+  console.log('⚠️  OpenAI API key not configured. Using fallback itinerary generation.');
+  console.log('   To enable OpenAI integration:');
+  console.log('   1. Get your API key from https://platform.openai.com/api-keys');
+  console.log('   2. Update VITE_OPENAI_API_KEY in your .env file');
 }
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-
-// Serve static files from dist directory
-app.use(express.static(path.join(__dirname, 'dist')));
 
 // Generate Itinerary Endpoint
 app.post('/api/generate-itinerary', async (req, res) => {
@@ -129,10 +97,6 @@ Rules: keep estimated_total_cost <= budget (hard cap) whenever possible; 3–5 a
     try {
       if (openai) {
         console.log('[GENERATE_ITINERARY] Using OpenAI to generate itinerary...');
-        
-        // Test OpenAI connection first
-        console.log('[GENERATE_ITINERARY] Testing OpenAI connection...');
-        
         const completion = await openai.chat.completions.create({
           model: "gpt-4o-mini",
           messages: [
@@ -146,7 +110,6 @@ Rules: keep estimated_total_cost <= budget (hard cap) whenever possible; 3–5 a
 
         const responseContent = completion.choices[0].message.content;
         console.log('[GENERATE_ITINERARY] ✅ OpenAI response received successfully');
-        console.log('[GENERATE_ITINERARY] Response length:', responseContent?.length || 0);
         
         try {
           itineraryData = JSON.parse(responseContent);
@@ -157,8 +120,7 @@ Rules: keep estimated_total_cost <= budget (hard cap) whenever possible; 3–5 a
         }
       } else {
         console.log('[GENERATE_ITINERARY] ⚠️  OpenAI not configured, using fallback');
-        console.log('[GENERATE_ITINERARY] 💡 To use AI features, add VITE_OPENAI_API_KEY to .env file');
-        throw new Error('OpenAI not available');
+        throw new Error('OpenAI not configured');
       }
     } catch (openaiError) {
       console.log('[GENERATE_ITINERARY] ❌ OpenAI failed, using fallback:', openaiError.message);
@@ -240,49 +202,36 @@ Rules: keep estimated_total_cost <= budget (hard cap) whenever possible; 3–5 a
 
     // Insert into Supabase (if configured)
     let tripId;
-    try {
-      if (supabase) {
-        console.log('[GENERATE_ITINERARY] Saving to Supabase database...');
-        const { data: tripData, error: insertError } = await supabase
-          .from('trips')
-          .insert({
-            destination,
-            vibe,
-            days,
-            budget,
-            start_date: start_date || null,
-            itinerary: itineraryData,
-            created_at: new Date().toISOString()
-          })
-          .select('id')
-          .single();
+    if (supabase) {
+      const { data: tripData, error: insertError } = await supabase
+        .from('trips')
+        .insert({
+          destination,
+          vibe,
+          days,
+          budget,
+          start_date: start_date || null,
+          itinerary: itineraryData,
+          created_at: new Date().toISOString()
+        })
+        .select('id')
+        .single();
 
-        if (insertError) {
-          console.error('[GENERATE_ITINERARY] Supabase error details:', insertError);
-          console.error('[GENERATE_ITINERARY] Database insert error:', insertError);
-          // Don't fail the request, just use fallback ID
-          tripId = 'fallback-' + Date.now();
-          console.log('[GENERATE_ITINERARY] Using fallback trip ID:', tripId);
-        } else if (!tripData || !tripData.id) {
-          console.error('[GENERATE_ITINERARY] No trip ID returned from insert');
-          tripId = 'fallback-' + Date.now();
-          console.log('[GENERATE_ITINERARY] Using fallback trip ID:', tripId);
-        } else {
-          tripId = tripData.id;
-        }
-      } else {
-        // Generate a mock trip ID when database is not configured
-        console.log('[GENERATE_ITINERARY] 💡 To use database features, configure Supabase in .env file');
-        tripId = 'demo-' + Date.now();
-        console.log('[GENERATE_ITINERARY] Database not configured, using demo ID:', tripId);
+      if (insertError) {
+        console.error('[GENERATE_ITINERARY] Database insert error:', insertError);
+        return res.status(500).json({ error: 'Failed to save trip' });
       }
-    } catch (dbError) {
-      console.error('[GENERATE_ITINERARY] Database operation failed:', dbError);
-      // Use fallback ID instead of failing the request
-      tripId = 'fallback-' + Date.now();
-      console.log('[GENERATE_ITINERARY] Using fallback trip ID due to DB error:', tripId);
+
+      if (!tripData || !tripData.id) {
+        console.error('[GENERATE_ITINERARY] No trip ID returned from insert');
+        return res.status(500).json({ error: 'Failed to create trip' });
+      }
+      
+      tripId = tripData.id;
+    } else {
+      // Generate a mock trip ID when database is not configured
+      tripId = 'demo-' + Date.now();
     }
-    
     console.log('[GENERATE_ITINERARY] Trip created successfully:', tripId);
     res.status(200).json({ id: tripId });
 
@@ -437,30 +386,20 @@ app.post('/api/trip/:id/vote', async (req, res) => {
 
     console.log('[VOTE] Recording vote:', { id, activityId, choice, voterId });
 
-    // Only try to save vote if database is configured
-    if (supabase) {
-      try {
-        const { error: voteError } = await supabase
-          .from('votes')
-          .upsert({
-            trip_id: id,
-            activity_id: activityId,
-            voter_id: voterId,
-            choice,
-            created_at: new Date().toISOString()
-          });
+    // Insert or update vote
+    const { error: voteError } = await supabase
+      .from('votes')
+      .upsert({
+        trip_id: id,
+        activity_id: activityId,
+        voter_id: voterId,
+        choice,
+        created_at: new Date().toISOString()
+      });
 
-        if (voteError) {
-          console.error('[VOTE] Database error:', voteError);
-          // Don't fail the request, just log the error
-          console.log('[VOTE] Vote not saved to database, but request succeeded');
-        }
-      } catch (dbError) {
-        console.error('[VOTE] Database operation failed:', dbError);
-        console.log('[VOTE] Vote not saved to database, but request succeeded');
-      }
-    } else {
-      console.log('[VOTE] Database not configured, vote not persisted');
+    if (voteError) {
+      console.error('[VOTE] Database error:', voteError);
+      return res.status(500).json({ error: 'Failed to record vote' });
     }
 
     console.log('[VOTE] Vote recorded successfully');
@@ -477,51 +416,10 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// Serve React app for all non-API routes
-app.get('/*', (req, res) => {
-  // Don't serve index.html for API routes
-  if (req.path.startsWith('/api/')) {
-    return res.status(404).json({ error: 'API endpoint not found' });
-  }
-  
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-});
-
 // Start server
-const server = app.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`🚀 Backend server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-  console.log(`🔧 Integration Status:`);
-  console.log(`   - Supabase: ${supabase ? '✅ Connected' : '❌ Not configured'}`);
-  console.log(`   - OpenAI: ${openai ? '✅ Connected' : '❌ Not configured'}`);
-  console.log(`💡 To enable integrations, check your .env file configuration`);
-  console.log(`🌐 Server ready to accept connections`);
-});
-
-// Handle server errors
-server.on('error', (error) => {
-  console.error('❌ Server error:', error);
-  if (error.code === 'EADDRINUSE') {
-    console.log(`Port ${PORT} is already in use. Trying to kill existing process...`);
-    process.exit(1);
-  }
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('🛑 SIGTERM received, shutting down gracefully');
-  server.close(() => {
-    console.log('✅ Server closed');
-    process.exit(0);
-  });
-});
-
-process.on('SIGINT', () => {
-  console.log('🛑 SIGINT received, shutting down gracefully');
-  server.close(() => {
-    console.log('✅ Server closed');
-    process.exit(0);
-  });
 });
 
 export default app;

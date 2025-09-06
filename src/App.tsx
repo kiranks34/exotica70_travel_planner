@@ -1,43 +1,6 @@
 import React, { useState } from 'react';
 import { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-
-// Add error boundary
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error('App Error:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Something went wrong</h1>
-            <p className="text-gray-600 mb-4">Please refresh the page to try again</p>
-            <button 
-              onClick={() => window.location.reload()} 
-              className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600"
-            >
-              Refresh Page
-            </button>
-          </div>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
-
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Header } from './components/Header';
 import { TripPlanner } from './components/TripPlanner';
 import { ItineraryView } from './components/ItineraryView';
@@ -63,9 +26,6 @@ interface User {
 type AppState = 'planning' | 'ai-insights' | 'itinerary';
 
 function App() {
-  // Add console log to debug
-  console.log('App component rendering...');
-  
   const [currentState, setCurrentState] = useState<AppState>('planning');
   const [currentTrip, setCurrentTrip] = useState<Trip | null>(null);
   const [currentTripType, setCurrentTripType] = useState<string>('');
@@ -316,7 +276,6 @@ function App() {
   };
 
   return (
-    <ErrorBoundary>
     <Router>
       <div className="min-h-screen bg-gray-50">
         <Routes>
@@ -390,13 +349,9 @@ function App() {
           
           {/* Trip detail route */}
           <Route path="/trip/:id" element={<TripPage />} />
-          
-          {/* Catch all route - redirect to home */}
-          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
     </Router>
-    </ErrorBoundary>
   );
 }
 

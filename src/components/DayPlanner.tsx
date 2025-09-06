@@ -179,6 +179,10 @@ export const DayPlanner: React.FC<DayPlannerProps> = ({
               voteCounts={voteCounts[activity.id]}
               userVote={userVotes[activity.id]}
               isLoggedIn={isLoggedIn}
+              onVote={onVote}
+              voteCounts={voteCounts[activity.id]}
+              userVote={userVotes[activity.id]}
+              isLoggedIn={isLoggedIn}
             />
           ))
         ) : (

@@ -55,11 +55,8 @@ export const ShareModal: React.FC<ShareModalProps> = ({ trip, onClose }) => {
           {/* Copy Link */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Share Trip Link
+              Share Link
             </label>
-            <p className="text-sm text-gray-600 mb-3">
-              Anyone with this link can view the trip and vote on activities
-            </p>
             <div className="flex items-center space-x-2">
               <div className="flex-1 relative">
                 <Link2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -81,19 +78,6 @@ export const ShareModal: React.FC<ShareModalProps> = ({ trip, onClose }) => {
               >
                 {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
               </button>
-            </div>
-            <div className="mt-3 p-3 bg-blue-50 rounded-lg">
-              <div className="flex items-start space-x-2">
-                <Users className="h-4 w-4 text-blue-600 mt-0.5" />
-                <div className="text-sm text-blue-700">
-                  <p className="font-medium">Collaborative Features:</p>
-                  <ul className="mt-1 space-y-1 text-xs">
-                    <li>• Friends can vote on activities</li>
-                    <li>• See group voting results</li>
-                    <li>• No account required to vote</li>
-                  </ul>
-                </div>
-              </div>
             </div>
           </div>
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Header } from '../components/Header';
 import { 
   MapPin, 
   Calendar, 
@@ -12,21 +11,8 @@ import {
   Tag,
   ThumbsUp,
   ThumbsDown,
-  Meh,
-  Users,
-  Share2
+  Meh
 } from 'lucide-react';
-import { supabase, signIn, signInWithGoogle, signOut, onAuthStateChange } from '../lib/supabase';
-import { LoginModal } from '../components/LoginModal';
-import { SignupModal } from '../components/SignupModal';
-
-interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  avatar?: string;
-}
 
 interface Activity {
   id: string;
@@ -67,92 +53,16 @@ const TripPage: React.FC = () => {
   const [copiedLink, setCopiedLink] = useState(false);
   const [voterId, setVoterId] = useState<string>('');
   const [votingStates, setVotingStates] = useState<{ [activityId: string]: boolean }>({});
-  const [user, setUser] = useState<User | null>(null);
-  const [showLogin, setShowLogin] = useState(false);
-  const [showSignup, setShowSignup] = useState(false);
-  const [userVotes, setUserVotes] = useState<{ [activityId: string]: 'yes' | 'no' | 'maybe' }>({});
-  const [showVotingResults, setShowVotingResults] = useState(false);
 
   // Generate or get voter ID from localStorage
   useEffect(() => {
-    // Check for existing session
-    const getSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Session error:', error);
-          return;
-        }
-        
-        if (session?.user) {
-          setUserFromSession(session);
-        }
-      } catch (err) {
-        console.error('Session retrieval error:', err);
-      }
-    };
-
-    getSession();
-
-    // Listen for auth changes
-    const { data: { subscription } } = onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        setUserFromSession(session);
-        setShowLogin(false);
-        setShowSignup(false);
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setUserVotes({});
-      }
-    });
-
-    // Generate anonymous voter ID for non-authenticated users
-    let storedVoterId = localStorage.getItem('anonymousVoterId');
+    let storedVoterId = localStorage.getItem('voterId');
     if (!storedVoterId) {
-      storedVoterId = `anon_${crypto.randomUUID()}`;
-      localStorage.setItem('anonymousVoterId', storedVoterId);
+      storedVoterId = crypto.randomUUID();
+      localStorage.setItem('voterId', storedVoterId);
     }
     setVoterId(storedVoterId);
-
-    return () => subscription.unsubscribe();
   }, []);
-
-  // Helper function to set user from session
-  const setUserFromSession = (session: any) => {
-    const user = session.user;
-    const metadata = user.user_metadata || {};
-    
-    let firstName = metadata.first_name || metadata.given_name || '';
-    let lastName = metadata.last_name || metadata.family_name || '';
-    
-    if (!firstName && !lastName && metadata.full_name) {
-      const nameParts = metadata.full_name.split(' ');
-      firstName = nameParts[0] || '';
-      lastName = nameParts.slice(1).join(' ') || '';
-    }
-    
-    if (!firstName && metadata.name) {
-      const nameParts = metadata.name.split(' ');
-      firstName = nameParts[0] || '';
-      lastName = nameParts.slice(1).join(' ') || '';
-    }
-    
-    if (!firstName) {
-      firstName = user.email?.split('@')[0] || 'User';
-    }
-    
-    const userData = {
-      id: user.id,
-      firstName,
-      lastName,
-      email: user.email || '',
-      avatar: metadata.avatar_url || metadata.picture
-    };
-    
-    setUser(userData);
-    setVoterId(user.id); // Use authenticated user ID as voter ID
-  };
 
   // Fetch trip data
   const fetchTripData = async () => {
@@ -170,30 +80,11 @@ const TripPage: React.FC = () => {
       
       const data: TripData = await response.json();
       setTripData(data);
-      
-      // Load user's existing votes if authenticated
-      if (user) {
-        loadUserVotes(data.votes);
-      }
     } catch (err) {
       console.error('Error fetching trip:', err);
       setError(err instanceof Error ? err.message : 'Failed to load trip');
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Load user's existing votes
-  const loadUserVotes = (allVotes: { [activityId: string]: VoteCounts }) => {
-    // In a real implementation, you'd fetch user-specific votes from the database
-    // For now, we'll use localStorage to track user votes
-    const storedVotes = localStorage.getItem(`userVotes_${user?.id || voterId}`);
-    if (storedVotes) {
-      try {
-        setUserVotes(JSON.parse(storedVotes));
-      } catch (err) {
-        console.error('Error parsing stored votes:', err);
-      }
     }
   };
 
@@ -214,11 +105,7 @@ const TripPage: React.FC = () => {
 
   // Vote on activity
   const handleVote = async (activityId: string, choice: 'yes' | 'no' | 'maybe') => {
-    if (!id || votingStates[activityId]) return;
-
-    // Use authenticated user ID or anonymous voter ID
-    const currentVoterId = user?.id || voterId;
-    if (!currentVoterId) return;
+    if (!id || !voterId || votingStates[activityId]) return;
 
     setVotingStates(prev => ({ ...prev, [activityId]: true }));
 
@@ -231,30 +118,13 @@ const TripPage: React.FC = () => {
         body: JSON.stringify({
           activityId,
           choice,
-          voterId: currentVoterId
+          voterId
         })
       });
 
       if (!response.ok) {
         throw new Error('Failed to submit vote');
       }
-
-      // Update local user votes
-      const previousVote = userVotes[activityId];
-      let newUserVotes = { ...userVotes };
-      
-      if (previousVote === choice) {
-        // Remove vote if clicking same choice
-        delete newUserVotes[activityId];
-      } else {
-        // Set new vote
-        newUserVotes[activityId] = choice;
-      }
-      
-      setUserVotes(newUserVotes);
-      
-      // Store votes locally
-      localStorage.setItem(`userVotes_${currentVoterId}`, JSON.stringify(newUserVotes));
 
       // Refresh trip data to get updated votes
       await fetchTripData();
@@ -264,16 +134,6 @@ const TripPage: React.FC = () => {
     } finally {
       setVotingStates(prev => ({ ...prev, [activityId]: false }));
     }
-  };
-
-  const handleLoginSuccess = (userData: User) => {
-    setUser(userData);
-    setShowLogin(false);
-    setShowSignup(false);
-  };
-
-  const handleLogout = () => {
-    signOut().then(() => setUser(null));
   };
 
   // Calculate total spent
@@ -290,19 +150,10 @@ const TripPage: React.FC = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header 
-          onLoginClick={() => setShowLogin(true)}
-          onSignupClick={() => setShowSignup(true)}
-          user={user}
-          onLogout={handleLogout}
-          onHomeClick={() => window.location.href = '/'}
-        />
-        <div className="flex items-center justify-center py-20">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading your trip...</p>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your trip...</p>
         </div>
       </div>
     );
@@ -311,28 +162,19 @@ const TripPage: React.FC = () => {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header 
-          onLoginClick={() => setShowLogin(true)}
-          onSignupClick={() => setShowSignup(true)}
-          user={user}
-          onLogout={handleLogout}
-          onHomeClick={() => window.location.href = '/'}
-        />
-        <div className="flex items-center justify-center py-20">
-          <div className="text-center max-w-md mx-auto p-6">
-            <div className="bg-red-100 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-              <RefreshCw className="h-8 w-8 text-red-600" />
-            </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Failed to Load Trip</h2>
-            <p className="text-gray-600 mb-4">{error}</p>
-            <button
-              onClick={fetchTripData}
-              className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
-            >
-              Try Again
-            </button>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="bg-red-100 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+            <RefreshCw className="h-8 w-8 text-red-600" />
           </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Failed to Load Trip</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={fetchTripData}
+            className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+          >
+            Try Again
+          </button>
         </div>
       </div>
     );
@@ -341,18 +183,9 @@ const TripPage: React.FC = () => {
   // No trip data
   if (!tripData) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header 
-          onLoginClick={() => setShowLogin(true)}
-          onSignupClick={() => setShowSignup(true)}
-          user={user}
-          onLogout={handleLogout}
-          onHomeClick={() => window.location.href = '/'}
-        />
-        <div className="flex items-center justify-center py-20">
-          <div className="text-center">
-            <p className="text-gray-600">Trip not found</p>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Trip not found</p>
         </div>
       </div>
     );
@@ -410,15 +243,6 @@ const TripPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <Header 
-        onLoginClick={() => setShowLogin(true)}
-        onSignupClick={() => setShowSignup(true)}
-        user={user}
-        onLogout={handleLogout}
-        onHomeClick={() => window.location.href = '/'}
-      />
-      
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
@@ -434,28 +258,15 @@ const TripPage: React.FC = () => {
                   <DollarSign className="h-4 w-4" />
                   <span>${trip.budget}</span>
                 </div>
-                <div className="flex items-center space-x-1 bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
-                  <Users className="h-4 w-4" />
-                  <span>Collaborative Trip</span>
-                </div>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => setShowVotingResults(!showVotingResults)}
-                className="flex items-center space-x-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 transition-colors"
-              >
-                <Users className="h-4 w-4" />
-                <span>{showVotingResults ? 'Hide Votes' : 'See Votes'}</span>
-              </button>
-              <button
-                onClick={handleCopyLink}
-                className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                {copiedLink ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
-                <span>{copiedLink ? 'Copied!' : 'Share Trip'}</span>
-              </button>
-            </div>
+            <button
+              onClick={handleCopyLink}
+              className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              {copiedLink ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              <span>{copiedLink ? 'Copied!' : 'Copy Link'}</span>
+            </button>
           </div>
         </div>
 
@@ -540,56 +351,26 @@ const TripPage: React.FC = () => {
 
                       {/* Voting Buttons */}
                       <div className="flex items-center space-x-3 mb-3">
-                        {!user && (
-                          <div className="text-sm text-gray-600 mb-2">
-                            <button
-                              onClick={() => setShowLogin(true)}
-                              className="text-blue-600 hover:text-blue-700 font-medium"
-                            >
-                              Login
-                            </button>
-                            {' or '}
-                            <button
-                              onClick={() => setShowSignup(true)}
-                              className="text-blue-600 hover:text-blue-700 font-medium"
-                            >
-                              sign up
-                            </button>
-                            {' to vote on activities'}
-                          </div>
-                        )}
                         <button
                           onClick={() => handleVote(activity.id, 'yes')}
-                          disabled={isVoting || !user}
-                          className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-colors disabled:opacity-50 ${
-                            userVotes[activity.id] === 'yes'
-                              ? 'bg-green-500 text-white shadow-md'
-                              : 'bg-green-100 text-green-700 hover:bg-green-200'
-                          }`}
+                          disabled={isVoting}
+                          className="flex items-center space-x-1 bg-green-100 text-green-700 px-3 py-2 rounded-lg hover:bg-green-200 transition-colors disabled:opacity-50"
                         >
                           <ThumbsUp className="h-4 w-4" />
                           <span>Yes</span>
                         </button>
                         <button
                           onClick={() => handleVote(activity.id, 'no')}
-                          disabled={isVoting || !user}
-                          className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-colors disabled:opacity-50 ${
-                            userVotes[activity.id] === 'no'
-                              ? 'bg-red-500 text-white shadow-md'
-                              : 'bg-red-100 text-red-700 hover:bg-red-200'
-                          }`}
+                          disabled={isVoting}
+                          className="flex items-center space-x-1 bg-red-100 text-red-700 px-3 py-2 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50"
                         >
                           <ThumbsDown className="h-4 w-4" />
                           <span>No</span>
                         </button>
                         <button
                           onClick={() => handleVote(activity.id, 'maybe')}
-                          disabled={isVoting || !user}
-                          className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-colors disabled:opacity-50 ${
-                            userVotes[activity.id] === 'maybe'
-                              ? 'bg-yellow-500 text-white shadow-md'
-                              : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-                          }`}
+                          disabled={isVoting}
+                          className="flex items-center space-x-1 bg-yellow-100 text-yellow-700 px-3 py-2 rounded-lg hover:bg-yellow-200 transition-colors disabled:opacity-50"
                         >
                           <Meh className="h-4 w-4" />
                           <span>Maybe</span>
@@ -618,101 +399,7 @@ const TripPage: React.FC = () => {
             </div>
           ))}
         </div>
-
-        {/* Voting Results Section */}
-        {showVotingResults && Object.keys(tripData.votes).length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm p-6 mt-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Group Voting Results</h2>
-            
-            <div className="space-y-4">
-              {trip.itinerary.map((day, dayIndex) => {
-                const dayActivitiesWithVotes = day.activities.filter(activity => 
-                  tripData.votes[activity.id] && 
-                  (tripData.votes[activity.id].yes + tripData.votes[activity.id].no + tripData.votes[activity.id].maybe) > 0
-                );
-                
-                if (dayActivitiesWithVotes.length === 0) return null;
-                
-                return (
-                  <div key={day.day} className="border border-gray-200 rounded-lg p-4">
-                    <h3 className="font-semibold text-gray-900 mb-3">
-                      Day {day.day}
-                    </h3>
-                    <div className="space-y-3">
-                      {dayActivitiesWithVotes
-                        .sort((a, b) => {
-                          const aVotes = tripData.votes[a.id];
-                          const bVotes = tripData.votes[b.id];
-                          const aScore = aVotes.yes * 2 + aVotes.maybe * 1 - aVotes.no * 1;
-                          const bScore = bVotes.yes * 2 + bVotes.maybe * 1 - bVotes.no * 1;
-                          return bScore - aScore;
-                        })
-                        .map(activity => {
-                          const votes = tripData.votes[activity.id];
-                          const totalVotes = votes.yes + votes.no + votes.maybe;
-                          const score = votes.yes * 2 + votes.maybe * 1 - votes.no * 1;
-                          const isTopVoted = score > 0 && votes.yes >= votes.no;
-                          
-                          return (
-                            <div key={activity.id} className={`flex items-center justify-between p-3 rounded-lg ${
-                              isTopVoted ? 'bg-green-50 border border-green-200' : 'bg-gray-50'
-                            }`}>
-                              <div className="flex-1">
-                                <h4 className={`font-medium ${isTopVoted ? 'text-green-800' : 'text-gray-900'}`}>
-                                  {activity.title}
-                                  {isTopVoted && <span className="ml-2 text-green-600">⭐ Top Choice</span>}
-                                </h4>
-                              </div>
-                              <div className="flex items-center space-x-4 text-sm">
-                                <span className="flex items-center space-x-1">
-                                  <span>👍</span>
-                                  <span className="font-medium">{votes.yes}</span>
-                                </span>
-                                <span className="flex items-center space-x-1">
-                                  <span>👎</span>
-                                  <span className="font-medium">{votes.no}</span>
-                                </span>
-                                <span className="flex items-center space-x-1">
-                                  <span>🤷</span>
-                                  <span className="font-medium">{votes.maybe}</span>
-                                </span>
-                                <span className="text-gray-500">({totalVotes} votes)</span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
-
-      {/* Login Modal */}
-      {showLogin && (
-        <LoginModal
-          onClose={() => setShowLogin(false)}
-          onSwitchToSignup={() => {
-            setShowLogin(false);
-            setShowSignup(true);
-          }}
-          onLoginSuccess={handleLoginSuccess}
-        />
-      )}
-
-      {/* Signup Modal */}
-      {showSignup && (
-        <SignupModal
-          onClose={() => setShowSignup(false)}
-          onSwitchToLogin={() => {
-            setShowSignup(false);
-            setShowLogin(true);
-          }}
-          onSignupSuccess={handleLoginSuccess}
-        />
-      )}
     </div>
   );
 };
