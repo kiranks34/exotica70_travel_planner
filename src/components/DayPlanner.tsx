@@ -17,6 +17,10 @@ interface DayPlannerProps {
   voteCounts?: { [activityId: string]: { yes: number; no: number; maybe: number } };
   userVotes?: { [activityId: string]: 'yes' | 'no' | 'maybe' };
   isLoggedIn?: boolean;
+  onVote?: (activityId: string, choice: 'yes' | 'no' | 'maybe') => void;
+  voteCounts?: { [activityId: string]: { yes: number; no: number; maybe: number } };
+  userVotes?: { [activityId: string]: 'yes' | 'no' | 'maybe' };
+  isLoggedIn?: boolean;
 }
 
 export const DayPlanner: React.FC<DayPlannerProps> = ({
@@ -28,6 +32,10 @@ export const DayPlanner: React.FC<DayPlannerProps> = ({
   onDeleteActivity,
   onUpdateNotes,
   onUpdateDay,
+  onVote,
+  voteCounts = {},
+  userVotes = {},
+  isLoggedIn = false
   onVote,
   voteCounts = {},
   userVotes = {},
@@ -175,6 +183,10 @@ export const DayPlanner: React.FC<DayPlannerProps> = ({
               onAISuggest={() => handleAISuggest(activity)}
               onUndo={() => handleUndo(activity.id)}
               hasUndo={activityHistory[activity.id]?.length > 0}
+              onVote={onVote}
+              voteCounts={voteCounts[activity.id]}
+              userVote={userVotes[activity.id]}
+              isLoggedIn={isLoggedIn}
               onVote={onVote}
               voteCounts={voteCounts[activity.id]}
               userVote={userVotes[activity.id]}
