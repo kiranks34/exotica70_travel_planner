@@ -26,6 +26,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
   const [isCreatingTrip, setIsCreatingTrip] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showAILoading, setShowAILoading] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
   const dateInputRef = useRef<HTMLInputElement>(null);
   const [isGeneratingWithAI, setIsGeneratingWithAI] = useState(false);
@@ -268,7 +269,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
 
   const handleTripCreation = async () => {
     setIsCreatingTrip(true);
-    setIsGeneratingWithAI(true);
+    setShowAILoading(true);
     setErrorMessage(null);
     
     try {
@@ -317,25 +318,23 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
       
       console.log('📦 Trip data prepared:', tripData);
       
-      // Show success message briefly
-      setShowSuccessMessage(true);
-      
-      // Navigate after short delay
-      setTimeout(() => {
-        console.log('🎯 Calling onTripCreate...');
-        setIsCreatingTrip(false);
-        setIsGeneratingWithAI(false);
-        setShowSuccessMessage(false);
-        onTripCreate(tripData);
-      }, 1000); // Reduced delay
+      // AI loading will handle the completion
+      console.log('🎯 Calling onTripCreate...');
+      onTripCreate(tripData);
       
     } catch (error) {
       console.error('❌ Error in trip creation:', error);
       setErrorMessage('Failed to create trip. Please try again.');
       setIsCreatingTrip(false);
-      setIsGeneratingWithAI(false);
+      setShowAILoading(false);
       setShowSuccessMessage(false);
     }
+  };
+
+  const handleAILoadingComplete = () => {
+    setShowAILoading(false);
+    setIsCreatingTrip(false);
+    setIsGeneratingWithAI(false);
   };
 
   // Generate personalized trip using OpenAI
@@ -705,11 +704,11 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={!destination || !startDate || !numberOfDays || !tripType || isCreatingTrip || showSuccessMessage}
+              disabled={!destination || !startDate || !numberOfDays || !tripType || isCreatingTrip || showSuccessMessage || showAILoading}
               className={`w-full py-2.5 px-6 rounded-xl font-semibold transition-all duration-200 shadow-lg ${
                 showSuccessMessage 
                   ? 'bg-green-500 text-white' 
-                  : isCreatingTrip
+                  : isCreatingTrip || showAILoading
                     ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white cursor-not-allowed'
                     : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none'
               }`}
@@ -721,11 +720,11 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                   </svg>
                   <span>Trip created! Redirecting...</span>
                 </div>
-              ) : isCreatingTrip ? (
+              ) : isCreatingTrip || showAILoading ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
                   <span className="animate-pulse">
-                    {isGeneratingWithAI ? 'AI is crafting your perfect trip' : 'Creating your trip'}
+                    {showAILoading ? 'Initializing AI...' : 'Creating your trip'}
                     <span className="animate-bounce">.</span>
                     <span className="animate-bounce" style={{animationDelay: '0.1s'}}>.</span>
                     <span className="animate-bounce" style={{animationDelay: '0.2s'}}>.</span>
@@ -760,7 +759,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
               <button
                 type="button"
                 onClick={onInspireMe}
-                disabled={isCreatingTrip || showSuccessMessage}
+                disabled={isCreatingTrip || showSuccessMessage || showAILoading}
                 className="inline-flex items-center space-x-2 text-orange-600 hover:text-orange-700 transition-all font-medium hover:scale-105 group"
               >
                 <div className="flex items-center space-x-1">
@@ -805,6 +804,14 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
             </button>
           </div>
         </div>
+
+        {/* AI Loading Modal */}
+        <LoadingModal 
+          destination={destination} 
+          isVisible={showAILoading}
+          tripType={tripType}
+          onComplete={handleAILoadingComplete}
+        />
       </div>
 
     </div>

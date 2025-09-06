@@ -34,7 +34,6 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const [isGeneratingTrip, setIsGeneratingTrip] = useState(false);
   const [aiInsights, setAiInsights] = useState<AITripInsights | null>(null);
   const [showAIInsights, setShowAIInsights] = useState(false);
   const [favoriteCount, setFavoriteCount] = useState(0);
@@ -346,10 +345,6 @@ function App() {
               )}
 
               {/* Loading Modal */}
-              <LoadingModal 
-                destination={currentTrip?.destination || ''} 
-                isVisible={isGeneratingTrip} 
-              />
 
             </>
           } />
