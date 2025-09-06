@@ -278,7 +278,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
   };
 
   return (
-    <div className="min-h-screen flex p-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background Video */}
       <div className="absolute inset-0 z-0">
         {travelVideos.map((videoUrl, index) => (
@@ -313,7 +313,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
         <div className="absolute inset-0 bg-black bg-opacity-30 z-20" />
       </div>
 
-      <div className="flex w-full max-w-7xl mx-auto items-start relative z-10">
+      <div className="flex w-full max-w-7xl items-start relative z-10">
         {/* Trip Planner Form - Left Side */}
         <div className="w-2/5 flex-shrink-0 ml-8">
           <div className="bg-white bg-opacity-90 backdrop-blur-lg rounded-2xl shadow-2xl p-5 md:p-6 border border-white border-opacity-80">
