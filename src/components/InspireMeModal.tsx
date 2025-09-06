@@ -4,9 +4,10 @@ import { X, Sparkles, MapPin, Calendar, Thermometer, DollarSign, Users, Shuffle 
 interface InspireMeModalProps {
   onClose: () => void;
   onSelectDestination: (destination: string) => void;
+  onShowPersonalizedSuggestions: (preferences: TravelPreferences) => void;
 }
 
-interface TravelPreferences {
+export interface TravelPreferences {
   budget: 'budget' | 'mid-range' | 'luxury' | '';
   climate: 'tropical' | 'temperate' | 'cold' | 'desert' | '';
   travelStyle: 'adventure' | 'relaxation' | 'culture' | 'nightlife' | 'nature' | '';
@@ -37,7 +38,11 @@ const destinations = {
   }
 };
 
-export const InspireMeModal: React.FC<InspireMeModalProps> = ({ onClose, onSelectDestination }) => {
+export const InspireMeModal: React.FC<InspireMeModalProps> = ({ 
+  onClose, 
+  onSelectDestination, 
+  onShowPersonalizedSuggestions 
+}) => {
   const [preferences, setPreferences] = useState<TravelPreferences>({
     budget: '',
     climate: '',
@@ -58,13 +63,9 @@ export const InspireMeModal: React.FC<InspireMeModalProps> = ({ onClose, onSelec
       return;
     }
 
-    const climateDestinations = destinations[preferences.climate];
-    const budgetDestinations = climateDestinations[preferences.budget] || [];
-    
-    // Shuffle and take 4 random suggestions
-    const shuffled = [...budgetDestinations].sort(() => 0.5 - Math.random());
-    setSuggestions(shuffled.slice(0, 4));
-    setShowSuggestions(true);
+    // Navigate to personalized suggestions page
+    onShowPersonalizedSuggestions(preferences);
+    onClose();
   };
 
   const handleSelectDestination = (destination: string) => {

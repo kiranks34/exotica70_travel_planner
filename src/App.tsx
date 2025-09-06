@@ -5,6 +5,8 @@ import { Header } from './components/Header';
 import { TripPlanner } from './components/TripPlanner';
 import { ItineraryView } from './components/ItineraryView';
 import { InspireMeModal } from './components/InspireMeModal';
+import { PersonalizedSuggestionsPage } from './components/PersonalizedSuggestionsPage';
+import { TravelPreferences } from './components/InspireMeModal';
 import { LoginModal } from './components/LoginModal';
 import { SignupModal } from './components/SignupModal';
 import { LoadingModal } from './components/LoadingModal';
@@ -25,7 +27,7 @@ interface User {
   avatar?: string;
 }
 
-type AppState = 'planning' | 'ai-insights' | 'itinerary' | 'destination-details';
+type AppState = 'planning' | 'ai-insights' | 'itinerary' | 'destination-details' | 'personalized-suggestions';
 
 function App() {
   const [currentState, setCurrentState] = useState<AppState>('planning');
@@ -47,6 +49,7 @@ function App() {
     rating: number;
     isFavorite: boolean;
   } | null>(null);
+  const [savedPreferences, setSavedPreferences] = useState<TravelPreferences | null>(null);
 
   // Listen for auth changes
   useEffect(() => {
@@ -247,6 +250,12 @@ function App() {
     setShowInspireMe(false);
     // We'll pass this to TripPlanner via a prop
     setInspirationDestination(destination);
+    setCurrentState('planning');
+  };
+
+  const handleShowPersonalizedSuggestions = (preferences: TravelPreferences) => {
+    setSavedPreferences(preferences);
+    setCurrentState('personalized-suggestions');
   };
 
   const handleLoginClick = () => {
@@ -354,6 +363,27 @@ function App() {
     setCurrentState('planning');
   };
 
+  const handleBackFromPersonalizedSuggestions = () => {
+    setCurrentState('planning');
+    setShowInspireMe(true);
+  };
+
+  const handlePersonalizedDestinationSelect = (destination: string) => {
+    setInspirationDestination(destination);
+    setCurrentState('planning');
+  };
+
+  const handlePersonalizedDestinationDetails = (name: string, country: string, image: string, rating: number) => {
+    setSelectedDestination({ 
+      name, 
+      country, 
+      image, 
+      rating,
+      isFavorite: false
+    });
+    setCurrentState('destination-details');
+  };
+
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
@@ -393,6 +423,13 @@ function App() {
                     }
                   }}
                 />
+              ) : currentState === 'personalized-suggestions' && savedPreferences ? (
+                <PersonalizedSuggestionsPage
+                  preferences={savedPreferences}
+                  onBack={handleBackFromPersonalizedSuggestions}
+                  onSelectDestination={handlePersonalizedDestinationSelect}
+                  onViewDestinationDetails={handlePersonalizedDestinationDetails}
+                />
               ) : currentState === 'ai-insights' && aiInsights ? (
                 <AIInsightsPage
                   insights={aiInsights}
@@ -414,6 +451,7 @@ function App() {
                 <InspireMeModal
                   onClose={() => setShowInspireMe(false)}
                   onSelectDestination={handleSelectInspiration}
+                  onShowPersonalizedSuggestions={handleShowPersonalizedSuggestions}
                 />
               )}
 
