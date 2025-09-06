@@ -83,7 +83,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button 
                 onClick={() => toggleDropdown('trip-planner')}
                 className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors font-medium whitespace-nowrap">
-                <span>Trip Planner</span>
+                <span>Crew Trips</span>
                 <ChevronDown className="h-4 w-4" />
               </button>
               {activeDropdown === 'trip-planner' && (
@@ -122,6 +122,13 @@ export const Header: React.FC<HeaderProps> = ({
                           <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Adventure</a>
                           <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Culture</a>
                           <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Spontaneous</a>
+                          <hr className="my-2 border-gray-200" />
+                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Relaxation</a>
+                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Family</a>
+                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Romantic</a>
+                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Business</a>
+                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Food & Culinary</a>
+                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Nature & Wildlife</a>
                         </div>
                       </div>
                     </div>

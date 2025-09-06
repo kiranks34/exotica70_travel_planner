@@ -282,12 +282,15 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                   onChange={(e) => setTripType(e.target.value)}
                   className="w-full px-4 py-2.5 border-2 border-gray-200 bg-white rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition-all appearance-none pr-10"
                 >
-                  <option value="relaxation">Relaxation</option>
+                  <option value="chill">Chill</option>
+                  <option value="party">Party</option>
                   <option value="adventure">Adventure</option>
+                  <option value="culture">Culture</option>
+                  <option value="spontaneous">Spontaneous</option>
+                  <option value="relaxation">Relaxation</option>
                   <option value="family">Family</option>
                   <option value="romantic">Romantic</option>
                   <option value="business">Business</option>
-                  <option value="cultural">Cultural</option>
                   <option value="food">Food & Culinary</option>
                   <option value="nature">Nature & Wildlife</option>
                 </select>
@@ -457,44 +460,6 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
             </div>
 
             {/* Collaborators */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <button
-                  type="button"
-                  onClick={() => setShowCollaborators(!showCollaborators)}
-                  className="flex items-center space-x-2 text-orange-600 hover:text-orange-700 font-medium transition-all hover:scale-105"
-                >
-                  <div className="flex items-center space-x-1">
-                    <UserPlus className="h-4 w-4" />
-                    <Users className="h-3 w-3 opacity-70" />
-                  </div>
-                  <span>Invite tripmates</span>
-                </button>
-                <button
-                  type="button"
-                  className="flex items-center space-x-2 text-gray-600 hover:text-orange-500 transition-colors"
-                >
-                  <Users className="h-5 w-5" />
-                  <span>Friends</span>
-                </button>
-              </div>
-              
-              {showCollaborators && (
-                <div className="p-3 bg-gray-50 rounded-xl">
-                  <input
-                    type="email"
-                    placeholder="Enter email address"
-                    className="w-full px-4 py-2.5 border border-gray-200 bg-white rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none"
-                  />
-                  <button
-                    type="button"
-                    className="mt-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium"
-                  >
-                    Send Invite
-                  </button>
-                </div>
-              )}
-            </div>
 
             {/* Submit Button */}
             <button
