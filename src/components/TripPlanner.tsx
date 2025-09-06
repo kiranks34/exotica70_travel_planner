@@ -16,6 +16,8 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
   const [budgetMax, setBudgetMax] = useState(1000);
   const [budgetMinInput, setBudgetMinInput] = useState('0');
   const [budgetMaxInput, setBudgetMaxInput] = useState('1000');
+  const [isDraggingMin, setIsDraggingMin] = useState(false);
+  const [isDraggingMax, setIsDraggingMax] = useState(false);
   const [currentCalendarMonth, setCurrentCalendarMonth] = useState(new Date());
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [showCalendar, setShowCalendar] = useState(false);
@@ -126,32 +128,30 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
   };
 
   const handleBudgetMinChange = (value: number) => {
-    const newMin = Math.max(0, Math.min(value, budgetMax - 50)); // Ensure min is always less than max and >= 0
+    const newMin = Math.max(0, Math.min(value, budgetMax - 50));
     setBudgetMin(newMin);
     setBudgetMinInput(newMin.toString());
   };
 
   const handleBudgetMaxChange = (value: number) => {
-    const newMax = Math.min(10000, Math.max(value, budgetMin + 50)); // Ensure max is always greater than min and <= 10000
+    const newMax = Math.min(10000, Math.max(value, budgetMin + 50));
     setBudgetMax(newMax);
     setBudgetMaxInput(newMax.toString());
   };
 
   const handleBudgetMinInputChange = (value: string) => {
     setBudgetMinInput(value);
-    const numValue = parseInt(value) || 0;
-    if (value !== '') {
-      const clampedValue = Math.max(0, Math.min(budgetMax - 50, numValue));
-      setBudgetMin(clampedValue);
+    if (value !== '' && !isNaN(Number(value))) {
+      const numValue = Math.max(0, Math.min(budgetMax - 50, Number(value)));
+      setBudgetMin(numValue);
     }
   };
 
   const handleBudgetMaxInputChange = (value: string) => {
     setBudgetMaxInput(value);
-    const numValue = parseInt(value) || 0;
-    if (value !== '') {
-      const clampedValue = Math.max(budgetMin + 50, Math.min(10000, numValue));
-      setBudgetMax(clampedValue);
+    if (value !== '' && !isNaN(Number(value))) {
+      const numValue = Math.max(budgetMin + 50, Math.min(10000, Number(value)));
+      setBudgetMax(numValue);
     }
   };
 
