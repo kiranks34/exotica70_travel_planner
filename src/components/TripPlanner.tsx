@@ -29,7 +29,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
       name: 'Santorini',
       country: 'Greece',
       image: 'https://images.pexels.com/photos/1285625/pexels-photo-1285625.jpeg?auto=compress&cs=tinysrgb&w=400&h=300',
-      description: 'Experience breathtaking sunsets, pristine white-washed buildings, and crystal-clear waters in this iconic Greek island paradise.',
+      description: 'Breathtaking sunsets, white-washed buildings, and crystal-clear waters in this Greek island paradise.',
       hiddenGem: 'Visit the hidden village of Pyrgos for authentic local cuisine away from tourist crowds.',
       rating: 4.8
     },
@@ -37,7 +37,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
       name: 'Kyoto',
       country: 'Japan',
       image: 'https://images.pexels.com/photos/161251/senso-ji-temple-japan-kyoto-landmark-161251.jpeg?auto=compress&cs=tinysrgb&w=400&h=300',
-      description: 'Immerse yourself in ancient temples, traditional gardens, and the timeless beauty of Japan\'s cultural heart.',
+      description: 'Ancient temples, traditional gardens, and timeless beauty in Japan\'s cultural heart.',
       hiddenGem: 'Explore the bamboo groves of Arashiyama at dawn for a magical, crowd-free experience.',
       rating: 4.9
     },
@@ -45,7 +45,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
       name: 'Banff',
       country: 'Canada',
       image: 'https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=400&h=300',
-      description: 'Discover pristine mountain lakes, towering peaks, and abundant wildlife in one of the world\'s most stunning national parks.',
+      description: 'Pristine mountain lakes, towering peaks, and abundant wildlife in stunning national parks.',
       hiddenGem: 'Hike to the secret Ink Pots hot springs for a natural spa experience in the wilderness.',
       rating: 4.7
     },
@@ -53,7 +53,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
       name: 'Marrakech',
       country: 'Morocco',
       image: 'https://images.pexels.com/photos/739407/pexels-photo-739407.jpeg?auto=compress&cs=tinysrgb&w=400&h=300',
-      description: 'Get lost in vibrant souks, marvel at stunning architecture, and experience the magic of North African culture.',
+      description: 'Vibrant souks, stunning architecture, and magical North African culture experiences.',
       hiddenGem: 'Visit the secret rooftop gardens of Bahia Palace for panoramic views of the medina.',
       rating: 4.6
     },
@@ -61,7 +61,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
       name: 'Reykjavik',
       country: 'Iceland',
       image: 'https://images.pexels.com/photos/1433052/pexels-photo-1433052.jpeg?auto=compress&cs=tinysrgb&w=400&h=300',
-      description: 'Witness the Northern Lights, explore dramatic landscapes, and relax in geothermal hot springs.',
+      description: 'Northern Lights, dramatic landscapes, and relaxing geothermal hot springs.',
       hiddenGem: 'Discover the hidden Seljavallalaug pool, a geothermal swimming spot surrounded by mountains.',
       rating: 4.5
     },
@@ -69,7 +69,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
       name: 'Bagan',
       country: 'Myanmar',
       image: 'https://images.pexels.com/photos/2166553/pexels-photo-2166553.jpeg?auto=compress&cs=tinysrgb&w=400&h=300',
-      description: 'Explore thousands of ancient temples and pagodas scattered across mystical plains in this archaeological wonder.',
+      description: 'Thousands of ancient temples and pagodas across mystical plains in this archaeological wonder.',
       hiddenGem: 'Take a sunrise hot air balloon ride over the temple plains for an unforgettable aerial view.',
       rating: 4.8
     }

@@ -33,8 +33,8 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer transform hover:scale-[1.02]">
-      <div className="flex h-40">
+    <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer transform hover:scale-[1.02] border border-white border-opacity-30">
+      <div className="flex h-48">
         {/* Image Section - 40% width */}
         <div className="relative w-2/5 overflow-hidden">
           <img
@@ -55,47 +55,47 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
             />
           </button>
 
-          {/* Rating Badge */}
-          <div className="absolute bottom-3 left-3 flex items-center space-x-1 bg-black/70 backdrop-blur-sm rounded-full px-2 py-1">
-            <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
-            <span className="text-white text-xs font-medium">{rating}</span>
+          {/* Rating and Add Trip Section */}
+          <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+            <div className="flex items-center space-x-1 bg-black/70 backdrop-blur-sm rounded-full px-2 py-1">
+              <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
+              <span className="text-white text-xs font-medium">{rating}</span>
+            </div>
+            <button
+              onClick={handlePlanTrip}
+              className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded-full text-xs font-medium transition-all transform hover:scale-105 whitespace-nowrap"
+            >
+              Add Trip
+            </button>
           </div>
         </div>
 
         {/* Content Section - 60% width */}
-        <div className="w-3/5 p-4 flex flex-col justify-between">
+        <div className="w-3/5 p-5 flex flex-col justify-between">
           {/* Header */}
           <div className="mb-2">
             <div className="flex items-center space-x-2 mb-1">
               <MapPin className="h-4 w-4 text-orange-500" />
-              <h3 className="text-lg font-bold text-gray-900">{name}</h3>
+              <h3 className="text-lg font-bold text-white drop-shadow-md">{name}</h3>
             </div>
-            <span className="text-gray-600 text-sm">{country}</span>
+            <span className="text-white/90 text-sm drop-shadow-sm">{country}</span>
           </div>
 
           {/* Description */}
-          <p className="text-gray-700 text-sm mb-3 leading-relaxed">
+          <p className="text-white/95 mb-3 leading-relaxed whitespace-normal drop-shadow-sm text-sm">
             {description}
           </p>
 
           {/* Hidden Gem */}
-          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-2 mb-3">
+          <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-sm rounded-lg p-3 mb-3 border border-purple-300/30">
             <div className="flex items-center space-x-2">
-              <Sparkles className="h-4 w-4 text-purple-500" />
-              <span className="text-purple-700 text-xs font-medium">Hidden Gem</span>
+              <Sparkles className="h-4 w-4 text-purple-300" />
+              <span className="text-purple-200 text-xs font-medium">Hidden Gem</span>
             </div>
-            <p className="text-purple-600 text-xs mt-1 leading-relaxed whitespace-normal">
+            <p className="text-purple-100 text-xs mt-1 leading-relaxed whitespace-normal">
               {hiddenGem}
             </p>
           </div>
-
-          {/* Plan a Trip Button */}
-          <button
-            onClick={handlePlanTrip}
-            className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-2.5 px-4 rounded-lg font-medium hover:from-orange-600 hover:to-red-600 transition-all transform hover:scale-105 text-sm whitespace-nowrap"
-          >
-            Plan a Trip
-          </button>
         </div>
       </div>
     </div>
