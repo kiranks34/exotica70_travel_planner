@@ -126,21 +126,8 @@ const TripPage: React.FC = () => {
         throw new Error('Failed to submit vote');
       }
 
-      // Optimistic update - increment the vote count
-      setTripData(prev => {
-        if (!prev) return prev;
-        
-        return {
-          ...prev,
-          votes: {
-            ...prev.votes,
-            [activityId]: {
-              ...prev.votes[activityId],
-              [choice]: (prev.votes[activityId]?.[choice] || 0) + 1
-            }
-          }
-        };
-      });
+      // Refresh trip data to get updated votes
+      await fetchTripData();
     } catch (err) {
       console.error('Error voting:', err);
       alert('Failed to submit vote. Please try again.');

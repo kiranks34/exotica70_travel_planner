@@ -24,9 +24,8 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
   user,
   aiInsights 
 }) => {
-  const initialDayItineraries = generateActivitySuggestions(trip.destination, tripType, generateDayItineraries(trip));
-  const [dayItineraries, setDayItineraries] = useState<DayItinerary[]>(initialDayItineraries);
-  const [selectedDay, setSelectedDay] = useState<DayItinerary | null>(initialDayItineraries[0] || null);
+  const [dayItineraries, setDayItineraries] = useState<DayItinerary[]>([]);
+  const [selectedDay, setSelectedDay] = useState<DayItinerary | null>(null);
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showAIInsights, setShowAIInsights] = useState(false);
@@ -34,6 +33,108 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
   const [voteCounts, setVoteCounts] = useState<{ [activityId: string]: { yes: number; no: number; maybe: number } }>({});
   const [userVotes, setUserVotes] = useState<{ [activityId: string]: 'yes' | 'no' | 'maybe' }>({});
   const [showVotesResults, setShowVotesResults] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load trip data and votes on component mount
+  React.useEffect(() => {
+    const loadTripData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Fetch trip data from API
+        const response = await fetch(`/api/trip/${trip.id}`);
+        if (!response.ok) {
+          throw new Error('Failed to load trip data');
+        }
+        
+        const data = await response.json();
+        
+        if (data.trip && data.trip.itinerary) {
+          // Convert API itinerary to day itineraries format
+          const convertedDays = convertAPIItineraryToDayItineraries(data.trip.itinerary, trip);
+          setDayItineraries(convertedDays);
+          setSelectedDay(convertedDays[0] || null);
+          
+          // Set vote counts from API
+          setVoteCounts(data.votes || {});
+        } else {
+          // Fallback to generated suggestions if no API data
+          const initialDayItineraries = generateActivitySuggestions(trip.destination, tripType, generateDayItineraries(trip));
+          setDayItineraries(initialDayItineraries);
+          setSelectedDay(initialDayItineraries[0] || null);
+        }
+      } catch (error) {
+        console.error('Error loading trip data:', error);
+        // Fallback to generated suggestions on error
+        const initialDayItineraries = generateActivitySuggestions(trip.destination, tripType, generateDayItineraries(trip));
+        setDayItineraries(initialDayItineraries);
+        setSelectedDay(initialDayItineraries[0] || null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTripData();
+  }, [trip.id, trip.destination, tripType]);
+
+  // Helper function to convert API itinerary format to our day itineraries format
+  const convertAPIItineraryToDayItineraries = (apiItinerary: any, trip: Trip): DayItinerary[] => {
+    if (!apiItinerary.days || !Array.isArray(apiItinerary.days)) {
+      return [];
+    }
+
+    const startDate = new Date(trip.startDate);
+    
+    return apiItinerary.days.map((day: any, index: number) => {
+      const dayDate = new Date(startDate);
+      dayDate.setDate(startDate.getDate() + index);
+      
+      const activities: Activity[] = day.activities.map((activity: any) => ({
+        id: activity.id || crypto.randomUUID(),
+        title: activity.title,
+        description: activity.description || '',
+        location: trip.destination,
+        startTime: activity.time || '09:00',
+        endTime: calculateEndTime(activity.time || '09:00', activity.duration_min || 120),
+        category: mapAPICategory(activity.category || 'activity'),
+        notes: `AI curated activity\n\nTips:\n${(activity.tips || []).map((tip: string) => `• ${tip}`).join('\n')}`,
+        cost: activity.est_cost_per_person,
+        bookedStatus: 'not-booked' as const
+      }));
+
+      return {
+        id: crypto.randomUUID(),
+        tripId: trip.id,
+        date: dayDate.toISOString().split('T')[0],
+        activities,
+        notes: day.summary || `Day ${day.day} in ${trip.destination}`,
+        budget: day.budget_estimate || 0
+      };
+    });
+  };
+
+  const calculateEndTime = (startTime: string, durationMin: number): string => {
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const startDate = new Date();
+    startDate.setHours(hours, minutes, 0, 0);
+    
+    const endDate = new Date(startDate.getTime() + durationMin * 60000);
+    return `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
+  };
+
+  const mapAPICategory = (apiCategory: string): ActivityCategory => {
+    const categoryMap: { [key: string]: ActivityCategory } = {
+      'accommodation': 'accommodation',
+      'transport': 'transport',
+      'restaurant': 'restaurant',
+      'attraction': 'attraction',
+      'activity': 'activity',
+      'shopping': 'shopping',
+      'other': 'other'
+    };
+    
+    return categoryMap[apiCategory] || 'activity';
+  };
 
   const handleAddActivity = (activity: Activity) => {
     if (!selectedDay) return;
@@ -98,52 +199,70 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
       return;
     }
 
-    const previousVote = userVotes[activityId];
-    
-    // If user clicks the same vote, remove it (toggle off)
-    if (previousVote === choice) {
-      // Remove vote
-      setUserVotes(prev => {
-        const newVotes = { ...prev };
-        delete newVotes[activityId];
-        return newVotes;
+    try {
+      // Call the voting API
+      const response = await fetch(`/api/trip/${trip.id}/vote`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          activityId,
+          choice,
+          voterId: user.id
+        })
       });
-      
-      setVoteCounts(prev => {
-        const currentCounts = prev[activityId] || { yes: 0, no: 0, maybe: 0 };
-        return {
-          ...prev,
-          [activityId]: {
-            ...currentCounts,
-            [choice]: Math.max(0, currentCounts[choice] - 1)
-          }
-        };
-      });
-      return;
-    }
 
-    // Update local state immediately for better UX
-    setUserVotes(prev => ({ ...prev, [activityId]: choice }));
-    
-    setVoteCounts(prev => {
-      const currentCounts = prev[activityId] || { yes: 0, no: 0, maybe: 0 };
-      
-      // Remove previous vote if exists
-      if (previousVote) {
-        currentCounts[previousVote] = Math.max(0, currentCounts[previousVote] - 1);
+      if (!response.ok) {
+        throw new Error('Failed to submit vote');
       }
-      
-      // Add new vote
-      currentCounts[choice] = currentCounts[choice] + 1;
-      
-      return {
-        ...prev,
-        [activityId]: { ...currentCounts }
-      };
-    });
 
-    // In a real app, you would save to database here
-    console.log(`Vote recorded: ${activityId} - ${choice} by user ${user.id}`);
+      // Update local state for immediate feedback
+      const previousVote = userVotes[activityId];
+      
+      // If user clicks the same vote, remove it (toggle off)
+      if (previousVote === choice) {
+        setUserVotes(prev => {
+          const newVotes = { ...prev };
+          delete newVotes[activityId];
+          return newVotes;
+        });
+        
+        setVoteCounts(prev => {
+          const currentCounts = prev[activityId] || { yes: 0, no: 0, maybe: 0 };
+          return {
+            ...prev,
+            [activityId]: {
+              ...currentCounts,
+              [choice]: Math.max(0, currentCounts[choice] - 1)
+            }
+          };
+        });
+      } else {
+        // Update vote
+        setUserVotes(prev => ({ ...prev, [activityId]: choice }));
+        
+        setVoteCounts(prev => {
+          const currentCounts = prev[activityId] || { yes: 0, no: 0, maybe: 0 };
+          
+          // Remove previous vote if exists
+          if (previousVote) {
+            currentCounts[previousVote] = Math.max(0, currentCounts[previousVote] - 1);
+          }
+          
+          // Add new vote
+          currentCounts[choice] = currentCounts[choice] + 1;
+          
+          return {
+            ...prev,
+            [activityId]: { ...currentCounts }
+          };
+        });
+      }
+    } catch (error) {
+      console.error('Error voting:', error);
+      alert('Failed to submit vote. Please try again.');
+    }
   };
 
   const tripDuration = new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime();
@@ -205,6 +324,14 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading your itinerary...</p>
+            </div>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Day List Sidebar */}
           <div className="lg:col-span-1">
@@ -277,9 +404,10 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
             )}
           </div>
         </div>
+        )}
 
         {/* Votes Results Section */}
-        {user && Object.keys(voteCounts).length > 0 && (
+        {!isLoading && user && Object.keys(voteCounts).length > 0 && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">

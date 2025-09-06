@@ -270,30 +270,43 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
     setErrorMessage(null);
     
     try {
-      // For static hosting, create trip directly without backend
-      const start = new Date(startDate);
-      const end = new Date(start);
-      end.setDate(start.getDate() + parseInt(numberOfDays) - 1);
-      const endDate = end.toISOString().split('T')[0];
+      // Call backend API to generate itinerary
+      const response = await fetch('/api/generate-itinerary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          destination,
+          vibe: tripType,
+          days: parseInt(numberOfDays),
+          budget: budgetMax,
+          startDate,
+          groupSize: 2 // Default group size
+        })
+      });
 
-      const tripData = {
-        destination,
-        startDate,
-        endDate,
-        tripType,
-        collaborators: []
-      };
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-      // Show success message briefly before creating trip
-      setShowSuccessMessage(true);
-      setTimeout(() => {
-        setIsCreatingTrip(false);
-        setShowSuccessMessage(false);
-        onTripCreate(tripData);
-      }, 1500);
+      const data = await response.json();
+      
+      if (data.id) {
+        // Show success message briefly before redirecting
+        setShowSuccessMessage(true);
+        setTimeout(() => {
+          setIsCreatingTrip(false);
+          setShowSuccessMessage(false);
+          // Redirect to the generated trip
+          window.location.href = `/trip/${data.id}`;
+        }, 1500);
+      } else {
+        throw new Error('No trip ID returned from server');
+      }
     } catch (error) {
       console.error('Error creating trip:', error);
-      setErrorMessage('Failed to create trip. Please try again.');
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to create trip. Please try again.');
       setIsCreatingTrip(false);
       setShowSuccessMessage(false);
       // Auto-hide error after 5 seconds
