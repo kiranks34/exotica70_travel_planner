@@ -347,12 +347,13 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
               {/* Calendar positioned below start date field */}
               {showCalendar && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-white bg-opacity-95 backdrop-blur-lg shadow-2xl z-50 rounded-xl border border-white border-opacity-80 max-w-sm mx-auto">
-                  <div className="p-3">
+                  <div className="p-4">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-base font-semibold text-gray-900">
                         Select Start Date
                       </h3>
                       <button
+                        type="button"
                         onClick={() => setShowCalendar(false)}
                         className="text-gray-400 hover:text-gray-600 transition-colors"
                       >
@@ -360,11 +361,30 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                       </button>
                     </div>
                     
-                    {/* Single Month with Navigation */}
-                    <div>
+                    <div className="space-y-4">
+                      {/* Month Navigation */}
+                      <div className="flex items-center justify-between">
+                        <button
+                          type="button"
+                          onClick={() => navigateMonth('prev')}
+                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                          <ChevronDown className="h-4 w-4 rotate-90 text-gray-600" />
+                        </button>
                         <h4 className="text-sm font-semibold text-gray-700 mb-3 text-center">
                           {getCurrentMonth().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                         </h4>
+                        <button
+                          type="button"
+                          onClick={() => navigateMonth('next')}
+                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                          <ChevronDown className="h-4 w-4 -rotate-90 text-gray-600" />
+                        </button>
+                      </div>
+                      
+                      {/* Calendar Grid */}
+                      <div>
                         <div className="grid grid-cols-7 gap-1 mb-2">
                           {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
                             <div key={day} className="text-xs font-medium text-gray-500 text-center py-1">
@@ -381,11 +401,12 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                             
                             return (
                               <button
+                                type="button"
                                 key={index}
                                 onClick={() => !isDisabled && handleDateSelect(dateStr)}
                                 disabled={isDisabled}
                                 className={`
-                                  w-8 h-8 text-xs rounded-lg transition-all font-medium
+                                  w-7 h-7 text-xs rounded-lg transition-all font-medium
                                   ${!isCurrentMonth ? 'text-gray-300' : ''}
                                   ${isSelected ? 'bg-orange-500 text-white font-semibold shadow-lg' : ''}
                                   ${!isSelected && isCurrentMonth && !isDisabled ? 'hover:bg-orange-100 hover:text-orange-700 text-gray-700' : ''}
@@ -399,59 +420,20 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                         </div>
                       </div>
                       
-                      {/* Next Month */}
-                      <div>
-                        <h4 className="text-sm font-semibold text-gray-700 mb-3 text-center">
-                          {getNextMonth().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                        </h4>
-                        <div className="grid grid-cols-7 gap-1 mb-2">
-                          {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-                            <div key={day} className="text-xs font-medium text-gray-500 text-center py-1">
-                              {day}
-                            </div>
-                          ))}
+                      {/* Selected Date Display */}
+                      {startDate && (
+                        <div className="p-3 bg-orange-50 rounded-lg">
+                          <p className="text-orange-700 text-center font-medium text-sm">
+                            <span className="font-semibold">Selected:</span> {formatDateForDisplay(startDate)}
+                            {numberOfDays && (
+                              <span className="block text-xs mt-1">
+                                Duration: {numberOfDays} day{numberOfDays !== '1' ? 's' : ''}
+                              </span>
+                            )}
+                          </p>
                         </div>
-                        <div className="grid grid-cols-7 gap-1">
-                          {generateCalendarDays(getNextMonth()).map((date, index) => {
-                            const isCurrentMonth = date.getMonth() === getNextMonth().getMonth();
-                            const isSelected = isDateSelected(date);
-                            const isDisabled = isDateDisabled(date);
-                            const dateStr = date.toISOString().split('T')[0];
-                            
-                            return (
-                              <button
-                                key={index}
-                                onClick={() => !isDisabled && handleDateSelect(dateStr)}
-                                disabled={isDisabled}
-                                className={`
-                                  w-8 h-8 text-xs rounded-lg transition-all font-medium
-                                  ${!isCurrentMonth ? 'text-gray-300' : ''}
-                                  ${isSelected ? 'bg-orange-500 text-white font-semibold shadow-lg' : ''}
-                                  ${!isSelected && isCurrentMonth && !isDisabled ? 'hover:bg-orange-100 hover:text-orange-700 text-gray-700' : ''}
-                                  ${isDisabled ? 'text-gray-300 cursor-not-allowed' : 'cursor-pointer'}
-                                `}
-                              >
-                                {date.getDate()}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
+                      )}
                     </div>
-                    
-                    {/* Selected Date Display */}
-                    {startDate && (
-                      <div className="mt-4 p-3 bg-orange-50 rounded-lg">
-                        <p className="text-orange-700 text-center font-medium text-sm">
-                          <span className="font-semibold">Selected:</span> {formatDateForDisplay(startDate)}
-                          {numberOfDays && (
-                            <span className="block text-xs mt-1">
-                              Duration: {numberOfDays} day{numberOfDays !== '1' ? 's' : ''}
-                            </span>
-                          )}
-                        </p>
-                      </div>
-                    )}
                   </div>
                 </div>
               )}
