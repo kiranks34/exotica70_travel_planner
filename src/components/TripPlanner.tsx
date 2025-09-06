@@ -289,7 +289,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
     setErrorMessage(null);
     
     try {
-      // Calculate end date based on start date and number of days
+      // For static hosting, create trip directly without backend
       const start = new Date(startDate);
       const end = new Date(start);
       end.setDate(start.getDate() + parseInt(numberOfDays) - 1);
@@ -297,35 +297,17 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
 
       const tripData = {
         destination,
-        vibe: tripType,
-        days: parseInt(numberOfDays),
-        start_date: startDate,
-        budget: budgetMax // Use max budget as the budget value
+        startDate,
+        endDate,
+        tripType,
+        collaborators: []
       };
 
-      const response = await fetch('/api/generate-itinerary', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(tripData)
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      
-      if (result.id) {
-        // Show success message briefly before redirect
-        setShowSuccessMessage(true);
-        setTimeout(() => {
-          window.location.href = `/trip/${result.id}`;
-        }, 1500);
-      } else {
-        throw new Error('No trip ID returned from server');
-      }
+      // Show success message briefly before creating trip
+      setShowSuccessMessage(true);
+      setTimeout(() => {
+        onTripCreate(tripData);
+      }, 1500);
     } catch (error) {
       console.error('Error creating trip:', error);
       setErrorMessage('Failed to create trip. Please try again.');
