@@ -627,17 +627,17 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({
         </div>
 
         {/* Destination Cards */}
-        <div className="w-96 mr-8 lg:mr-16">
+        <div className="flex-1 max-w-4xl mr-8 lg:mr-16">
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-white mb-2 text-center">
+            <h2 className="text-3xl font-bold text-white mb-2 text-center">
               Discover Amazing Destinations
             </h2>
-            <p className="text-white/80 text-center text-sm">
+            <p className="text-white/80 text-center">
               Handpicked places with insider secrets from locals
             </p>
           </div>
           
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {destinations.map((destination) => (
               <DestinationCard
                 key={destination.id}
