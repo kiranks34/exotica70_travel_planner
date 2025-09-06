@@ -12,12 +12,20 @@ const PORT = 3001;
 // Initialize Supabase client
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+
+let supabase = null;
+if (supabaseUrl && supabaseKey && !supabaseUrl.includes('your-project') && !supabaseKey.includes('your-anon-key')) {
+  supabase = createClient(supabaseUrl, supabaseKey);
+}
 
 // Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.VITE_OPENAI_API_KEY,
-});
+const openaiApiKey = process.env.VITE_OPENAI_API_KEY;
+let openai = null;
+if (openaiApiKey && !openaiApiKey.includes('your-openai-api-key')) {
+  openai = new OpenAI({
+    apiKey: openaiApiKey,
+  });
+}
 
 // Middleware
 app.use(cors());
@@ -81,25 +89,30 @@ Rules: keep estimated_total_cost <= budget (hard cap) whenever possible; 3–5 a
     let itineraryData;
 
     try {
-      const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        temperature: 0.4,
-        response_format: { type: "json_object" }
-      });
+      if (openai) {
+        const completion = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ],
+          temperature: 0.4,
+          response_format: { type: "json_object" }
+        });
 
-      const responseContent = completion.choices[0].message.content;
-      console.log('[GENERATE_ITINERARY] OpenAI response received');
-      
-      try {
-        itineraryData = JSON.parse(responseContent);
-        console.log('[GENERATE_ITINERARY] JSON parsed successfully');
-      } catch (parseError) {
-        console.log('[GENERATE_ITINERARY] JSON parse failed, using fallback');
-        throw new Error('JSON parse failed');
+        const responseContent = completion.choices[0].message.content;
+        console.log('[GENERATE_ITINERARY] OpenAI response received');
+        
+        try {
+          itineraryData = JSON.parse(responseContent);
+          console.log('[GENERATE_ITINERARY] JSON parsed successfully');
+        } catch (parseError) {
+          console.log('[GENERATE_ITINERARY] JSON parse failed, using fallback');
+          throw new Error('JSON parse failed');
+        }
+      } else {
+        console.log('[GENERATE_ITINERARY] OpenAI not configured, using fallback');
+        throw new Error('OpenAI not configured');
       }
     } catch (openaiError) {
       console.log('[GENERATE_ITINERARY] OpenAI failed, using fallback:', openaiError.message);
@@ -179,30 +192,39 @@ Rules: keep estimated_total_cost <= budget (hard cap) whenever possible; 3–5 a
 
     console.log('[GENERATE_ITINERARY] Saving to database...');
 
-    // Insert into Supabase
-    const { data: tripData, error: insertError } = await supabase
-      .from('trips')
-      .insert({
-        destination,
-        vibe,
-        days,
-        budget,
-        start_date: start_date || null,
-        itinerary: itineraryData,
-        created_at: new Date().toISOString()
-      })
-      .select('id')
-      .single();
+    // Insert into Supabase (if configured)
+    let tripId;
+    if (supabase) {
+      const { data: tripData, error: insertError } = await supabase
+        .from('trips')
+        .insert({
+          destination,
+          vibe,
+          days,
+          budget,
+          start_date: start_date || null,
+          itinerary: itineraryData,
+          created_at: new Date().toISOString()
+        })
+        .select('id')
+        .single();
 
-    if (insertError) {
-      console.error('[GENERATE_ITINERARY] Database insert error:', insertError);
-      return res.status(500).json({ 
-        error: 'Failed to save trip to database' 
-      });
-    }
+      if (insertError) {
+        console.error('[GENERATE_ITINERARY] Database insert error:', insertError);
+        return res.status(500).json({ error: 'Failed to save trip' });
+      }
 
-    console.log('[GENERATE_ITINERARY] Trip created successfully:', tripData.id);
-    res.status(200).json({ id: tripData.id });
+      if (!tripData || !tripData.id) {
+        console.error('[GENERATE_ITINERARY] No trip ID returned from insert');
+        return res.status(500).json({ error: 'Failed to create trip' });
+      }
+      
+      tripId = tripData.id;
+    } else {
+      // Generate a mock trip ID when database is not configured
+      tripId = 'demo-' + Date.now();
+    console.log('[GENERATE_ITINERARY] Trip created successfully:', tripId);
+    res.status(200).json({ id: tripId });
 
   } catch (error) {
     console.error('[GENERATE_ITINERARY] Server error:', error);
@@ -223,51 +245,111 @@ app.get('/api/trip/:id', async (req, res) => {
 
     console.log('[GET_TRIP] Fetching trip:', id);
 
-    // Fetch trip data
-    const { data: tripData, error: tripError } = await supabase
-      .from('trips')
-      .select('destination, days, budget, itinerary')
-      .eq('id', id)
-      .single();
-
-    if (tripError) {
-      if (tripError.code === 'PGRST116') {
-        console.log('[GET_TRIP] Trip not found:', id);
-        return res.status(404).json({ error: 'NOT_FOUND' });
-      }
-      console.error('[GET_TRIP] Database error:', tripError);
-      return res.status(500).json({ error: 'SERVER_ERROR' });
-    }
-
-    // Fetch votes for this trip
-    const { data: votesData, error: votesError } = await supabase
-      .from('votes')
-      .select('activity_id, choice')
-      .eq('trip_id', id);
-
-    if (votesError) {
-      console.error('[GET_TRIP] Votes fetch error:', votesError);
-      return res.status(500).json({ error: 'SERVER_ERROR' });
-    }
-
-    // Aggregate votes by activity_id
-    const votes = {};
-    if (votesData) {
-      votesData.forEach(vote => {
-        if (!votes[vote.activity_id]) {
-          votes[vote.activity_id] = { yes: 0, no: 0, maybe: 0 };
+    // Check if this is a demo trip or real trip
+    if (id.startsWith('demo-')) {
+      // Return demo trip data
+      const demoTrip = {
+        destination: 'Demo Destination',
+        days: 3,
+        budget: 1000,
+        itinerary: {
+          trip: {
+            destination: 'Demo Destination',
+            days: 3,
+            budget: 1000,
+            vibe: 'adventure',
+            group_size: 2,
+            currency: 'USD'
+          },
+          days: [
+            {
+              day: 1,
+              summary: 'Day 1 exploring Demo Destination',
+              cluster: 'Demo Center',
+              activities: [
+                {
+                  id: 'demo-activity-1',
+                  title: 'Morning Demo Activity',
+                  time: '09:00',
+                  duration_min: 180,
+                  est_cost_per_person: 25,
+                  tags: ['demo', 'sightseeing'],
+                  hidden_gem: true,
+                  photo_hint: 'Beautiful demo location'
+                }
+              ]
+            }
+          ],
+          estimated_total_cost: 300,
+          over_budget: false,
+          swap_suggestions: [],
+          eco_notes: ['This is a demo trip']
         }
-        if (['yes', 'no', 'maybe'].includes(vote.choice)) {
-          votes[vote.activity_id][vote.choice]++;
-        }
+      };
+      
+      console.log('[GET_TRIP] Returning demo trip data');
+      return res.status(200).json({
+        trip: demoTrip,
+        votes: {}
       });
     }
 
-    console.log('[GET_TRIP] Trip data fetched successfully');
-    res.status(200).json({
-      trip: tripData,
-      votes
-    });
+    // Handle real trips with Supabase
+    if (!supabase) {
+      console.log('[GET_TRIP] Database not configured');
+      return res.status(500).json({ error: 'DATABASE_NOT_CONFIGURED' });
+    }
+
+    try {
+      // Fetch trip data
+      const { data: tripData, error: tripError } = await supabase
+        .from('trips')
+        .select('destination, days, budget, itinerary')
+        .eq('id', id)
+        .single();
+
+      if (tripError) {
+        if (tripError.code === 'PGRST116') {
+          console.log('[GET_TRIP] Trip not found:', id);
+          return res.status(404).json({ error: 'NOT_FOUND' });
+        }
+        console.error('[GET_TRIP] Database error:', tripError);
+        return res.status(500).json({ error: 'SERVER_ERROR' });
+      }
+
+      // Fetch votes for this trip
+      const { data: votesData, error: votesError } = await supabase
+        .from('votes')
+        .select('activity_id, choice')
+        .eq('trip_id', id);
+
+      if (votesError) {
+        console.error('[GET_TRIP] Votes fetch error:', votesError);
+        return res.status(500).json({ error: 'SERVER_ERROR' });
+      }
+
+      // Aggregate votes by activity_id
+      const votes = {};
+      if (votesData) {
+        votesData.forEach(vote => {
+          if (!votes[vote.activity_id]) {
+            votes[vote.activity_id] = { yes: 0, no: 0, maybe: 0 };
+          }
+          if (['yes', 'no', 'maybe'].includes(vote.choice)) {
+            votes[vote.activity_id][vote.choice]++;
+          }
+        });
+      }
+
+      console.log('[GET_TRIP] Trip data fetched successfully');
+      res.status(200).json({
+        trip: tripData,
+        votes
+      });
+    } catch (dbError) {
+      console.error('[GET_TRIP] Database connection error:', dbError);
+      return res.status(500).json({ error: 'DATABASE_CONNECTION_ERROR' });
+    }
 
   } catch (error) {
     console.error('[GET_TRIP] Server error:', error);
