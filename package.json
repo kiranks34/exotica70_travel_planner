@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.2",
+    "dotenv": "^17.2.2",
     "lucide-react": "^0.344.0",
     "openai": "^5.19.1",
     "react": "^18.3.1",
