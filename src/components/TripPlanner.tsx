@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Calendar, MapPin, Users, Plus, Sparkles, UserPlus, Lightbulb, X, ChevronDown } from 'lucide-react';
+import { DestinationCard } from './DestinationCard';
 
 interface TripPlannerProps {
   onTripCreate: (tripData: any) => void;
@@ -21,6 +22,58 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
   const [showCalendar, setShowCalendar] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
   const dateInputRef = useRef<HTMLInputElement>(null);
+
+  // Destination cards data
+  const destinationCards = [
+    {
+      name: 'Santorini',
+      country: 'Greece',
+      image: 'https://images.pexels.com/photos/1285625/pexels-photo-1285625.jpeg?auto=compress&cs=tinysrgb&w=400&h=300',
+      description: 'Experience breathtaking sunsets, pristine white-washed buildings, and crystal-clear waters in this iconic Greek island paradise.',
+      hiddenGem: 'Visit the hidden village of Pyrgos for authentic local cuisine away from tourist crowds.',
+      rating: 4.8
+    },
+    {
+      name: 'Kyoto',
+      country: 'Japan',
+      image: 'https://images.pexels.com/photos/161251/senso-ji-temple-japan-kyoto-landmark-161251.jpeg?auto=compress&cs=tinysrgb&w=400&h=300',
+      description: 'Immerse yourself in ancient temples, traditional gardens, and the timeless beauty of Japan\'s cultural heart.',
+      hiddenGem: 'Explore the bamboo groves of Arashiyama at dawn for a magical, crowd-free experience.',
+      rating: 4.9
+    },
+    {
+      name: 'Banff',
+      country: 'Canada',
+      image: 'https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=400&h=300',
+      description: 'Discover pristine mountain lakes, towering peaks, and abundant wildlife in one of the world\'s most stunning national parks.',
+      hiddenGem: 'Hike to the secret Ink Pots hot springs for a natural spa experience in the wilderness.',
+      rating: 4.7
+    },
+    {
+      name: 'Marrakech',
+      country: 'Morocco',
+      image: 'https://images.pexels.com/photos/739407/pexels-photo-739407.jpeg?auto=compress&cs=tinysrgb&w=400&h=300',
+      description: 'Get lost in vibrant souks, marvel at stunning architecture, and experience the magic of North African culture.',
+      hiddenGem: 'Visit the secret rooftop gardens of Bahia Palace for panoramic views of the medina.',
+      rating: 4.6
+    },
+    {
+      name: 'Reykjavik',
+      country: 'Iceland',
+      image: 'https://images.pexels.com/photos/1433052/pexels-photo-1433052.jpeg?auto=compress&cs=tinysrgb&w=400&h=300',
+      description: 'Witness the Northern Lights, explore dramatic landscapes, and relax in geothermal hot springs.',
+      hiddenGem: 'Discover the hidden Seljavallalaug pool, a geothermal swimming spot surrounded by mountains.',
+      rating: 4.5
+    },
+    {
+      name: 'Bagan',
+      country: 'Myanmar',
+      image: 'https://images.pexels.com/photos/2166553/pexels-photo-2166553.jpeg?auto=compress&cs=tinysrgb&w=400&h=300',
+      description: 'Explore thousands of ancient temples and pagodas scattered across mystical plains in this archaeological wonder.',
+      hiddenGem: 'Take a sunrise hot air balloon ride over the temple plains for an unforgettable aerial view.',
+      rating: 4.8
+    }
+  ];
 
   // Beautiful travel videos from Pexels - various landscapes and experiences
   const travelVideos = [
@@ -220,8 +273,12 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
     return date < today;
   };
 
+  const handleDestinationSelect = (destination: string) => {
+    setDestination(destination);
+  };
+
   return (
-    <div className="min-h-screen flex items-center p-4 relative overflow-hidden">
+    <div className="min-h-screen flex p-4 relative overflow-hidden">
       {/* Background Video */}
       <div className="absolute inset-0 z-0">
         {travelVideos.map((videoUrl, index) => (
@@ -256,8 +313,10 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
         <div className="absolute inset-0 bg-black bg-opacity-30 z-20" />
       </div>
 
-      <div className="max-w-xl w-full ml-8 lg:ml-16">
-        <div className="bg-white bg-opacity-90 backdrop-blur-lg rounded-2xl shadow-2xl p-5 md:p-6 border border-white border-opacity-80 relative z-10">
+      <div className="flex w-full max-w-7xl mx-auto items-start space-x-8 relative z-10">
+        {/* Trip Planner Form - Left Side */}
+        <div className="w-2/5 flex-shrink-0">
+          <div className="bg-white bg-opacity-90 backdrop-blur-lg rounded-2xl shadow-2xl p-5 md:p-6 border border-white border-opacity-80">
           <div className="mb-8 text-center">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 font-heading">
               Every Trip Has a Plan. What's Yours?
@@ -598,6 +657,32 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
               </button>
             </div>
           </form>
+        </div>
+        </div>
+
+        {/* Destination Cards - Right Side */}
+        <div className="flex-1 max-h-screen overflow-y-auto">
+          <div className="bg-white bg-opacity-90 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border border-white border-opacity-80">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Popular Destinations</h2>
+              <p className="text-gray-600">Discover amazing places around the world</p>
+            </div>
+            
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              {destinationCards.map((destination, index) => (
+                <DestinationCard
+                  key={index}
+                  name={destination.name}
+                  country={destination.country}
+                  image={destination.image}
+                  description={destination.description}
+                  hiddenGem={destination.hiddenGem}
+                  rating={destination.rating}
+                  onPlanTrip={handleDestinationSelect}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
