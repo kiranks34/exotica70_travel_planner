@@ -74,6 +74,11 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
     }
   };
 
+  const getTotalVotes = () => {
+    if (!voteCounts) return 0;
+    return (voteCounts.yes || 0) + (voteCounts.no || 0) + (voteCounts.maybe || 0);
+  };
+
   return (
     <div className="relative group">
       {/* Edit/Delete Buttons - Outside card, top right */}
