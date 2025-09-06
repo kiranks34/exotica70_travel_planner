@@ -473,19 +473,21 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
       {/* Calendar Overlay - Slides from right */}
       {showCalendar && (
         <>
-          {/* Backdrop */}
-          <div className="fixed inset-0 bg-black bg-opacity-30 z-40" />
-          
           {/* Calendar Panel */}
           <div 
             ref={calendarRef}
-            className={`fixed top-0 right-0 h-full w-96 bg-white bg-opacity-95 backdrop-blur-lg shadow-2xl z-50 transform transition-transform duration-300 ease-out ${
+            className={`absolute top-0 left-full ml-4 w-80 bg-white bg-opacity-95 backdrop-blur-lg shadow-2xl z-50 transform transition-transform duration-300 ease-out rounded-2xl border border-white border-opacity-80 ${
               showCalendar ? 'translate-x-0' : 'translate-x-full'
             }`}
           >
-            <div className="p-6 h-full overflow-y-auto">
+            {/* Arrow pointing to start date field */}
+            <div className="absolute left-0 top-8 transform -translate-x-2">
+              <div className="w-0 h-0 border-t-8 border-b-8 border-r-8 border-transparent border-r-white border-opacity-95"></div>
+            </div>
+            
+            <div className="p-4 max-h-96 overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-gray-900">
                   Select Start Date
                 </h3>
                 <button
@@ -496,15 +498,15 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                 </button>
               </div>
               
-              <div className="space-y-8">
+              <div className="space-y-6">
                 {/* Current Month */}
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-700 mb-4 text-center">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3 text-center">
                     {getCurrentMonth().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                   </h4>
-                  <div className="grid grid-cols-7 gap-1 mb-3">
+                  <div className="grid grid-cols-7 gap-1 mb-2">
                     {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-                      <div key={day} className="text-sm font-medium text-gray-500 text-center py-2">
+                      <div key={day} className="text-xs font-medium text-gray-500 text-center py-1">
                         {day}
                       </div>
                     ))}
@@ -522,7 +524,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                           onClick={() => !isDisabled && handleDateSelect(dateStr)}
                           disabled={isDisabled}
                           className={`
-                            w-10 h-10 text-sm rounded-lg transition-all font-medium
+                            w-8 h-8 text-xs rounded-lg transition-all font-medium
                             ${!isCurrentMonth ? 'text-gray-300' : ''}
                             ${isSelected ? 'bg-orange-500 text-white font-semibold shadow-lg' : ''}
                             ${!isSelected && isCurrentMonth && !isDisabled ? 'hover:bg-orange-100 hover:text-orange-700 text-gray-700' : ''}
@@ -538,12 +540,12 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                 
                 {/* Next Month */}
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-700 mb-4 text-center">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3 text-center">
                     {getNextMonth().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                   </h4>
-                  <div className="grid grid-cols-7 gap-1 mb-3">
+                  <div className="grid grid-cols-7 gap-1 mb-2">
                     {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-                      <div key={day} className="text-sm font-medium text-gray-500 text-center py-2">
+                      <div key={day} className="text-xs font-medium text-gray-500 text-center py-1">
                         {day}
                       </div>
                     ))}
@@ -561,7 +563,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                           onClick={() => !isDisabled && handleDateSelect(dateStr)}
                           disabled={isDisabled}
                           className={`
-                            w-10 h-10 text-sm rounded-lg transition-all font-medium
+                            w-8 h-8 text-xs rounded-lg transition-all font-medium
                             ${!isCurrentMonth ? 'text-gray-300' : ''}
                             ${isSelected ? 'bg-orange-500 text-white font-semibold shadow-lg' : ''}
                             ${!isSelected && isCurrentMonth && !isDisabled ? 'hover:bg-orange-100 hover:text-orange-700 text-gray-700' : ''}
@@ -578,11 +580,11 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
               
               {/* Selected Date Display */}
               {startDate && (
-                <div className="mt-8 p-4 bg-orange-50 rounded-xl">
-                  <p className="text-orange-700 text-center font-medium">
+                <div className="mt-4 p-3 bg-orange-50 rounded-lg">
+                  <p className="text-orange-700 text-center font-medium text-sm">
                     <span className="font-semibold">Selected:</span> {formatDateForDisplay(startDate)}
                     {numberOfDays && (
-                      <span className="block text-sm mt-1">
+                      <span className="block text-xs mt-1">
                         Duration: {numberOfDays} day{numberOfDays !== '1' ? 's' : ''}
                       </span>
                     )}
