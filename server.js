@@ -28,9 +28,6 @@ if (openaiApiKey && openaiApiKey.startsWith('sk-')) {
   console.log('✅ OpenAI client initialized successfully');
 } else {
   console.log('⚠️  OpenAI API key not configured. Using fallback itinerary generation.');
-  console.log('   To enable OpenAI integration:');
-  console.log('   1. Get your API key from https://platform.openai.com/api-keys');
-  console.log('   2. Update VITE_OPENAI_API_KEY in your .env file');
 }
 
 // Middleware
@@ -298,8 +295,7 @@ app.get('/api/trip/:id', async (req, res) => {
       
       console.log('[GET_TRIP] Returning demo trip data');
       return res.status(200).json({
-        trip: demoTrip,
-        votes: {}
+        trip: demoTrip
       });
     }
 
@@ -326,34 +322,9 @@ app.get('/api/trip/:id', async (req, res) => {
         return res.status(500).json({ error: 'SERVER_ERROR' });
       }
 
-      // Fetch votes for this trip
-      const { data: votesData, error: votesError } = await supabase
-        .from('votes')
-        .select('activity_id, choice')
-        .eq('trip_id', id);
-
-      if (votesError) {
-        console.error('[GET_TRIP] Votes fetch error:', votesError);
-        return res.status(500).json({ error: 'SERVER_ERROR' });
-      }
-
-      // Aggregate votes by activity_id
-      const votes = {};
-      if (votesData) {
-        votesData.forEach(vote => {
-          if (!votes[vote.activity_id]) {
-            votes[vote.activity_id] = { yes: 0, no: 0, maybe: 0 };
-          }
-          if (['yes', 'no', 'maybe'].includes(vote.choice)) {
-            votes[vote.activity_id][vote.choice]++;
-          }
-        });
-      }
-
       console.log('[GET_TRIP] Trip data fetched successfully');
       res.status(200).json({
-        trip: tripData,
-        votes
+        trip: tripData
       });
     } catch (dbError) {
       console.error('[GET_TRIP] Database connection error:', dbError);
@@ -363,51 +334,6 @@ app.get('/api/trip/:id', async (req, res) => {
   } catch (error) {
     console.error('[GET_TRIP] Server error:', error);
     res.status(500).json({ error: 'SERVER_ERROR' });
-  }
-});
-
-// Vote Endpoint
-app.post('/api/trip/:id/vote', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { activityId, choice, voterId } = req.body;
-
-    if (!id || !activityId || !choice || !voterId) {
-      return res.status(400).json({ 
-        error: 'Missing required fields: activityId, choice, voterId' 
-      });
-    }
-
-    if (!['yes', 'no', 'maybe'].includes(choice)) {
-      return res.status(400).json({ 
-        error: 'Invalid choice. Must be yes, no, or maybe' 
-      });
-    }
-
-    console.log('[VOTE] Recording vote:', { id, activityId, choice, voterId });
-
-    // Insert or update vote
-    const { error: voteError } = await supabase
-      .from('votes')
-      .upsert({
-        trip_id: id,
-        activity_id: activityId,
-        voter_id: voterId,
-        choice,
-        created_at: new Date().toISOString()
-      });
-
-    if (voteError) {
-      console.error('[VOTE] Database error:', voteError);
-      return res.status(500).json({ error: 'Failed to record vote' });
-    }
-
-    console.log('[VOTE] Vote recorded successfully');
-    res.status(200).json({ success: true });
-
-  } catch (error) {
-    console.error('[VOTE] Server error:', error);
-    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

@@ -8,10 +8,7 @@ import {
   Check, 
   RefreshCw, 
   Clock,
-  Tag,
-  ThumbsUp,
-  ThumbsDown,
-  Meh
+  Tag
 } from 'lucide-react';
 
 interface Activity {
@@ -34,15 +31,8 @@ interface Trip {
   itinerary: Day[];
 }
 
-interface VoteCounts {
-  yes: number;
-  no: number;
-  maybe: number;
-}
-
 interface TripData {
   trip: Trip;
-  votes: { [activityId: string]: VoteCounts };
 }
 
 const TripPage: React.FC = () => {
@@ -51,18 +41,6 @@ const TripPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [voterId, setVoterId] = useState<string>('');
-  const [votingStates, setVotingStates] = useState<{ [activityId: string]: boolean }>({});
-
-  // Generate or get voter ID from localStorage
-  useEffect(() => {
-    let storedVoterId = localStorage.getItem('voterId');
-    if (!storedVoterId) {
-      storedVoterId = crypto.randomUUID();
-      localStorage.setItem('voterId', storedVoterId);
-    }
-    setVoterId(storedVoterId);
-  }, []);
 
   // Fetch trip data
   const fetchTripData = async () => {
@@ -100,39 +78,6 @@ const TripPage: React.FC = () => {
       setTimeout(() => setCopiedLink(false), 2000);
     } catch (err) {
       console.error('Failed to copy link:', err);
-    }
-  };
-
-  // Vote on activity
-  const handleVote = async (activityId: string, choice: 'yes' | 'no' | 'maybe') => {
-    if (!id || !voterId || votingStates[activityId]) return;
-
-    setVotingStates(prev => ({ ...prev, [activityId]: true }));
-
-    try {
-      const response = await fetch(`/api/trip/${id}/vote`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          activityId,
-          choice,
-          voterId
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit vote');
-      }
-
-      // Refresh trip data to get updated votes
-      await fetchTripData();
-    } catch (err) {
-      console.error('Error voting:', err);
-      alert('Failed to submit vote. Please try again.');
-    } finally {
-      setVotingStates(prev => ({ ...prev, [activityId]: false }));
     }
   };
 
@@ -191,7 +136,7 @@ const TripPage: React.FC = () => {
     );
   }
 
-  const { trip, votes } = tripData;
+  const { trip } = tripData;
   const totalSpent = calculateTotalSpent();
   const budgetProgress = trip.budget > 0 ? (totalSpent / trip.budget) * 100 : 0;
 
@@ -307,94 +252,45 @@ const TripPage: React.FC = () => {
               </div>
 
               <div className="space-y-4">
-                {day.activities.map((activity) => {
-                  const activityVotes = votes[activity.id] || { yes: 0, no: 0, maybe: 0 };
-                  const isVoting = votingStates[activity.id];
-
-                  return (
-                    <div key={activity.id} className="border border-gray-200 rounded-lg p-4">
-                      {/* Activity Header */}
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 mb-1">{activity.title}</h3>
-                          <div className="flex items-center space-x-4 text-sm text-gray-600">
+                {day.activities.map((activity) => (
+                  <div key={activity.id} className="border border-gray-200 rounded-lg p-4">
+                    {/* Activity Header */}
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 mb-1">{activity.title}</h3>
+                        <div className="flex items-center space-x-4 text-sm text-gray-600">
+                          <div className="flex items-center space-x-1">
+                            <Clock className="h-4 w-4" />
+                            <span>{activity.time}</span>
+                          </div>
+                          {activity.est_cost > 0 && (
                             <div className="flex items-center space-x-1">
-                              <Clock className="h-4 w-4" />
-                              <span>{activity.time}</span>
+                              <DollarSign className="h-4 w-4" />
+                              <span>${activity.est_cost}</span>
                             </div>
-                            {activity.est_cost > 0 && (
-                              <div className="flex items-center space-x-1">
-                                <DollarSign className="h-4 w-4" />
-                                <span>${activity.est_cost}</span>
-                              </div>
-                            )}
-                          </div>
+                          )}
                         </div>
-                      </div>
-
-                      {/* Tags */}
-                      {activity.tags && activity.tags.length > 0 && (
-                        <div className="flex items-center space-x-2 mb-4">
-                          <Tag className="h-4 w-4 text-gray-400" />
-                          <div className="flex flex-wrap gap-2">
-                            {activity.tags.map((tag, index) => (
-                              <span
-                                key={index}
-                                className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs"
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Voting Buttons */}
-                      <div className="flex items-center space-x-3 mb-3">
-                        <button
-                          onClick={() => handleVote(activity.id, 'yes')}
-                          disabled={isVoting}
-                          className="flex items-center space-x-1 bg-green-100 text-green-700 px-3 py-2 rounded-lg hover:bg-green-200 transition-colors disabled:opacity-50"
-                        >
-                          <ThumbsUp className="h-4 w-4" />
-                          <span>Yes</span>
-                        </button>
-                        <button
-                          onClick={() => handleVote(activity.id, 'no')}
-                          disabled={isVoting}
-                          className="flex items-center space-x-1 bg-red-100 text-red-700 px-3 py-2 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50"
-                        >
-                          <ThumbsDown className="h-4 w-4" />
-                          <span>No</span>
-                        </button>
-                        <button
-                          onClick={() => handleVote(activity.id, 'maybe')}
-                          disabled={isVoting}
-                          className="flex items-center space-x-1 bg-yellow-100 text-yellow-700 px-3 py-2 rounded-lg hover:bg-yellow-200 transition-colors disabled:opacity-50"
-                        >
-                          <Meh className="h-4 w-4" />
-                          <span>Maybe</span>
-                        </button>
-                      </div>
-
-                      {/* Vote Counts */}
-                      <div className="flex items-center space-x-4 text-sm text-gray-600">
-                        <span className="flex items-center space-x-1">
-                          <span>👍</span>
-                          <span>{activityVotes.yes}</span>
-                        </span>
-                        <span className="flex items-center space-x-1">
-                          <span>👎</span>
-                          <span>{activityVotes.no}</span>
-                        </span>
-                        <span className="flex items-center space-x-1">
-                          <span>🤷</span>
-                          <span>{activityVotes.maybe}</span>
-                        </span>
                       </div>
                     </div>
-                  );
-                })}
+
+                    {/* Tags */}
+                    {activity.tags && activity.tags.length > 0 && (
+                      <div className="flex items-center space-x-2">
+                        <Tag className="h-4 w-4 text-gray-400" />
+                        <div className="flex flex-wrap gap-2">
+                          {activity.tags.map((tag, index) => (
+                            <span
+                              key={index}
+                              className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           ))}
