@@ -34,48 +34,38 @@ const validVibes = ['Adventure', 'Chill', 'Party', 'Culture', 'Spontaneous', 'ad
 // Generate Itinerary Endpoint
 app.post('/api/generate-itinerary', async (req, res) => {
   try {
-    console.log('📝 Received request:', req.body);
-    
     const { destination, vibe, days, budget, startDate, groupSize } = req.body;
 
     if (!destination || !vibe || !days || !budget) {
-      console.log('❌ Missing required fields');
       return res.status(400).json({ 
         error: 'Missing required fields: destination, vibe, days, budget' 
       });
     }
 
     if (typeof days !== 'number' || days < 1 || days > 30) {
-      console.log('❌ Invalid days:', days);
       return res.status(400).json({ 
         error: 'Days must be a number between 1 and 30' 
       });
     }
 
     if (typeof budget !== 'number' || budget <= 0) {
-      console.log('❌ Invalid budget:', budget);
       return res.status(400).json({ 
         error: 'Budget must be a positive number' 
       });
     }
 
     if (!validVibes.includes(vibe)) {
-      console.log('❌ Invalid vibe:', vibe);
       return res.status(400).json({ 
         error: 'Invalid vibe. Must be one of: Adventure, Chill, Party, Culture, Spontaneous' 
       });
     }
 
-    console.log('✅ Validation passed, generating itinerary...');
-    
     const finalGroupSize = groupSize || 2;
     const finalStartDate = startDate || 'flexible';
     
     // Generate fallback itinerary
-    const costPerDay = Math.max(1, Math.floor(budget / days / 4));
+    const costPerDay = Math.floor(budget / days / 4);
     const fallbackDays = [];
-    
-    console.log('💰 Cost per day:', costPerDay);
     
     for (let i = 1; i <= days; i++) {
       fallbackDays.push({
@@ -119,8 +109,6 @@ app.post('/api/generate-itinerary', async (req, res) => {
 
     const totalCost = costPerDay * 3 * days;
     
-    console.log('📊 Total cost calculated:', totalCost);
-    
     const itineraryData = {
       trip: {
         destination,
@@ -147,13 +135,10 @@ app.post('/api/generate-itinerary', async (req, res) => {
       ]
     };
 
-    console.log('🗂️ Itinerary data generated successfully');
-
     // Insert into Supabase (if configured)
     let tripId;
     if (supabase) {
       try {
-        console.log('💾 Attempting to save to database...');
         const { data: tripData, error: insertError } = await supabase
           .from('trips')
           .insert({
@@ -161,7 +146,7 @@ app.post('/api/generate-itinerary', async (req, res) => {
             vibe,
             days,
             budget,
-            start_date: (finalStartDate && finalStartDate !== 'flexible') ? finalStartDate : null,
+            start_date: finalStartDate === 'flexible' ? null : finalStartDate,
             itinerary: itineraryData,
             created_at: new Date().toISOString()
           })
@@ -172,10 +157,8 @@ app.post('/api/generate-itinerary', async (req, res) => {
           console.error('Database insert error:', insertError);
           tripId = 'demo-' + Date.now();
         } else if (tripData && tripData.id) {
-          console.log('✅ Trip saved to database with ID:', tripData.id);
           tripId = tripData.id;
         } else {
-          console.log('⚠️ No trip ID returned, using demo ID');
           tripId = 'demo-' + Date.now();
         }
       } catch (dbError) {
@@ -183,21 +166,15 @@ app.post('/api/generate-itinerary', async (req, res) => {
         tripId = 'demo-' + Date.now();
       }
     } else {
-      console.log('⚠️ Database not configured, using demo ID');
       tripId = 'demo-' + Date.now();
     }
     
-    console.log('🎉 Trip created successfully:', tripId);
+    console.log('Trip created successfully:', tripId);
     res.status(200).json({ id: tripId });
 
   } catch (error) {
-    console.error('💥 Server error:', error);
-    console.error('💥 Error stack:', error.stack);
-    console.error('💥 Error details:', {
-      message: error.message,
-      name: error.name,
-      stack: error.stack
-    });
+    console.error('Server error:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).json({ 
       error: 'Internal server error',
       details: error.message
