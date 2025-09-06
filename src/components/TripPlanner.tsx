@@ -126,13 +126,13 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
   };
 
   const handleBudgetMinChange = (value: number) => {
-    const newMin = Math.min(value, budgetMax - 50); // Ensure min is always less than max
+    const newMin = Math.max(0, Math.min(value, budgetMax - 50)); // Ensure min is always less than max and >= 0
     setBudgetMin(newMin);
     setBudgetMinInput(newMin.toString());
   };
 
   const handleBudgetMaxChange = (value: number) => {
-    const newMax = Math.max(value, budgetMin + 50); // Ensure max is always greater than min
+    const newMax = Math.min(10000, Math.max(value, budgetMin + 50)); // Ensure max is always greater than min and <= 10000
     setBudgetMax(newMax);
     setBudgetMaxInput(newMax.toString());
   };
@@ -140,15 +140,19 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
   const handleBudgetMinInputChange = (value: string) => {
     setBudgetMinInput(value);
     const numValue = parseInt(value) || 0;
-    const clampedValue = Math.max(0, Math.min(budgetMax - 50, numValue));
-    setBudgetMin(clampedValue);
+    if (value !== '') {
+      const clampedValue = Math.max(0, Math.min(budgetMax - 50, numValue));
+      setBudgetMin(clampedValue);
+    }
   };
 
   const handleBudgetMaxInputChange = (value: string) => {
     setBudgetMaxInput(value);
     const numValue = parseInt(value) || 0;
-    const clampedValue = Math.max(budgetMin + 50, Math.min(10000, numValue));
-    setBudgetMax(clampedValue);
+    if (value !== '') {
+      const clampedValue = Math.max(budgetMin + 50, Math.min(10000, numValue));
+      setBudgetMax(clampedValue);
+    }
   };
 
   const openCalendar = () => {
@@ -267,7 +271,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
             {/* Destination */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Where's your dream destination?
+                Where's your dream destination? <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -276,6 +280,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                   value={destination}
                   onChange={(e) => setDestination(e.target.value)}
                   placeholder="e.g. Paris, Hawaii, Japan, India"
+                  required
                   className="w-full pl-12 pr-4 py-2.5 border-2 border-gray-200 bg-white rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
                 />
               </div>
@@ -312,11 +317,11 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
             {/* Start Date and Number of Days */}
             <div className="relative" ref={calendarRef}>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                When are you going and for how long?
+                When are you going and for how long? <span className="text-red-500">*</span>
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="relative">
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Number of Days</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Number of Days <span className="text-red-500">*</span></label>
                   <input
                     type="number"
                     min="1"
@@ -324,11 +329,12 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                     value={numberOfDays}
                     onChange={(e) => setNumberOfDays(e.target.value)}
                     placeholder="e.g. 7"
+                    required
                     className="w-full px-4 py-2.5 border-2 border-gray-200 bg-white rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
                   />
                 </div>
                 <div className="relative">
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Start Date</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Start Date <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                     <input
@@ -338,8 +344,12 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                       onClick={openCalendar}
                       placeholder="Select start date"
                       readOnly
+                      required
                       className="w-full pl-12 pr-4 py-2.5 border-2 border-gray-200 bg-white rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition-all cursor-pointer"
                     />
+                    <ChevronDown className={`absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 transition-transform ${
+                      showCalendar ? 'rotate-180' : ''
+                    }`} />
                   </div>
                 </div>
               </div>
@@ -476,7 +486,8 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                     step="100"
                     value={budgetMin}
                     onChange={(e) => handleBudgetMinChange(parseInt(e.target.value))}
-                    className="absolute top-0 w-full h-2 bg-transparent appearance-none cursor-pointer range-slider"
+                    className="absolute top-0 w-full h-2 bg-transparent appearance-none cursor-pointer range-slider pointer-events-auto"
+                    style={{ zIndex: 2 }}
                   />
                   
                   {/* Max Range Input */}
@@ -487,7 +498,8 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                     step="100"
                     value={budgetMax}
                     onChange={(e) => handleBudgetMaxChange(parseInt(e.target.value))}
-                    className="absolute top-0 w-full h-2 bg-transparent appearance-none cursor-pointer range-slider"
+                    className="absolute top-0 w-full h-2 bg-transparent appearance-none cursor-pointer range-slider pointer-events-auto"
+                    style={{ zIndex: 1 }}
                   />
                   
                   <style jsx>{`
