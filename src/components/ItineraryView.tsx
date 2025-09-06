@@ -7,8 +7,9 @@ import { VotingSummary } from './VotingSummary';
 import { Trip, DayItinerary, Activity } from '../types';
 import { generateDayItineraries } from '../utils/tripUtils';
 import { generateActivitySuggestions } from '../utils/activitySuggestions';
-import { ArrowLeft, Share2, Plus, Calendar, MapPin, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Share2, Plus, Calendar, MapPin, Lightbulb, FileText } from 'lucide-react';
 import { AITripInsights } from '../utils/aiTripConverter';
+import { generateItinerarySummary } from '../utils/openaiEnrichment';
 
 interface VoteCounts {
   yes: number;
@@ -39,6 +40,7 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [userVotes, setUserVotes] = useState<{[activityId: string]: 'yes' | 'no' | 'maybe'}>({});
   const [voteCounts, setVoteCounts] = useState<{[activityId: string]: VoteCounts}>({});
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
 
   // Load trip data and votes on component mount
   React.useEffect(() => {
@@ -289,7 +291,7 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
       });
     }
   };
-  const handleConfirmItinerary = () => {
+  const handleConfirmItinerary = async () => {
     // Filter activities based on votes - keep activities with more yes than no votes
     const confirmedDayItineraries = dayItineraries.map(day => {
       const confirmedActivities = day.activities.filter(activity => {
@@ -311,11 +313,41 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
     
     setDayItineraries(confirmedDayItineraries);
     
-    // Show confirmation message
-    alert(`Itinerary confirmed! Removed ${
+    const removedCount = 
       dayItineraries.reduce((total, day) => total + day.activities.length, 0) -
-      confirmedDayItineraries.reduce((total, day) => total + day.activities.length, 0)
-    } activities based on voting results.`);
+      confirmedDayItineraries.reduce((total, day) => total + day.activities.length, 0);
+    
+    // Generate and navigate to summary
+    setIsGeneratingSummary(true);
+    try {
+      const summaryContent = await generateItinerarySummary(
+        trip,
+        confirmedDayItineraries,
+        tripType,
+        aiInsights
+      );
+      
+      // Navigate to summary page with data
+      const summaryData = {
+        trip,
+        dayItineraries: confirmedDayItineraries,
+        tripType,
+        aiInsights,
+        summaryContent,
+        removedCount
+      };
+      
+      // Store in sessionStorage for the summary page
+      sessionStorage.setItem('itinerarySummary', JSON.stringify(summaryData));
+      
+      // Navigate to summary page
+      window.location.href = `/summary/${trip.id}`;
+    } catch (error) {
+      console.error('Failed to generate summary:', error);
+      alert(`Itinerary confirmed! Removed ${removedCount} activities based on voting results.`);
+    } finally {
+      setIsGeneratingSummary(false);
+    }
   };
 
   const tripDuration = new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime();
@@ -471,12 +503,23 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
             <div className="mt-8 text-center">
               <button
                 onClick={handleConfirmItinerary}
-                className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-green-600 hover:to-blue-600 transition-all transform hover:scale-105 shadow-lg"
+                disabled={isGeneratingSummary}
+                className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-green-600 hover:to-blue-600 transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center space-x-2"
               >
-                🎯 Confirm Final Itinerary
+                {isGeneratingSummary ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Generating Summary...</span>
+                  </>
+                ) : (
+                  <>
+                    <FileText className="h-5 w-5" />
+                    <span>🎯 Confirm & Generate Summary</span>
+                  </>
+                )}
               </button>
               <p className="text-gray-600 text-sm mt-2">
-                Activities with more "No" votes than "Yes" votes will be removed
+                Creates final itinerary and generates shareable summary
               </p>
             </div>
           </>

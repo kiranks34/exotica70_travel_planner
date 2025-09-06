@@ -10,6 +10,7 @@ import { SignupModal } from './components/SignupModal';
 import { LoadingModal } from './components/LoadingModal';
 import { AIInsightsPage } from './components/AIInsightsPage';
 import TripPage from './pages/TripPage';
+import { ItinerarySummaryPage } from './components/ItinerarySummaryPage';
 import { Trip } from './types';
 import { generateTripPlan } from './lib/openai';
 import { convertAITripPlanToItinerary, AITripInsights } from './utils/aiTripConverter';
@@ -351,6 +352,9 @@ function App() {
           
           {/* Trip detail route */}
           <Route path="/trip/:id" element={<TripPage />} />
+          
+          {/* Itinerary summary route */}
+          <Route path="/summary/:id" element={<ItinerarySummaryPage />} />
         </Routes>
       </div>
     </Router>

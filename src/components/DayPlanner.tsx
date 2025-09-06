@@ -182,6 +182,7 @@ export const DayPlanner: React.FC<DayPlannerProps> = ({
               userVote={userVotes?.[activity.id]}
               voteCounts={voteCounts?.[activity.id]}
               onVote={onVote}
+              tripType={tripType}
             />
           ))
         ) : (

@@ -1,8 +1,9 @@
 import React from 'react';
 import { Activity } from '../types';
-import { Clock, MapPin, Edit2, Trash2, DollarSign, Sparkles, Undo2, ThumbsUp, ThumbsDown, Meh, Users } from 'lucide-react';
+import { Clock, MapPin, Edit2, Trash2, DollarSign, Sparkles, Undo2, ThumbsUp, ThumbsDown, Meh, Users, Info, Star, Lightbulb } from 'lucide-react';
 import { getDestinationThumbnail, getActivityAddress, getActivityPhoneNumber } from '../utils/destinationImages';
 import { getCategoryColor, getCategoryLabel, shouldShowPrice } from '../utils/categoryUtils';
+import { enrichActivityWithAI, EnrichedActivity } from '../utils/openaiEnrichment';
 
 interface VoteCounts {
   yes: number;
@@ -22,6 +23,7 @@ interface ActivityCardProps {
   userVote?: 'yes' | 'no' | 'maybe';
   voteCounts?: VoteCounts;
   onVote?: (activityId: string, vote: 'yes' | 'no' | 'maybe') => void;
+  tripType?: string;
 }
 
 export const ActivityCard: React.FC<ActivityCardProps> = ({
@@ -36,7 +38,12 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   userVote,
   voteCounts,
   onVote,
+  tripType = '',
 }) => {
+  const [enrichedData, setEnrichedData] = React.useState<EnrichedActivity | null>(null);
+  const [showDetails, setShowDetails] = React.useState(false);
+  const [isEnriching, setIsEnriching] = React.useState(false);
+
   const startTime = new Date(`2000-01-01T${activity.startTime}`);
   const endTime = new Date(`2000-01-01T${activity.endTime}`);
   const thumbnailImage = getDestinationThumbnail(activity.title, destination);
@@ -79,6 +86,25 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
     return (voteCounts.yes || 0) + (voteCounts.no || 0) + (voteCounts.maybe || 0);
   };
 
+  const handleEnrichActivity = async () => {
+    if (enrichedData || isEnriching) return;
+    
+    setIsEnriching(true);
+    try {
+      const enriched = await enrichActivityWithAI(
+        activity.title,
+        destination,
+        tripType,
+        activity.category
+      );
+      setEnrichedData(enriched);
+      setShowDetails(true);
+    } catch (error) {
+      console.error('Failed to enrich activity:', error);
+    } finally {
+      setIsEnriching(false);
+    }
+  };
   return (
     <div className="relative group">
       {/* Edit/Delete Buttons - Outside card, top right */}
@@ -111,66 +137,131 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
           {/* Content - Left Side */}
           <div className="flex-1 pr-6">
             <div className="p-6">
-            {/* Activity Number and Title */}
-            <div className="mb-3">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                <span className="text-orange-500 font-bold mr-2">{activityNumber}.</span>
-                {activity.title}
-              </h3>
-              
-              {/* Category and Status */}
-              <div className="flex items-center space-x-3 mb-3">
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${categoryColor}`}>
-                  {categoryLabel}
-                </span>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(activity.bookedStatus)}`}>
-                  {activity.bookedStatus.replace('-', ' ')}
-                </span>
-              </div>
-            </div>
-          
-            {/* Activity Details */}
-            <div className="space-y-3 text-sm text-gray-600 mb-4">
-              {/* Time */}
-              <div className="flex items-center space-x-2">
-                <Clock className="h-4 w-4 text-gray-400" />
-                <span>
-                  {startTime.toLocaleTimeString('en-US', { 
-                    hour: 'numeric', 
-                    minute: '2-digit',
-                    hour12: true 
-                  })} - {endTime.toLocaleTimeString('en-US', { 
-                    hour: 'numeric', 
-                    minute: '2-digit',
-                    hour12: true 
-                  })}
-                </span>
-              </div>
-              
-              {/* Address with Google Maps */}
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={handleMapClick}
-                  className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
-                  title="Open in Google Maps"
-                >
-                  <MapPin className="h-4 w-4" />
-                  <span>{preciseAddress}</span>
-                </button>
+              {/* Activity Number and Title */}
+              <div className="mb-3">
+                <div className="flex items-start justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2 flex-1">
+                    <span className="text-orange-500 font-bold mr-2">{activityNumber}.</span>
+                    {enrichedData?.title || activity.title}
+                  </h3>
+                  <button
+                    onClick={handleEnrichActivity}
+                    disabled={isEnriching}
+                    className="ml-2 p-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
+                    title="Get AI insights"
+                  >
+                    {isEnriching ? (
+                      <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <Sparkles className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                
+                {/* Enhanced Description */}
+                {enrichedData && (
+                  <p className="text-gray-700 mb-3 leading-relaxed">
+                    {enrichedData.description}
+                  </p>
+                )}
+                
+                {/* Category and Status */}
+                <div className="flex items-center space-x-3 mb-3">
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${categoryColor}`}>
+                    {categoryLabel}
+                  </span>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(activity.bookedStatus)}`}>
+                    {activity.bookedStatus.replace('-', ' ')}
+                  </span>
+                  {enrichedData && (
+                    <>
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                        {enrichedData.duration}
+                      </span>
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                        {enrichedData.difficulty}
+                      </span>
+                    </>
+                  )}
+                </div>
               </div>
 
-              {/* Cost */}
-              {activity.cost && (
+              {/* Activity Details */}
+              <div className="space-y-3 text-sm text-gray-600 mb-4">
+                {/* Time */}
                 <div className="flex items-center space-x-2">
-                  <DollarSign className="h-4 w-4 text-gray-400" />
-                  <span>${activity.cost}</span>
+                  <Clock className="h-4 w-4 text-gray-400" />
+                  <span>
+                    {startTime.toLocaleTimeString('en-US', { 
+                      hour: 'numeric', 
+                      minute: '2-digit',
+                      hour12: true 
+                    })} - {endTime.toLocaleTimeString('en-US', { 
+                      hour: 'numeric', 
+                      minute: '2-digit',
+                      hour12: true 
+                    })}
+                  </span>
+                  {enrichedData && (
+                    <span className="text-purple-600 font-medium">
+                      • Best: {enrichedData.bestTimeToVisit}
+                    </span>
+                  )}
                 </div>
-              )}
-            </div>
+                
+                {/* Address with Google Maps */}
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handleMapClick}
+                    className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
+                    title="Open in Google Maps"
+                  >
+                    <MapPin className="h-4 w-4" />
+                    <span>{preciseAddress}</span>
+                  </button>
+                </div>
+
+                {/* Cost */}
+                {activity.cost && (
+                  <div className="flex items-center space-x-2">
+                    <DollarSign className="h-4 w-4 text-gray-400" />
+                    <span>${activity.cost}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* AI Enhanced Content */}
+              {enrichedData && showDetails && (
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4 mb-4">
+                  <div className="space-y-3">
+                    {/* Detailed Description */}
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-2 flex items-center">
+                        <Info className="h-4 w-4 mr-1 text-purple-600" />
+                        About This Experience
+                      </h4>
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        {enrichedData.detailedDescription}
+                      </p>
+                    </div>
             </div>
           </div>
         </div>
 
+                    {/* Highlights */}
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-2 flex items-center">
+                        <Star className="h-4 w-4 mr-1 text-yellow-600" />
+                        Highlights
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {enrichedData.highlights.map((highlight, index) => (
+                          <span key={index} className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
+                            {highlight}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
         {/* Voting Section */}
         {onVote && (
           <div className="border-t border-gray-100 px-6 py-4">
@@ -245,6 +336,31 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                       You voted: <span className="font-medium capitalize">{userVote}</span>
                     </span>
                   )}
+                </div>
+                    {/* Tips */}
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-2 flex items-center">
+                        <Lightbulb className="h-4 w-4 mr-1 text-green-600" />
+                        Pro Tips
+                      </h4>
+                      <ul className="text-sm text-gray-700 space-y-1">
+                        {enrichedData.tips.map((tip, index) => (
+                          <li key={index} className="flex items-start">
+                            <span className="w-1 h-1 bg-green-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                            {tip}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+              )}
+                    {/* Toggle Details Button */}
+                    <button
+                      onClick={() => setShowDetails(false)}
+                      className="text-purple-600 hover:text-purple-700 text-sm font-medium"
+                    >
+                      Hide Details
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
