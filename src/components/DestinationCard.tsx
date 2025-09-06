@@ -132,3 +132,5 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
     </div>
   );
 };
+  )
+}
