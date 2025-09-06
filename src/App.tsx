@@ -10,6 +10,7 @@ import { SignupModal } from './components/SignupModal';
 import { LoadingModal } from './components/LoadingModal';
 import { AIInsightsPage } from './components/AIInsightsPage';
 import TripPage from './pages/TripPage';
+import { DestinationDetailsPage } from './components/DestinationDetailsPage';
 import { ItinerarySummaryPage } from './components/ItinerarySummaryPage';
 import { Trip } from './types';
 import { generateTripPlan } from './lib/openai';
@@ -24,7 +25,7 @@ interface User {
   avatar?: string;
 }
 
-type AppState = 'planning' | 'ai-insights' | 'itinerary';
+type AppState = 'planning' | 'ai-insights' | 'itinerary' | 'destination-details';
 
 function App() {
   const [currentState, setCurrentState] = useState<AppState>('planning');
@@ -39,6 +40,11 @@ function App() {
   const [showAIInsights, setShowAIInsights] = useState(false);
   const [favoriteCount, setFavoriteCount] = useState(0);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [selectedDestination, setSelectedDestination] = useState<{
+    name: string;
+    country: string;
+    image: string;
+  } | null>(null);
 
   // Listen for auth changes
   useEffect(() => {
@@ -280,6 +286,17 @@ function App() {
     setCurrentTrip(null);
     setCurrentTripType('');
     setInspirationDestination('');
+    setSelectedDestination(null);
+  };
+
+  const handleShowDestinationDetails = (name: string, country: string, image: string) => {
+    setSelectedDestination({ name, country, image });
+    setCurrentState('destination-details');
+  };
+
+  const handleBackFromDestinationDetails = () => {
+    setSelectedDestination(null);
+    setCurrentState('planning');
   };
 
   return (
@@ -304,6 +321,14 @@ function App() {
                   onInspireMe={handleInspireMe}
                   inspirationDestination={inspirationDestination}
                   onFavoriteCountChange={setFavoriteCount}
+                  onShowDestinationDetails={handleShowDestinationDetails}
+                />
+              ) : currentState === 'destination-details' && selectedDestination ? (
+                <DestinationDetailsPage
+                  destinationName={selectedDestination.name}
+                  country={selectedDestination.country}
+                  image={selectedDestination.image}
+                  onBack={handleBackFromDestinationDetails}
                 />
               ) : currentState === 'ai-insights' && aiInsights ? (
                 <AIInsightsPage

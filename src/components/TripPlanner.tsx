@@ -8,10 +8,16 @@ interface TripPlannerProps {
   onInspireMe: () => void;
   inspirationDestination?: string;
   onFavoriteCountChange?: (count: number) => void;
-  onFavoriteCountChange?: (count: number) => void;
+  onShowDestinationDetails?: (name: string, country: string, image: string) => void;
 }
 
-export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspireMe, inspirationDestination, onFavoriteCountChange }) => {
+export const TripPlanner: React.FC<TripPlannerProps> = ({ 
+  onTripCreate, 
+  onInspireMe, 
+  inspirationDestination, 
+  onFavoriteCountChange,
+  onShowDestinationDetails 
+}) => {
   const [destination, setDestination] = useState('');
   const [startDate, setStartDate] = useState('');
   const [numberOfDays, setNumberOfDays] = useState('');
@@ -792,6 +798,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                 hiddenGem={destination.hiddenGem}
                 rating={destination.rating}
                 onPlanTrip={handleDestinationSelect}
+                onViewDetails={onShowDestinationDetails}
                 onFavoriteToggle={(isFavorite) => handleFavoriteToggle(`${destination.name}-${destination.country}`, isFavorite)}
                 favoriteCount={favoriteCards.size}
               />
