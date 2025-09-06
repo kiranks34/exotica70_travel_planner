@@ -244,9 +244,6 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                         {enrichedData.detailedDescription}
                       </p>
                     </div>
-            </div>
-          </div>
-        </div>
 
                     {/* Highlights */}
                     <div>
@@ -262,6 +259,37 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                         ))}
                       </div>
                     </div>
+
+                    {/* Tips */}
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-2 flex items-center">
+                        <Lightbulb className="h-4 w-4 mr-1 text-green-600" />
+                        Pro Tips
+                      </h4>
+                      <ul className="text-sm text-gray-700 space-y-1">
+                        {enrichedData.tips.map((tip, index) => (
+                          <li key={index} className="flex items-start">
+                            <span className="w-1 h-1 bg-green-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                            {tip}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Toggle Details Button */}
+                    <button
+                      onClick={() => setShowDetails(false)}
+                      className="text-purple-600 hover:text-purple-700 text-sm font-medium"
+                    >
+                      Hide Details
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
         {/* Voting Section */}
         {onVote && (
           <div className="border-t border-gray-100 px-6 py-4">
@@ -336,31 +364,6 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                       You voted: <span className="font-medium capitalize">{userVote}</span>
                     </span>
                   )}
-                </div>
-                    {/* Tips */}
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-2 flex items-center">
-                        <Lightbulb className="h-4 w-4 mr-1 text-green-600" />
-                        Pro Tips
-                      </h4>
-                      <ul className="text-sm text-gray-700 space-y-1">
-                        {enrichedData.tips.map((tip, index) => (
-                          <li key={index} className="flex items-start">
-                            <span className="w-1 h-1 bg-green-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                            {tip}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-              )}
-                    {/* Toggle Details Button */}
-                    <button
-                      onClick={() => setShowDetails(false)}
-                      className="text-purple-600 hover:text-purple-700 text-sm font-medium"
-                    >
-                      Hide Details
-                    </button>
-                  </div>
                 </div>
               )}
             </div>
