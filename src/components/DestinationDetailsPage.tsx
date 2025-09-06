@@ -1,23 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, MapPin, Clock, Globe, Utensils, Camera, DollarSign, Lightbulb, Star, Info, Plane } from 'lucide-react';
+import { ArrowLeft, MapPin, Clock, Globe, Utensils, Camera, DollarSign, Lightbulb, Star, Info, Plane, Heart } from 'lucide-react';
 import { generateDestinationDetails, DestinationDetails } from '../utils/destinationDetails';
 
 interface DestinationDetailsPageProps {
   destinationName: string;
   country: string;
   image: string;
+  rating: number;
+  initialFavorite?: boolean;
   onBack: () => void;
+  onStartPlanning: (destination: string) => void;
+  onFavoriteToggle?: (isFavorite: boolean) => void;
 }
 
 export const DestinationDetailsPage: React.FC<DestinationDetailsPageProps> = ({
   destinationName,
   country,
   image,
+  rating,
+  initialFavorite = false,
   onBack
+  onStartPlanning,
+  onFavoriteToggle
 }) => {
   const [details, setDetails] = useState<DestinationDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isFavorite, setIsFavorite] = useState(initialFavorite);
 
   useEffect(() => {
     const fetchDestinationDetails = async () => {
@@ -37,6 +46,16 @@ export const DestinationDetailsPage: React.FC<DestinationDetailsPageProps> = ({
 
     fetchDestinationDetails();
   }, [destinationName, country]);
+
+  const handleFavoriteClick = () => {
+    const newFavoriteState = !isFavorite;
+    setIsFavorite(newFavoriteState);
+    onFavoriteToggle?.(newFavoriteState);
+  };
+
+  const handleStartPlanning = () => {
+    onStartPlanning(`${destinationName}, ${country}`);
+  };
 
   if (loading) {
     return (
@@ -80,20 +99,37 @@ export const DestinationDetailsPage: React.FC<DestinationDetailsPageProps> = ({
         />
         <div className="absolute inset-0 bg-black bg-opacity-40" />
         
-        {/* Back Button */}
-        <button
-          onClick={onBack}
-          className="absolute top-6 left-6 flex items-center space-x-2 bg-white bg-opacity-90 backdrop-blur-sm text-gray-800 px-4 py-2 rounded-lg hover:bg-white transition-colors shadow-lg"
-        >
-          <ArrowLeft className="h-5 w-5" />
-          <span className="font-medium">Back to Home</span>
-        </button>
+        {/* Header Actions */}
+        <div className="absolute top-6 left-6 right-6 flex items-center justify-between">
+          <button
+            onClick={onBack}
+            className="flex items-center space-x-2 bg-white bg-opacity-90 backdrop-blur-sm text-gray-800 px-4 py-2 rounded-lg hover:bg-white transition-colors shadow-lg"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span className="font-medium">Back to Home</span>
+          </button>
+
+          <button
+            onClick={handleFavoriteClick}
+            className="p-3 bg-white bg-opacity-90 backdrop-blur-sm rounded-full hover:bg-white transition-colors shadow-lg"
+          >
+            <Heart 
+              className={`h-6 w-6 transition-colors ${
+                isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-600'
+              }`} 
+            />
+          </button>
+        </div>
 
         {/* Title Overlay */}
         <div className="absolute bottom-8 left-8 right-8">
-          <div className="flex items-center space-x-2 mb-2">
+          <div className="flex items-center space-x-4 mb-2">
             <MapPin className="h-6 w-6 text-white" />
             <span className="text-white text-lg">{country}</span>
+            <div className="flex items-center space-x-1">
+              <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+              <span className="text-white text-lg font-medium">{rating}</span>
+            </div>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">{destinationName}</h1>
           <p className="text-white text-lg max-w-2xl leading-relaxed">{details.overview}</p>
@@ -102,6 +138,19 @@ export const DestinationDetailsPage: React.FC<DestinationDetailsPageProps> = ({
 
       {/* Content */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Favorites Button - Mobile */}
+        <div className="lg:hidden mb-6">
+          <button
+            onClick={handleFavoriteClick}
+            className="flex items-center space-x-2 text-gray-700 hover:text-orange-500 transition-colors px-3 py-2 rounded-lg hover:bg-orange-50"
+          >
+            <Heart className={`h-5 w-5 ${isFavorite ? 'text-red-500 fill-red-500' : ''}`} />
+            <span className="font-medium">
+              {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+            </span>
+          </button>
+        </div>
+
         {/* Highlights */}
         <div className="mb-12">
           <div className="flex items-center space-x-3 mb-6">
@@ -264,7 +313,7 @@ export const DestinationDetailsPage: React.FC<DestinationDetailsPageProps> = ({
             <h3 className="text-2xl font-bold mb-4">Ready to Plan Your Trip?</h3>
             <p className="text-lg mb-6 opacity-90">Start creating your personalized itinerary for {destinationName}</p>
             <button
-              onClick={onBack}
+              onClick={handleStartPlanning}
               className="bg-white text-orange-600 px-8 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-colors shadow-lg"
             >
               Start Planning Your Trip

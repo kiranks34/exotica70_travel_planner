@@ -44,6 +44,8 @@ function App() {
     name: string;
     country: string;
     image: string;
+    rating: number;
+    isFavorite: boolean;
   } | null>(null);
 
   // Listen for auth changes
@@ -290,8 +292,61 @@ function App() {
   };
 
   const handleShowDestinationDetails = (name: string, country: string, image: string) => {
-    setSelectedDestination({ name, country, image });
+    // Find the destination data to get rating and favorite status
+    const destinationCards = [
+      {
+        name: 'Santorini',
+        country: 'Greece',
+        image: 'https://images.pexels.com/photos/1285625/pexels-photo-1285625.jpeg?auto=compress&cs=tinysrgb&w=400&h=300',
+        rating: 4.8
+      },
+      {
+        name: 'Kyoto',
+        country: 'Japan',
+        image: 'https://images.pexels.com/photos/161251/senso-ji-temple-japan-kyoto-landmark-161251.jpeg?auto=compress&cs=tinysrgb&w=400&h=300',
+        rating: 4.9
+      },
+      {
+        name: 'Banff',
+        country: 'Canada',
+        image: 'https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=400&h=300',
+        rating: 4.7
+      },
+      {
+        name: 'Marrakech',
+        country: 'Morocco',
+        image: 'https://images.pexels.com/photos/739407/pexels-photo-739407.jpeg?auto=compress&cs=tinysrgb&w=400&h=300',
+        rating: 4.6
+      },
+      {
+        name: 'Reykjavik',
+        country: 'Iceland',
+        image: 'https://images.pexels.com/photos/1433052/pexels-photo-1433052.jpeg?auto=compress&cs=tinysrgb&w=400&h=300',
+        rating: 4.5
+      },
+      {
+        name: 'Bagan',
+        country: 'Myanmar',
+        image: 'https://images.pexels.com/photos/2166553/pexels-photo-2166553.jpeg?auto=compress&cs=tinysrgb&w=400&h=300',
+        rating: 4.8
+      }
+    ];
+    
+    const destinationData = destinationCards.find(dest => dest.name === name && dest.country === country);
+    setSelectedDestination({ 
+      name, 
+      country, 
+      image, 
+      rating: destinationData?.rating || 4.5,
+      isFavorite: false // You can track this in state if needed
+    });
     setCurrentState('destination-details');
+  };
+
+  const handleStartPlanningFromDetails = (destination: string) => {
+    setInspirationDestination(destination);
+    setSelectedDestination(null);
+    setCurrentState('planning');
   };
 
   const handleBackFromDestinationDetails = () => {
@@ -328,7 +383,15 @@ function App() {
                   destinationName={selectedDestination.name}
                   country={selectedDestination.country}
                   image={selectedDestination.image}
+                  rating={selectedDestination.rating}
+                  initialFavorite={selectedDestination.isFavorite}
                   onBack={handleBackFromDestinationDetails}
+                  onStartPlanning={handleStartPlanningFromDetails}
+                  onFavoriteToggle={(isFavorite) => {
+                    if (selectedDestination) {
+                      setSelectedDestination({ ...selectedDestination, isFavorite });
+                    }
+                  }}
                 />
               ) : currentState === 'ai-insights' && aiInsights ? (
                 <AIInsightsPage
