@@ -522,7 +522,6 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
            <p className="text-gray-600 text-sm mt-3 text-center">
              Creates final itinerary and generates shareable summary
            </p>
-            </div>
           </>
         )}
       </div>
