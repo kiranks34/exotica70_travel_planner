@@ -105,21 +105,17 @@ export const LoadingModal: React.FC<LoadingModalProps> = ({
     setSteps(aiSteps);
 
     let stepIndex = 0;
-    let totalProgress = 0;
     const totalSteps = aiSteps.length;
 
     const processSteps = () => {
       if (stepIndex >= totalSteps) {
         // All steps completed, start completion phase
         setIsCompleting(true);
-        setProgress(95);
+        setProgress(100);
         
         setTimeout(() => {
-          setProgress(100);
-          setTimeout(() => {
-            onComplete?.();
-          }, 500);
-        }, 1000);
+          onComplete?.();
+        }, 1500);
         return;
       }
 
@@ -127,14 +123,14 @@ export const LoadingModal: React.FC<LoadingModalProps> = ({
       setCurrentStepIndex(stepIndex);
 
       // Animate progress for current step
-      const stepProgressIncrement = (100 / totalSteps) / (currentStep.duration / 100);
+      const stepProgressIncrement = (90 / totalSteps) / (currentStep.duration / 100);
       let stepProgress = 0;
 
       const progressInterval = setInterval(() => {
         stepProgress += stepProgressIncrement;
-        const newTotalProgress = (stepIndex * (100 / totalSteps)) + (stepProgress * (100 / totalSteps) / 100);
+        const newTotalProgress = (stepIndex * (90 / totalSteps)) + (stepProgress * (90 / totalSteps) / 100);
         
-        if (newTotalProgress >= (stepIndex + 1) * (100 / totalSteps)) {
+        if (newTotalProgress >= (stepIndex + 1) * (90 / totalSteps)) {
           clearInterval(progressInterval);
           
           // Mark step as completed
@@ -142,13 +138,13 @@ export const LoadingModal: React.FC<LoadingModalProps> = ({
             index === stepIndex ? { ...step, completed: true } : step
           ));
           
-          setProgress((stepIndex + 1) * (100 / totalSteps));
+          setProgress((stepIndex + 1) * (90 / totalSteps));
           stepIndex++;
           
           // Move to next step after a brief pause
           setTimeout(processSteps, 300);
         } else {
-          setProgress(Math.min(newTotalProgress, 90));
+          setProgress(Math.min(newTotalProgress, 89));
         }
       }, 100);
     };

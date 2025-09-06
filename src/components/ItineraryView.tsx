@@ -251,7 +251,9 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
         if (!newCounts[activityId]) {
           newCounts[activityId] = { yes: 0, no: 0, maybe: 0 };
         }
-        newCounts[activityId][vote] = Math.max(0, newCounts[activityId][vote] - 1);
+        if (newCounts[activityId][vote] > 0) {
+          newCounts[activityId][vote] = newCounts[activityId][vote] - 1;
+        }
         return newCounts;
       });
     } else {
@@ -270,7 +272,9 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
         
         // Remove previous vote if exists
         if (previousVote) {
-          newCounts[activityId][previousVote] = Math.max(0, newCounts[activityId][previousVote] - 1);
+          if (newCounts[activityId][previousVote] > 0) {
+            newCounts[activityId][previousVote] = newCounts[activityId][previousVote] - 1;
+          }
         }
         
         // Add new vote
