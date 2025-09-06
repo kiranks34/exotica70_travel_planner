@@ -83,18 +83,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
 
   // Beautiful travel videos from Pexels - various landscapes and experiences
   const travelVideos = [
-    'https://videos.pexels.com/video-files/1851190/1851190-hd_1920_1080_30fps.mp4',
-    'https://videos.pexels.com/video-files/1093662/1093662-hd_1920_1080_30fps.mp4',
-    'https://videos.pexels.com/video-files/2022395/2022395-hd_1920_1080_30fps.mp4',
-    'https://videos.pexels.com/video-files/1448735/1448735-hd_1920_1080_25fps.mp4',
-    'https://videos.pexels.com/video-files/1526909/1526909-hd_1920_1080_30fps.mp4',
-    'https://videos.pexels.com/video-files/1409899/1409899-hd_1920_1080_24fps.mp4',
-    'https://videos.pexels.com/video-files/1721294/1721294-hd_1920_1080_30fps.mp4',
-    'https://videos.pexels.com/video-files/1534735/1534735-hd_1920_1080_30fps.mp4',
-    'https://videos.pexels.com/video-files/1448735/1448735-hd_1920_1080_25fps.mp4',
-    'https://videos.pexels.com/video-files/1851190/1851190-hd_1920_1080_30fps.mp4',
-    'https://videos.pexels.com/video-files/1093662/1093662-hd_1920_1080_30fps.mp4',
-    'https://videos.pexels.com/video-files/2022395/2022395-hd_1920_1080_30fps.mp4'
+    // Using static background images instead of videos for better compatibility
   ];
 
   // High-quality 4K travel destination images from Pexels
@@ -145,20 +134,12 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
   React.useEffect(() => {
     const interval = setInterval(() => {
       setCurrentVideoIndex((prevIndex) => 
-        (prevIndex + 1) % travelVideos.length
+        (prevIndex + 1) % travelImages.length
       );
-    }, 7000); // 7 seconds per video
+    }, 7000); // 7 seconds per image
 
     return () => clearInterval(interval);
-  }, [travelVideos.length]);
-
-  // Preload next video for smoother transitions
-  React.useEffect(() => {
-    const nextIndex = (currentVideoIndex + 1) % travelVideos.length;
-    const video = document.createElement('video');
-    video.src = travelVideos[nextIndex];
-    video.load();
-  }, [currentVideoIndex, travelVideos]);
+  }, [travelImages.length]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -306,15 +287,17 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
       // Show success message briefly before creating trip
       setShowSuccessMessage(true);
       setTimeout(() => {
+        setIsCreatingTrip(false);
+        setShowSuccessMessage(false);
         onTripCreate(tripData);
       }, 1500);
     } catch (error) {
       console.error('Error creating trip:', error);
       setErrorMessage('Failed to create trip. Please try again.');
+      setIsCreatingTrip(false);
+      setShowSuccessMessage(false);
       // Auto-hide error after 5 seconds
       setTimeout(() => setErrorMessage(null), 5000);
-    } finally {
-      setIsCreatingTrip(false);
     }
   };
 
@@ -322,30 +305,14 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background Video */}
       <div className="absolute inset-0 z-0">
-        {travelVideos.map((videoUrl, index) => (
+        {travelImages.map((imageUrl, index) => (
           <div key={`video-${index}`} className={`absolute inset-0 transition-opacity duration-1000 ${
             index === currentVideoIndex ? 'opacity-100' : 'opacity-0'
           }`}>
-            <video
-              key={`video-element-${index}-${currentVideoIndex}`}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              className="absolute inset-0 w-full h-full object-cover z-10"
-              poster={travelImages[index]}
-              onLoadStart={() => console.log(`Loading video ${index}`)}
-              onCanPlay={() => console.log(`Video ${index} can play`)}
-              onError={(e) => console.log(`Video ${index} error:`, e)}
-            >
-              <source src={videoUrl} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-            {/* Background image fallback - lower z-index so video appears on top */}
+            {/* Background image */}
             <div 
-              className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat z-0"
-              style={{ backgroundImage: `url(${travelImages[index]})` }}
+              className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat z-10"
+              style={{ backgroundImage: `url(${imageUrl})` }}
             />
           </div>
         ))}
