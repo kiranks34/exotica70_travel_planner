@@ -16,6 +16,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
   const [budgetMax, setBudgetMax] = useState(1000);
   const [budgetMinInput, setBudgetMinInput] = useState('0');
   const [budgetMaxInput, setBudgetMaxInput] = useState('1000');
+  const [currentCalendarMonth, setCurrentCalendarMonth] = useState(new Date());
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [showCalendar, setShowCalendar] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -125,13 +126,13 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
   };
 
   const handleBudgetMinChange = (value: number) => {
-    const newMin = Math.min(value, budgetMax - 100); // Ensure min is always less than max
+    const newMin = Math.min(value, budgetMax - 50); // Ensure min is always less than max
     setBudgetMin(newMin);
     setBudgetMinInput(newMin.toString());
   };
 
   const handleBudgetMaxChange = (value: number) => {
-    const newMax = Math.max(value, budgetMin + 100); // Ensure max is always greater than min
+    const newMax = Math.max(value, budgetMin + 50); // Ensure max is always greater than min
     setBudgetMax(newMax);
     setBudgetMaxInput(newMax.toString());
   };
@@ -139,14 +140,14 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
   const handleBudgetMinInputChange = (value: string) => {
     setBudgetMinInput(value);
     const numValue = parseInt(value) || 0;
-    const clampedValue = Math.max(0, Math.min(budgetMax - 100, numValue));
+    const clampedValue = Math.max(0, Math.min(budgetMax - 50, numValue));
     setBudgetMin(clampedValue);
   };
 
   const handleBudgetMaxInputChange = (value: string) => {
     setBudgetMaxInput(value);
     const numValue = parseInt(value) || 0;
-    const clampedValue = Math.max(budgetMin + 100, Math.min(10000, numValue));
+    const clampedValue = Math.max(budgetMin + 50, Math.min(10000, numValue));
     setBudgetMax(clampedValue);
   };
 
@@ -154,16 +155,18 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
     setShowCalendar(true);
   };
 
-
-  const getCurrentMonth = () => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), 1);
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    setCurrentCalendarMonth(prev => {
+      const newMonth = new Date(prev);
+      if (direction === 'prev') {
+        newMonth.setMonth(prev.getMonth() - 1);
+      } else {
+        newMonth.setMonth(prev.getMonth() + 1);
+      }
+      return newMonth;
+    });
   };
 
-  const getNextMonth = () => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  };
 
   const formatDateForDisplay = (dateString: string) => {
     if (!dateString) return '';
@@ -339,10 +342,10 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
               
               {/* Calendar positioned below start date field */}
               {showCalendar && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white bg-opacity-95 backdrop-blur-lg shadow-2xl z-50 rounded-xl border border-white border-opacity-80">
-                  <div className="p-4">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white bg-opacity-95 backdrop-blur-lg shadow-2xl z-50 rounded-xl border border-white border-opacity-80 max-w-sm mx-auto">
+                  <div className="p-3">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900">
+                      <h3 className="text-base font-semibold text-gray-900">
                         Select Start Date
                       </h3>
                       <button
@@ -353,9 +356,8 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                       </button>
                     </div>
                     
-                    <div className="space-y-6">
-                      {/* Current Month */}
-                      <div>
+                    {/* Single Month with Navigation */}
+                    <div>
                         <h4 className="text-sm font-semibold text-gray-700 mb-3 text-center">
                           {getCurrentMonth().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                         </h4>
@@ -530,24 +532,40 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                 {/* Input Fields */}
                 <div className="flex items-center justify-between space-x-4">
                   <div className="flex-1">
+                    <label className="block text-xs text-gray-500 mb-1">Min</label>
                     <input
                       type="number"
                       min="0"
                       max="10000"
+                      step="50"
                       value={budgetMinInput}
                       onChange={(e) => handleBudgetMinInputChange(e.target.value)}
+                      onBlur={(e) => {
+                        const value = parseInt(e.target.value) || 0;
+                        const clampedValue = Math.max(0, Math.min(budgetMax - 50, value));
+                        setBudgetMin(clampedValue);
+                        setBudgetMinInput(clampedValue.toString());
+                      }}
                       placeholder="$0"
                       className="w-full px-4 py-2 border-2 border-gray-200 bg-white rounded-full text-center focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
                     />
                   </div>
                   <span className="text-gray-500 font-medium">—</span>
                   <div className="flex-1">
+                    <label className="block text-xs text-gray-500 mb-1">Max</label>
                     <input
                       type="number"
                       min="0"
                       max="10000"
+                      step="50"
                       value={budgetMaxInput}
                       onChange={(e) => handleBudgetMaxInputChange(e.target.value)}
+                      onBlur={(e) => {
+                        const value = parseInt(e.target.value) || 0;
+                        const clampedValue = Math.max(budgetMin + 50, Math.min(10000, value));
+                        setBudgetMax(clampedValue);
+                        setBudgetMaxInput(clampedValue.toString());
+                      }}
                       placeholder="$1000"
                       className="w-full px-4 py-2 border-2 border-gray-200 bg-white rounded-full text-center focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
                     />
