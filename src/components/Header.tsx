@@ -69,266 +69,6 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Navigation */}
           <nav className="hidden lg:flex items-center space-x-4">
-            {/* Domestic Dropdown */}
-            <div className="relative dropdown-wrapper">
-              <button 
-                onClick={() => toggleDropdown('domestic')}
-                className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors font-medium whitespace-nowrap">
-                <span>Domestic</span>
-                <ChevronDown className="h-4 w-4" />
-              </button>
-              {activeDropdown === 'domestic' && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-100 z-50">
-                  <div className="p-4">
-                    <div className="space-y-3">
-                      <div>
-                        <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                          <Mountain className="h-4 w-4 mr-2 text-orange-500" />
-                          Popular Destinations
-                        </h3>
-                        <div className="space-y-1">
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Goa</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Kerala</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Rajasthan</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Himachal Pradesh</a>
-                        </div>
-                      </div>
-                      <div className="border-t border-gray-100 pt-3">
-                        <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                          <MapPin className="h-4 w-4 mr-2 text-orange-500" />
-                          By Region
-                        </h3>
-                        <div className="space-y-1">
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">North India</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">South India</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">East India</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">West India</a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* International Dropdown */}
-            <div className="relative dropdown-wrapper">
-              <button 
-                onClick={() => toggleDropdown('international')}
-                className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors font-medium whitespace-nowrap">
-                <span>International</span>
-                <ChevronDown className="h-4 w-4" />
-              </button>
-              {activeDropdown === 'international' && (
-                <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-100 z-50">
-                  <div className="p-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                          <Globe className="h-4 w-4 mr-2 text-orange-500" />
-                          Asia
-                        </h3>
-                        <div className="space-y-1">
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Thailand</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Japan</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Singapore</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Malaysia</a>
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                          <Plane className="h-4 w-4 mr-2 text-orange-500" />
-                          Europe
-                        </h3>
-                        <div className="space-y-1">
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">France</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Italy</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Spain</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Switzerland</a>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="border-t border-gray-100 pt-3 mt-3">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <h3 className="text-sm font-semibold text-gray-900 mb-2">Americas</h3>
-                          <div className="space-y-1">
-                            <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">USA</a>
-                            <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Canada</a>
-                          </div>
-                        </div>
-                        <div>
-                          <h3 className="text-sm font-semibold text-gray-900 mb-2">Oceania</h3>
-                          <div className="space-y-1">
-                            <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Australia</a>
-                            <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">New Zealand</a>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Activities Dropdown */}
-            <div className="relative dropdown-wrapper">
-              <button 
-                onClick={() => toggleDropdown('activities')}
-                className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors font-medium whitespace-nowrap">
-                <span>Activities</span>
-                <ChevronDown className="h-4 w-4" />
-              </button>
-              {activeDropdown === 'activities' && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-100 z-50">
-                  <div className="p-4">
-                    <div className="space-y-3">
-                      <div>
-                        <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                          <Mountain className="h-4 w-4 mr-2 text-orange-500" />
-                          Adventure
-                        </h3>
-                        <div className="space-y-1">
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Trekking</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Water Sports</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Rock Climbing</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Paragliding</a>
-                        </div>
-                      </div>
-                      <div className="border-t border-gray-100 pt-3">
-                        <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                          <Camera className="h-4 w-4 mr-2 text-orange-500" />
-                          Experiences
-                        </h3>
-                        <div className="space-y-1">
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Photography Tours</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Cultural Immersion</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Food Tours</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Wildlife Safari</a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Travel Dropdown */}
-            <div className="relative dropdown-wrapper">
-              <button 
-                onClick={() => toggleDropdown('travel')}
-                className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors font-medium whitespace-nowrap">
-                <span>Travel</span>
-                <ChevronDown className="h-4 w-4" />
-              </button>
-              {activeDropdown === 'travel' && (
-                <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 z-50">
-                  <div className="p-4">
-                    <div className="space-y-3">
-                      <div>
-                        <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                          <Plane className="h-4 w-4 mr-2 text-orange-500" />
-                          Flights
-                        </h3>
-                        <div className="space-y-1">
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Domestic Flights</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">International Flights</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Flight Deals</a>
-                        </div>
-                      </div>
-                      <div className="border-t border-gray-100 pt-3">
-                        <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                          <Car className="h-4 w-4 mr-2 text-orange-500" />
-                          Ground Transport
-                        </h3>
-                        <div className="space-y-1">
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Car Rentals</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Bus Tickets</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Train Bookings</a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Wedding Dropdown */}
-            <div className="relative dropdown-wrapper">
-              <button 
-                onClick={() => toggleDropdown('wedding')}
-                className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors font-medium whitespace-nowrap">
-                <span>Wedding</span>
-                <ChevronDown className="h-4 w-4" />
-              </button>
-              {activeDropdown === 'wedding' && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-100 z-50">
-                  <div className="p-4">
-                    <div className="space-y-3">
-                      <div>
-                        <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                          <Heart className="h-4 w-4 mr-2 text-pink-500" />
-                          Destination Weddings
-                        </h3>
-                        <div className="space-y-1">
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Beach Weddings</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Mountain Weddings</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Palace Weddings</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">International Venues</a>
-                        </div>
-                      </div>
-                      <div className="border-t border-gray-100 pt-3">
-                        <h3 className="text-sm font-semibold text-gray-900 mb-2">Services</h3>
-                        <div className="space-y-1">
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Wedding Planning</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Guest Accommodation</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Photography</a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Honeymoon Dropdown */}
-            <div className="relative dropdown-wrapper">
-              <button 
-                onClick={() => toggleDropdown('honeymoon')}
-                className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors font-medium whitespace-nowrap">
-                <span>Honeymoon</span>
-                <ChevronDown className="h-4 w-4" />
-              </button>
-              {activeDropdown === 'honeymoon' && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-100 z-50">
-                  <div className="p-4">
-                    <div className="space-y-3">
-                      <div>
-                        <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                          <Heart className="h-4 w-4 mr-2 text-pink-500" />
-                          Romantic Destinations
-                        </h3>
-                        <div className="space-y-1">
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Maldives</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Santorini</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Bali</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Paris</a>
-                        </div>
-                      </div>
-                      <div className="border-t border-gray-100 pt-3">
-                        <h3 className="text-sm font-semibold text-gray-900 mb-2">Packages</h3>
-                        <div className="space-y-1">
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Luxury Packages</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Budget Friendly</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">All Inclusive</a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
             {/* Trip Planner Dropdown */}
             <div className="relative dropdown-wrapper">
               <button 
@@ -338,63 +78,14 @@ export const Header: React.FC<HeaderProps> = ({
                 <ChevronDown className="h-4 w-4" />
               </button>
               {activeDropdown === 'trip-planner' && (
-                <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 z-50">
-                  <div className="p-4">
-                    <div className="space-y-3">
-                      <div>
-                        <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                          <Compass className="h-4 w-4 mr-2 text-orange-500" />
-                          Planning Tools
-                        </h3>
-                        <div className="space-y-1">
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Create Itinerary</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Budget Calculator</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Packing Checklist</a>
-                        </div>
-                      </div>
-                      <div className="border-t border-gray-100 pt-3">
-                        <h3 className="text-sm font-semibold text-gray-900 mb-2">Resources</h3>
-                        <div className="space-y-1">
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Travel Guides</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Weather Info</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Currency Converter</a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* AI Dropdown */}
-            <div className="relative dropdown-wrapper">
-              <button 
-                onClick={() => toggleDropdown('ai')}
-                className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors font-medium whitespace-nowrap">
-                <span>AI</span>
-                <ChevronDown className="h-4 w-4" />
-              </button>
-              {activeDropdown === 'ai' && (
                 <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-100 z-50">
                   <div className="p-4">
                     <div className="space-y-3">
                       <div>
-                        <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                          <Sparkles className="h-4 w-4 mr-2 text-purple-500" />
-                          AI-Powered Tools
-                        </h3>
                         <div className="space-y-1">
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Smart Recommendations</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Auto Itinerary</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Travel Assistant</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Price Predictor</a>
-                        </div>
-                      </div>
-                      <div className="border-t border-gray-100 pt-3">
-                        <h3 className="text-sm font-semibold text-gray-900 mb-2">Personalization</h3>
-                        <div className="space-y-1">
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Travel Preferences</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Custom Suggestions</a>
+                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Plan with friends</a>
+                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Share link</a>
+                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Vote</a>
                         </div>
                       </div>
                     </div>
@@ -403,42 +94,65 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </div>
 
-            {/* Visa Dropdown */}
+            {/* Discover Vibes Dropdown */}
             <div className="relative dropdown-wrapper">
               <button 
-                onClick={() => toggleDropdown('visa')}
+                onClick={() => toggleDropdown('discover-vibes')}
                 className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors font-medium whitespace-nowrap">
-                <span>Visa</span>
+                <span>Discover Vibes</span>
                 <ChevronDown className="h-4 w-4" />
               </button>
-              {activeDropdown === 'visa' && (
-                <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 z-50">
+              {activeDropdown === 'discover-vibes' && (
+                <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-100 z-50">
                   <div className="p-4">
                     <div className="space-y-3">
                       <div>
-                        <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                          <FileText className="h-4 w-4 mr-2 text-blue-500" />
-                          Visa Services
-                        </h3>
                         <div className="space-y-1">
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Visa Requirements</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Application Assistance</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Document Checklist</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Processing Status</a>
-                        </div>
-                      </div>
-                      <div className="border-t border-gray-100 pt-3">
-                        <h3 className="text-sm font-semibold text-gray-900 mb-2">Popular Visas</h3>
-                        <div className="space-y-1">
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Schengen Visa</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">US Tourist Visa</a>
-                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">UK Visa</a>
+                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Chill</a>
+                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Party</a>
+                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Adventure</a>
+                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Culture</a>
+                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Spontaneous</a>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Steals Dropdown */}
+            <div className="relative dropdown-wrapper">
+              <button 
+                onClick={() => toggleDropdown('steals')}
+                className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors font-medium whitespace-nowrap">
+                <span>Steals</span>
+                <ChevronDown className="h-4 w-4" />
+              </button>
+              {activeDropdown === 'steals' && (
+                <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-100 z-50">
+                  <div className="p-4">
+                    <div className="space-y-3">
+                      <div>
+                        <div className="space-y-1">
+                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Deals</a>
+                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Last-minute</a>
+                          <a href="#" onClick={closeDropdown} className="block px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors">Budget hacks</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Trending - No Dropdown */}
+            <div className="relative dropdown-wrapper">
+              <button 
+                onClick={closeDropdown}
+                className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors font-medium whitespace-nowrap">
+                <span>Trending</span>
+              </button>
             </div>
 
           </nav>
