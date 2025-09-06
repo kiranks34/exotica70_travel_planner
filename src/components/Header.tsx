@@ -69,6 +69,15 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Navigation */}
           <nav className="hidden lg:flex items-center space-x-4">
+            {/* Home - No Dropdown */}
+            <div className="relative dropdown-wrapper">
+              <button 
+                onClick={onHomeClick}
+                className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition-colors font-medium whitespace-nowrap">
+                <span>Home</span>
+              </button>
+            </div>
+
             {/* Trip Planner Dropdown */}
             <div className="relative dropdown-wrapper">
               <button 
