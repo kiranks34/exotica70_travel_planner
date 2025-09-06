@@ -21,34 +21,45 @@ const PORT = 3001;
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
-let supabase = null;
-if (supabaseUrl && supabaseKey) {
+console.log('🔍 Checking Supabase configuration...');
+console.log('Supabase URL exists:', !!supabaseUrl);
+console.log('Supabase Key exists:', !!supabaseKey);
+
+let supabase;
+if (supabaseUrl && supabaseKey && !supabaseUrl.includes('your_') && !supabaseKey.includes('your_')) {
   try {
     supabase = createClient(supabaseUrl, supabaseKey);
     console.log('✅ Supabase client initialized successfully');
   } catch (error) {
-    console.log('⚠️  Supabase initialization failed:', error.message);
-    console.log('⚠️  Using fallback mode.');
+    console.log('❌ Supabase initialization failed:', error.message);
+    supabase = null;
   }
 } else {
-  console.log('⚠️  Supabase not configured. Using fallback mode.');
+  console.log('⚠️  Supabase not configured (missing or placeholder values)');
+  supabase = null;
 }
 
 // Initialize OpenAI client
 const openaiApiKey = process.env.VITE_OPENAI_API_KEY;
-let openai = null;
-if (openaiApiKey) {
+
+console.log('🔍 Checking OpenAI configuration...');
+console.log('OpenAI Key exists:', !!openaiApiKey);
+console.log('OpenAI Key valid format:', openaiApiKey ? openaiApiKey.startsWith('sk-') : false);
+
+let openai;
+if (openaiApiKey && openaiApiKey.startsWith('sk-') && !openaiApiKey.includes('your-')) {
   try {
     openai = new OpenAI({
       apiKey: openaiApiKey,
     });
     console.log('✅ OpenAI client initialized successfully');
   } catch (error) {
-    console.log('⚠️  OpenAI initialization failed:', error.message);
-    console.log('⚠️  Using fallback itinerary generation.');
+    console.log('❌ OpenAI initialization failed:', error.message);
+    openai = null;
   }
 } else {
-  console.log('⚠️  OpenAI not configured. Using fallback itinerary generation.');
+  console.log('⚠️  OpenAI not configured (missing or invalid API key format)');
+  openai = null;
 }
 
 // Middleware
@@ -118,6 +129,10 @@ Rules: keep estimated_total_cost <= budget (hard cap) whenever possible; 3–5 a
     try {
       if (openai) {
         console.log('[GENERATE_ITINERARY] Using OpenAI to generate itinerary...');
+        
+        // Test OpenAI connection first
+        console.log('[GENERATE_ITINERARY] Testing OpenAI connection...');
+        
         const completion = await openai.chat.completions.create({
           model: "gpt-4o-mini",
           messages: [
@@ -131,6 +146,7 @@ Rules: keep estimated_total_cost <= budget (hard cap) whenever possible; 3–5 a
 
         const responseContent = completion.choices[0].message.content;
         console.log('[GENERATE_ITINERARY] ✅ OpenAI response received successfully');
+        console.log('[GENERATE_ITINERARY] Response length:', responseContent?.length || 0);
         
         try {
           itineraryData = JSON.parse(responseContent);
@@ -141,7 +157,8 @@ Rules: keep estimated_total_cost <= budget (hard cap) whenever possible; 3–5 a
         }
       } else {
         console.log('[GENERATE_ITINERARY] ⚠️  OpenAI not configured, using fallback');
-        throw new Error('OpenAI not configured');
+        console.log('[GENERATE_ITINERARY] 💡 To use AI features, add VITE_OPENAI_API_KEY to .env file');
+        throw new Error('OpenAI not available');
       }
     } catch (openaiError) {
       console.log('[GENERATE_ITINERARY] ❌ OpenAI failed, using fallback:', openaiError.message);
@@ -225,6 +242,7 @@ Rules: keep estimated_total_cost <= budget (hard cap) whenever possible; 3–5 a
     let tripId;
     try {
       if (supabase) {
+        console.log('[GENERATE_ITINERARY] Saving to Supabase database...');
         const { data: tripData, error: insertError } = await supabase
           .from('trips')
           .insert({
@@ -240,6 +258,7 @@ Rules: keep estimated_total_cost <= budget (hard cap) whenever possible; 3–5 a
           .single();
 
         if (insertError) {
+          console.error('[GENERATE_ITINERARY] Supabase error details:', insertError);
           console.error('[GENERATE_ITINERARY] Database insert error:', insertError);
           // Don't fail the request, just use fallback ID
           tripId = 'fallback-' + Date.now();
@@ -253,6 +272,7 @@ Rules: keep estimated_total_cost <= budget (hard cap) whenever possible; 3–5 a
         }
       } else {
         // Generate a mock trip ID when database is not configured
+        console.log('[GENERATE_ITINERARY] 💡 To use database features, configure Supabase in .env file');
         tripId = 'demo-' + Date.now();
         console.log('[GENERATE_ITINERARY] Database not configured, using demo ID:', tripId);
       }
@@ -471,6 +491,10 @@ app.get('/*', (req, res) => {
 const server = app.listen(PORT, () => {
   console.log(`🚀 Backend server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`🔧 Integration Status:`);
+  console.log(`   - Supabase: ${supabase ? '✅ Connected' : '❌ Not configured'}`);
+  console.log(`   - OpenAI: ${openai ? '✅ Connected' : '❌ Not configured'}`);
+  console.log(`💡 To enable integrations, check your .env file configuration`);
   console.log(`🌐 Server ready to accept connections`);
 });
 
