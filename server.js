@@ -1,5 +1,12 @@
 import dotenv from 'dotenv';
-dotenv.config();
+
+// Load environment variables with error handling
+try {
+  dotenv.config();
+  console.log('✅ Environment variables loaded');
+} catch (error) {
+  console.log('⚠️  Could not load .env file, using default values');
+}
 
 import express from 'express';
 import cors from 'cors';
@@ -19,36 +26,45 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
 let supabase = null;
-try {
-  if (supabaseUrl && supabaseKey && !supabaseUrl.includes('your-project') && !supabaseKey.includes('your-anon-key')) {
+
+// Safer Supabase initialization
+if (supabaseUrl && supabaseKey && 
+    !supabaseUrl.includes('your-project') && 
+    !supabaseKey.includes('your-anon-key') &&
+    supabaseUrl.startsWith('https://') &&
+    supabaseKey.length > 20) {
+  try {
     supabase = createClient(supabaseUrl, supabaseKey);
     console.log('✅ Supabase client initialized successfully');
-  } else {
-    console.log('⚠️  Supabase not configured. Using fallback mode.');
+  } catch (error) {
+    console.error('❌ Failed to initialize Supabase client:', error.message);
+    supabase = null;
   }
-} catch (error) {
-  console.error('❌ Failed to initialize Supabase client:', error.message);
-  supabase = null;
+} else {
+  console.log('⚠️  Supabase not configured properly. Using fallback mode.');
+  console.log('   URL present:', !!supabaseUrl);
+  console.log('   Key present:', !!supabaseKey);
 }
 
 // Initialize OpenAI client
 const openaiApiKey = process.env.VITE_OPENAI_API_KEY;
 let openai = null;
-try {
-  if (openaiApiKey && openaiApiKey.startsWith('sk-')) {
+
+// Safer OpenAI initialization
+if (openaiApiKey && openaiApiKey.startsWith('sk-') && openaiApiKey.length > 20) {
+  try {
     openai = new OpenAI({
       apiKey: openaiApiKey,
     });
     console.log('✅ OpenAI client initialized successfully');
-  } else {
-    console.log('⚠️  OpenAI API key not configured. Using fallback itinerary generation.');
-    console.log('   To enable OpenAI integration:');
-    console.log('   1. Get your API key from https://platform.openai.com/api-keys');
-    console.log('   2. Update VITE_OPENAI_API_KEY in your .env file');
+  } catch (error) {
+    console.error('❌ Failed to initialize OpenAI client:', error.message);
+    openai = null;
   }
-} catch (error) {
-  console.error('❌ Failed to initialize OpenAI client:', error.message);
-  openai = null;
+} else {
+  console.log('⚠️  OpenAI API key not configured properly. Using fallback itinerary generation.');
+  console.log('   Key present:', !!openaiApiKey);
+  console.log('   Key format valid:', openaiApiKey ? openaiApiKey.startsWith('sk-') : false);
 }
 
 // Middleware
@@ -468,9 +484,36 @@ app.get('*', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Backend server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`🌐 Server listening on all interfaces (0.0.0.0:${PORT})`);
+});
+
+// Handle server errors
+server.on('error', (error) => {
+  console.error('❌ Server error:', error);
+  if (error.code === 'EADDRINUSE') {
+    console.log(`Port ${PORT} is already in use. Trying to kill existing process...`);
+    process.exit(1);
+  }
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('🛑 SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    console.log('✅ Server closed');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('🛑 SIGINT received, shutting down gracefully');
+  server.close(() => {
+    console.log('✅ Server closed');
+    process.exit(0);
+  });
 });
 
 export default app;
