@@ -223,6 +223,7 @@ Rules: keep estimated_total_cost <= budget (hard cap) whenever possible; 3–5 a
     } else {
       // Generate a mock trip ID when database is not configured
       tripId = 'demo-' + Date.now();
+    }
     console.log('[GENERATE_ITINERARY] Trip created successfully:', tripId);
     res.status(200).json({ id: tripId });
 
