@@ -1,23 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { Calendar, MapPin, Users, Plus, Sparkles, UserPlus, Lightbulb, X, ChevronDown } from 'lucide-react';
-import { DestinationCard } from './DestinationCard';
-import { destinations } from '../data/destinations';
 
 interface TripPlannerProps {
   onTripCreate: (tripData: any) => void;
   onInspireMe: () => void;
   inspirationDestination?: string;
-  onToggleFavorite?: (id: string) => void;
-  favorites?: string[];
 }
 
-export const TripPlanner: React.FC<TripPlannerProps> = ({ 
-  onTripCreate, 
-  onInspireMe, 
-  inspirationDestination,
-  onToggleFavorite,
-  favorites = []
-}) => {
+export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspireMe, inspirationDestination }) => {
   const [destination, setDestination] = useState('');
   const [startDate, setStartDate] = useState('');
   const [numberOfDays, setNumberOfDays] = useState('');
@@ -26,8 +16,6 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({
   const [budgetMax, setBudgetMax] = useState(1000);
   const [budgetMinInput, setBudgetMinInput] = useState('0');
   const [budgetMaxInput, setBudgetMaxInput] = useState('1000');
-  const [isDraggingMin, setIsDraggingMin] = useState(false);
-  const [isDraggingMax, setIsDraggingMax] = useState(false);
   const [currentCalendarMonth, setCurrentCalendarMonth] = useState(new Date());
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [showCalendar, setShowCalendar] = useState(false);
@@ -138,46 +126,35 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({
   };
 
   const handleBudgetMinChange = (value: number) => {
-    const newMin = Math.max(0, Math.min(value, budgetMax - 50));
+    const newMin = Math.max(0, Math.min(value, budgetMax - 50)); // Ensure min is always less than max and >= 0
     setBudgetMin(newMin);
     setBudgetMinInput(newMin.toString());
   };
 
   const handleBudgetMaxChange = (value: number) => {
-    const newMax = Math.min(10000, Math.max(value, budgetMin + 50));
+    const newMax = Math.min(10000, Math.max(value, budgetMin + 50)); // Ensure max is always greater than min and <= 10000
     setBudgetMax(newMax);
     setBudgetMaxInput(newMax.toString());
   };
 
   const handleBudgetMinInputChange = (value: string) => {
     setBudgetMinInput(value);
-    if (value !== '' && !isNaN(Number(value))) {
-      const numValue = Math.max(0, Math.min(budgetMax - 50, Number(value)));
-      setBudgetMin(numValue);
+    const numValue = parseInt(value) || 0;
+    if (value !== '') {
+      const clampedValue = Math.max(0, Math.min(budgetMax - 50, numValue));
+      setBudgetMin(clampedValue);
     }
   };
 
   const handleBudgetMaxInputChange = (value: string) => {
     setBudgetMaxInput(value);
-    if (value !== '' && !isNaN(Number(value))) {
-      const numValue = Math.max(budgetMin + 50, Math.min(10000, Number(value)));
-      setBudgetMax(numValue);
+    const numValue = parseInt(value) || 0;
+    if (value !== '') {
+      const clampedValue = Math.max(budgetMin + 50, Math.min(10000, numValue));
+      setBudgetMax(clampedValue);
     }
   };
 
-  const handlePlanTripFromCard = (destination: string) => {
-    setDestination(destination);
-    // Scroll to trip planner form
-    const formElement = document.querySelector('.trip-planner-form');
-    if (formElement) {
-      formElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  };
-
-  const handleViewDestinationDetails = (id: string) => {
-    // TODO: Navigate to destination details page
-    console.log('View details for destination:', id);
-  };
   const openCalendar = () => {
     setShowCalendar(true);
   };
@@ -279,10 +256,8 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({
         <div className="absolute inset-0 bg-black bg-opacity-30 z-20" />
       </div>
 
-      <div className="max-w-7xl w-full mx-auto flex items-start gap-8 relative z-30">
-        {/* Trip Planner Form */}
-        <div className="max-w-xl w-full ml-8 lg:ml-16">
-          <div className="trip-planner-form bg-white bg-opacity-90 backdrop-blur-lg rounded-2xl shadow-2xl p-5 md:p-6 border border-white border-opacity-80 relative z-10">
+      <div className="max-w-xl w-full ml-8 lg:ml-16">
+        <div className="bg-white bg-opacity-90 backdrop-blur-lg rounded-2xl shadow-2xl p-5 md:p-6 border border-white border-opacity-80 relative z-10">
           <div className="mb-8 text-center">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 font-heading">
               Every Trip Has a Plan. What's Yours?
@@ -566,7 +541,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({
                       value={budgetMinInput}
                       onChange={(e) => handleBudgetMinInputChange(e.target.value)}
                       onBlur={(e) => {
-                        const value = Number(e.target.value) || 0;
+                        const value = parseInt(e.target.value) || 0;
                         const clampedValue = Math.max(0, Math.min(budgetMax - 50, value));
                         setBudgetMin(clampedValue);
                         setBudgetMinInput(clampedValue.toString());
@@ -586,7 +561,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({
                       value={budgetMaxInput}
                       onChange={(e) => handleBudgetMaxInputChange(e.target.value)}
                       onBlur={(e) => {
-                        const value = Number(e.target.value) || 0;
+                        const value = parseInt(e.target.value) || 0;
                         const clampedValue = Math.max(budgetMin + 50, Math.min(10000, value));
                         setBudgetMax(clampedValue);
                         setBudgetMaxInput(clampedValue.toString());
@@ -623,39 +598,6 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({
               </button>
             </div>
           </form>
-        </div>
-        </div>
-
-        {/* Destination Cards */}
-        <div className="flex-1 max-w-4xl mr-8 lg:mr-16">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-white mb-2 text-center">
-              Discover Amazing Destinations
-            </h2>
-            <p className="text-white/80 text-center">
-              Handpicked places with insider secrets from locals
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {destinations.map((destination) => (
-              <DestinationCard
-                key={destination.id}
-                id={destination.id}
-                name={destination.name}
-                country={destination.country}
-                image={destination.image}
-                description={destination.description}
-                hiddenGem={destination.hiddenGem}
-                rating={destination.rating}
-                reviewCount={destination.reviewCount}
-                isFavorite={favorites.includes(destination.id)}
-                onToggleFavorite={onToggleFavorite || (() => {})}
-                onPlanTrip={handlePlanTripFromCard}
-                onViewDetails={handleViewDestinationDetails}
-              />
-            ))}
-          </div>
         </div>
       </div>
 

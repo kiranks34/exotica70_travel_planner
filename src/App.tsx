@@ -6,10 +6,8 @@ import { ItineraryView } from './components/ItineraryView';
 import { InspireMeModal } from './components/InspireMeModal';
 import { LoginModal } from './components/LoginModal';
 import { SignupModal } from './components/SignupModal';
-import { FavoritesModal } from './components/FavoritesModal';
 import { LoadingModal } from './components/LoadingModal';
 import { AIInsightsModal } from './components/AIInsightsModal';
-import { destinations } from './data/destinations';
 import { Trip } from './types';
 import { generateTripPlan } from './lib/openai';
 import { convertAITripPlanToItinerary, AITripInsights } from './utils/aiTripConverter';
@@ -37,8 +35,6 @@ function App() {
   const [isGeneratingTrip, setIsGeneratingTrip] = useState(false);
   const [aiInsights, setAiInsights] = useState<AITripInsights | null>(null);
   const [showAIInsights, setShowAIInsights] = useState(false);
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [showFavorites, setShowFavorites] = useState(false);
 
   // Listen for auth changes
   useEffect(() => {
@@ -275,33 +271,6 @@ function App() {
     setInspirationDestination('');
   };
 
-  const handleToggleFavorite = (destinationId: string) => {
-    setFavorites(prev => {
-      if (prev.includes(destinationId)) {
-        return prev.filter(id => id !== destinationId);
-      } else {
-        return [...prev, destinationId];
-      }
-    });
-  };
-
-  const handleRemoveFavorite = (destinationId: string) => {
-    setFavorites(prev => prev.filter(id => id !== destinationId));
-  };
-
-  const handleFavoritesClick = () => {
-    setShowFavorites(true);
-  };
-
-  const handlePlanTripFromFavorites = (destination: string) => {
-    setInspirationDestination(destination);
-    setCurrentState('planning');
-  };
-
-  const getFavoriteDestinations = () => {
-    return destinations.filter(dest => favorites.includes(dest.id));
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header 
@@ -310,8 +279,6 @@ function App() {
         user={user}
         onLogout={handleLogout}
         onHomeClick={handleHomeClick}
-        onFavoritesClick={handleFavoritesClick}
-        favoritesCount={favorites.length}
       />
       
       {currentState === 'planning' ? (
@@ -319,8 +286,6 @@ function App() {
           onTripCreate={handleTripCreate} 
           onInspireMe={handleInspireMe}
           inspirationDestination={inspirationDestination}
-          onToggleFavorite={handleToggleFavorite}
-          favorites={favorites}
         />
       ) : currentTrip ? (
         <ItineraryView 
@@ -350,15 +315,6 @@ function App() {
           onClose={() => setShowSignup(false)}
           onSwitchToLogin={handleSwitchToLogin}
           onSignupSuccess={handleLoginSuccess}
-        />
-      )}
-
-      {showFavorites && (
-        <FavoritesModal
-          favorites={getFavoriteDestinations()}
-          onClose={() => setShowFavorites(false)}
-          onRemoveFavorite={handleRemoveFavorite}
-          onPlanTrip={handlePlanTripFromFavorites}
         />
       )}
 
