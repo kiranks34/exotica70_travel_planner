@@ -4,6 +4,7 @@ import { Clock, MapPin, Edit2, Trash2, DollarSign, Sparkles, Undo2, ThumbsUp, Th
 import { getDestinationThumbnail, getActivityAddress, getActivityPhoneNumber } from '../utils/destinationImages';
 import { getCategoryColor, getCategoryLabel, shouldShowPrice } from '../utils/categoryUtils';
 import { enrichActivityWithAI, EnrichedActivity } from '../utils/openaiEnrichment';
+import { generateActivityImage } from '../utils/openaiImageGeneration';
 
 interface VoteCounts {
   yes: number;
@@ -61,8 +62,13 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
     const fetchAndSetActivityImage = async () => {
       setIsLoadingImage(true);
       try {
-        // Use OpenAI to generate a high-quality image description and get a relevant image
-        const imageUrl = await generateActivityImage(activity.title, destination, tripType);
+        // Use OpenAI DALL-E to generate a high-quality, unique image
+        const imageUrl = await generateActivityImage(
+          activity.title, 
+          destination, 
+          tripType, 
+          activity.category
+        );
         setActivityImage(imageUrl);
       } catch (error) {
         console.error('Failed to generate activity image:', error);
@@ -76,11 +82,6 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
     fetchAndSetActivityImage();
   }, [activity.title, destination, tripType, thumbnailImage]);
 
-  const generateActivityImage = async (title: string, destination: string, tripType: string): Promise<string> => {
-    // For now, return enhanced thumbnail - in production, this would call OpenAI DALL-E
-    // This is a placeholder for the OpenAI image generation
-    return getDestinationThumbnail(title, destination);
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {

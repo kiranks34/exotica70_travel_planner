@@ -422,7 +422,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({
             {/* Trip Type */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                What type of trip are you planning?
+                What type of trip are you planning? (Optional)
               </label>
               <div className="relative">
                 <select
@@ -430,7 +430,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({
                   onChange={(e) => setTripType(e.target.value)}
                   className="w-full px-4 py-2.5 border-2 border-gray-200 bg-white rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition-all appearance-none pr-10"
                 >
-                  <option value="" disabled>Select your vibe</option>
+                  <option value="">Select your vibe (optional)</option>
                   <option value="chill">Chill</option>
                   <option value="party">Party</option>
                   <option value="adventure">Adventure</option>
@@ -711,7 +711,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={!destination || !startDate || !numberOfDays || !tripType || isCreatingTrip || showSuccessMessage || showAILoading}
+              disabled={!destination || !startDate || !numberOfDays || isCreatingTrip || showSuccessMessage || showAILoading}
               className={`w-full py-2.5 px-6 rounded-xl font-semibold transition-all duration-200 shadow-lg ${
                 showSuccessMessage 
                   ? 'bg-green-500 text-white' 
