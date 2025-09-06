@@ -13,6 +13,9 @@ interface DayPlannerProps {
   onDeleteActivity: (dayId: string, activityId: string) => void;
   onUpdateNotes: (dayId: string, notes: string) => void;
   onUpdateDay: (updatedDay: DayItinerary) => void;
+  onVote?: (activityId: string, choice: 'yes' | 'no' | 'maybe') => void;
+  voteCounts?: { [activityId: string]: { yes: number; no: number; maybe: number } };
+  userVotes?: { [activityId: string]: 'yes' | 'no' | 'maybe' };
 }
 
 export const DayPlanner: React.FC<DayPlannerProps> = ({
@@ -23,7 +26,10 @@ export const DayPlanner: React.FC<DayPlannerProps> = ({
   onEditActivity,
   onDeleteActivity,
   onUpdateNotes,
-  onUpdateDay
+  onUpdateDay,
+  onVote,
+  voteCounts = {},
+  userVotes = {}
 }) => {
   const [notes, setNotes] = useState(day.notes);
   const [showNotes, setShowNotes] = useState(false);
@@ -167,6 +173,9 @@ export const DayPlanner: React.FC<DayPlannerProps> = ({
               onAISuggest={() => handleAISuggest(activity)}
               onUndo={() => handleUndo(activity.id)}
               hasUndo={activityHistory[activity.id]?.length > 0}
+              onVote={onVote ? (choice) => onVote(activity.id, choice) : undefined}
+              voteCounts={voteCounts[activity.id]}
+              userVote={userVotes[activity.id]}
             />
           ))
         ) : (

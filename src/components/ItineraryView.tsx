@@ -20,6 +20,8 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({ trip, tripType = '
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+  const [voteCounts, setVoteCounts] = useState<{ [activityId: string]: { yes: number; no: number; maybe: number } }>({});
+  const [userVotes, setUserVotes] = useState<{ [activityId: string]: 'yes' | 'no' | 'maybe' }>({});
 
   const handleAddActivity = (activity: Activity) => {
     if (!selectedDay) return;
@@ -77,6 +79,30 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({ trip, tripType = '
       setSelectedDay(updatedDay);
     }
   };
+  const handleVote = (activityId: string, choice: 'yes' | 'no' | 'maybe') => {
+    // Update user's vote
+    setUserVotes(prev => ({ ...prev, [activityId]: choice }));
+    
+    // Update vote counts (simulate real-time voting)
+    setVoteCounts(prev => {
+      const currentCounts = prev[activityId] || { yes: 0, no: 0, maybe: 0 };
+      const previousVote = userVotes[activityId];
+      
+      // Remove previous vote if exists
+      if (previousVote) {
+        currentCounts[previousVote] = Math.max(0, currentCounts[previousVote] - 1);
+      }
+      
+      // Add new vote
+      currentCounts[choice] = currentCounts[choice] + 1;
+      
+      return {
+        ...prev,
+        [activityId]: { ...currentCounts }
+      };
+    });
+  };
+
   const tripDuration = new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime();
   const dayCount = Math.ceil(tripDuration / (1000 * 60 * 60 * 24)) + 1;
 
@@ -180,6 +206,9 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({ trip, tripType = '
                 onDeleteActivity={handleDeleteActivity}
                 onUpdateNotes={handleUpdateNotes}
                onUpdateDay={handleUpdateDay}
+                onVote={handleVote}
+                voteCounts={voteCounts}
+                userVotes={userVotes}
               />
             ) : (
               <div className="bg-white rounded-xl shadow-sm p-12 text-center">

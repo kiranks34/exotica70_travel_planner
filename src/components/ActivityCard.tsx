@@ -1,6 +1,6 @@
 import React from 'react';
 import { Activity } from '../types';
-import { Clock, MapPin, Edit2, Trash2, DollarSign, Sparkles, Undo2 } from 'lucide-react';
+import { Clock, MapPin, Edit2, Trash2, DollarSign, Sparkles, Undo2, ThumbsUp, ThumbsDown, Meh } from 'lucide-react';
 import { getDestinationThumbnail, getActivityAddress, getActivityPhoneNumber } from '../utils/destinationImages';
 import { getCategoryColor, getCategoryLabel, shouldShowPrice } from '../utils/categoryUtils';
 
@@ -13,6 +13,9 @@ interface ActivityCardProps {
   onAISuggest?: () => void;
   onUndo?: () => void;
   hasUndo?: boolean;
+  onVote?: (choice: 'yes' | 'no' | 'maybe') => void;
+  voteCounts?: { yes: number; no: number; maybe: number };
+  userVote?: 'yes' | 'no' | 'maybe' | null;
 }
 
 export const ActivityCard: React.FC<ActivityCardProps> = ({
@@ -23,7 +26,10 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   onDelete,
   onAISuggest,
   onUndo,
-  hasUndo = false
+  hasUndo = false,
+  onVote,
+  voteCounts = { yes: 0, no: 0, maybe: 0 },
+  userVote = null
 }) => {
   const startTime = new Date(`2000-01-01T${activity.startTime}`);
   const endTime = new Date(`2000-01-01T${activity.endTime}`);
@@ -154,6 +160,67 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
               {activity.description}
             </p>
           )}
+
+            {/* Voting Section */}
+            {onVote && (
+              <div className="border-t border-gray-200 pt-4 mt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium text-gray-700">What do you think?</span>
+                  <div className="flex items-center space-x-4 text-xs text-gray-500">
+                    <span className="flex items-center space-x-1">
+                      <span>👍</span>
+                      <span>{voteCounts.yes}</span>
+                    </span>
+                    <span className="flex items-center space-x-1">
+                      <span>👎</span>
+                      <span>{voteCounts.no}</span>
+                    </span>
+                    <span className="flex items-center space-x-1">
+                      <span>🤷</span>
+                      <span>{voteCounts.maybe}</span>
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => onVote('yes')}
+                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      userVote === 'yes'
+                        ? 'bg-green-500 text-white shadow-md'
+                        : 'bg-green-100 text-green-700 hover:bg-green-200'
+                    }`}
+                  >
+                    <ThumbsUp className="h-4 w-4" />
+                    <span>Yes</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => onVote('no')}
+                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      userVote === 'no'
+                        ? 'bg-red-500 text-white shadow-md'
+                        : 'bg-red-100 text-red-700 hover:bg-red-200'
+                    }`}
+                  >
+                    <ThumbsDown className="h-4 w-4" />
+                    <span>No</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => onVote('maybe')}
+                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      userVote === 'maybe'
+                        ? 'bg-yellow-500 text-white shadow-md'
+                        : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                    }`}
+                  >
+                    <Meh className="h-4 w-4" />
+                    <span>Maybe</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
           
           {/* Thumbnail Image - Right Side */}
