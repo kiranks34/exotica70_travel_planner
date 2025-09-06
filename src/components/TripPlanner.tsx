@@ -24,6 +24,8 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
   const [showCalendar, setShowCalendar] = useState(false);
   const [favoriteCards, setFavoriteCards] = useState<Set<string>>(new Set());
   const [isCreatingTrip, setIsCreatingTrip] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
   const dateInputRef = useRef<HTMLInputElement>(null);
 
@@ -284,6 +286,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
 
   const handleTripCreation = async () => {
     setIsCreatingTrip(true);
+    setErrorMessage(null);
     
     try {
       // Calculate end date based on start date and number of days
@@ -315,14 +318,19 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
       const result = await response.json();
       
       if (result.id) {
-        // Redirect to the trip page
-        window.location.href = `/trip/${result.id}`;
+        // Show success message briefly before redirect
+        setShowSuccessMessage(true);
+        setTimeout(() => {
+          window.location.href = `/trip/${result.id}`;
+        }, 1500);
       } else {
         throw new Error('No trip ID returned from server');
       }
     } catch (error) {
       console.error('Error creating trip:', error);
-      alert('Failed to create trip. Please try again.');
+      setErrorMessage('Failed to create trip. Please try again.');
+      // Auto-hide error after 5 seconds
+      setTimeout(() => setErrorMessage(null), 5000);
     } finally {
       setIsCreatingTrip(false);
     }
@@ -688,10 +696,21 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={!destination || !startDate || !numberOfDays || !tripType || isCreatingTrip}
-              className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-2.5 px-6 rounded-xl font-semibold hover:from-orange-600 hover:to-red-600 transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
+              disabled={!destination || !startDate || !numberOfDays || !tripType || isCreatingTrip || showSuccessMessage}
+              className={`w-full py-2.5 px-6 rounded-xl font-semibold transition-all duration-200 shadow-lg ${
+                showSuccessMessage 
+                  ? 'bg-green-500 text-white' 
+                  : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none'
+              }`}
             >
-              {isCreatingTrip ? (
+              {showSuccessMessage ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Trip created! Redirecting...</span>
+                </div>
+              ) : isCreatingTrip ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   <span>Creating trip...</span>
@@ -701,10 +720,31 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
               )}
             </button>
 
+            {/* Error Message */}
+            {errorMessage && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+                <div className="flex items-center space-x-2">
+                  <svg className="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="text-red-700 text-sm font-medium">{errorMessage}</p>
+                  <button
+                    onClick={() => setErrorMessage(null)}
+                    className="ml-auto text-red-400 hover:text-red-600 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="text-center">
               <button
                 type="button"
                 onClick={onInspireMe}
+                disabled={isCreatingTrip || showSuccessMessage}
                 className="inline-flex items-center space-x-2 text-orange-600 hover:text-orange-700 transition-all font-medium hover:scale-105 group"
               >
                 <div className="flex items-center space-x-1">
