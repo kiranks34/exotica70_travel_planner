@@ -106,7 +106,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
       setIsEnriching(false);
     }
   };
-  return (
+
   const handleGetAlternate = async () => {
     if (!onAISuggest) return;
     
@@ -123,6 +123,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
     }
   };
 
+  return (
     <div className="relative group">
       {/* Edit/Delete Buttons - Outside card, top right */}
       <div className="absolute -top-2 -right-2 flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
