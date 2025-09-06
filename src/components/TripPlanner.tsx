@@ -667,7 +667,7 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
             <p className="text-white/90 drop-shadow-md">Discover amazing places around the world</p>
           </div>
           
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 ml-8 max-w-5xl">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 ml-8 max-w-6xl">
             {destinationCards.map((destination, index) => (
               <DestinationCard
                 key={index}

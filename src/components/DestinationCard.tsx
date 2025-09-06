@@ -33,10 +33,10 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
   };
 
   return (
-    <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer transform hover:scale-[1.02] border border-white border-opacity-30 w-full max-w-md">
-      <div className="flex h-48">
+    <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer transform hover:scale-[1.02] border border-white border-opacity-30 w-full max-w-lg">
+      <div className="flex h-56">
         {/* Image Section - 45% width */}
-        <div className="relative w-[45%] overflow-hidden">
+        <div className="relative w-[50%] overflow-hidden">
           <img
             src={image}
             alt={`${name}, ${country}`}
@@ -56,15 +56,15 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
           </button>
 
           {/* Rating and Add Trip Section */}
-          <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+          <div className="absolute bottom-4 left-3 right-3 flex items-center justify-between">
             <div className="flex items-center space-x-1 bg-black/70 backdrop-blur-sm rounded-full px-2 py-1">
               <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
               <span className="text-white text-xs font-medium">{rating}</span>
             </div>
-            <div className="ml-4">
+            <div className="ml-3">
             <button
               onClick={handlePlanTrip}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded-full text-xs font-medium transition-all transform hover:scale-105 whitespace-nowrap"
+              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-full text-xs font-medium transition-all transform hover:scale-105 whitespace-nowrap shadow-lg"
             >
               Add Trip
             </button>
@@ -73,7 +73,7 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
         </div>
 
         {/* Content Section - 55% width */}
-        <div className="w-[55%] p-5 flex flex-col justify-between">
+        <div className="w-[50%] p-5 flex flex-col justify-between">
           {/* Header */}
           <div className="mb-2">
             <div className="flex items-center space-x-2 mb-1">
