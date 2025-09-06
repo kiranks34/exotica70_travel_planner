@@ -500,7 +500,7 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
             />
             
             {/* Confirm Itinerary Button */}
-           <div className="mt-8 text-center">
+           <div className="mt-8 flex flex-col items-center text-center">
               <button
                 onClick={handleConfirmItinerary}
                 disabled={isGeneratingSummary}
@@ -512,16 +512,13 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
                     <span>Generating Summary...</span>
                   </>
                 ) : (
-                  <>
-                    <FileText className="h-5 w-5" />
-                   <span>🎯 Final Itinerary</span>
-                  </>
+                 <span>Final Itinerary</span>
                 )}
               </button>
+             <p className="text-gray-600 text-sm mt-3">
+               Creates final itinerary and generates shareable summary
+             </p>
            </div>
-           <p className="text-gray-600 text-sm mt-3 text-center">
-             Creates final itinerary and generates shareable summary
-           </p>
           </>
         )}
       </div>
