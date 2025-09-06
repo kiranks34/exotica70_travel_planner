@@ -82,20 +82,9 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({
           </div>
 
           {/* Description */}
-          <p className="text-white/95 mb-3 leading-relaxed whitespace-normal drop-shadow-sm text-sm">
+          <p className="text-white/95 mb-4 leading-relaxed text-sm line-clamp-3">
             {description}
           </p>
-
-          {/* Hidden Gem */}
-          <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-sm rounded-lg p-3 mb-3 border border-purple-300/30">
-            <div className="flex items-center space-x-2">
-              <Sparkles className="h-4 w-4 text-purple-300" />
-              <span className="text-purple-200 text-xs font-medium">Hidden Gem</span>
-            </div>
-            <p className="text-purple-100 text-xs mt-1 leading-relaxed whitespace-normal">
-              {hiddenGem}
-            </p>
-          </div>
         </div>
       </div>
     </div>

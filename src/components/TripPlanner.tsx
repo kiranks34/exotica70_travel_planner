@@ -313,9 +313,9 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
         <div className="absolute inset-0 bg-black bg-opacity-30 z-20" />
       </div>
 
-      <div className="flex w-full max-w-7xl mx-auto items-start space-x-8 relative z-10">
+      <div className="flex w-full max-w-7xl mx-auto items-start relative z-10">
         {/* Trip Planner Form - Left Side */}
-        <div className="w-2/5 flex-shrink-0">
+        <div className="w-2/5 flex-shrink-0 ml-8">
           <div className="bg-white bg-opacity-90 backdrop-blur-lg rounded-2xl shadow-2xl p-5 md:p-6 border border-white border-opacity-80">
           <div className="mb-8 text-center">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 font-heading">
@@ -661,13 +661,13 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
         </div>
 
         {/* Destination Cards - Right Side */}
-        <div className="flex-1 max-h-screen overflow-y-auto ml-12">
-          <div className="mb-6 text-center">
+        <div className="flex-1 max-h-screen overflow-y-auto ml-16">
+          <div className="mb-6 text-left ml-8">
             <h2 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">Popular Destinations</h2>
             <p className="text-white/90 drop-shadow-md">Discover amazing places around the world</p>
           </div>
           
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 ml-8">
             {destinationCards.map((destination, index) => (
               <DestinationCard
                 key={index}
@@ -680,6 +680,13 @@ export const TripPlanner: React.FC<TripPlannerProps> = ({ onTripCreate, onInspir
                 onPlanTrip={handleDestinationSelect}
               />
             ))}
+          </div>
+          
+          {/* Explore More Button */}
+          <div className="flex justify-center mt-8 ml-8">
+            <button className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white px-8 py-3 rounded-full font-semibold transition-all transform hover:scale-105 shadow-lg">
+              Explore More Destinations
+            </button>
           </div>
         </div>
       </div>
